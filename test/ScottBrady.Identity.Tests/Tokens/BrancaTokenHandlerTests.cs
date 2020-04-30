@@ -64,8 +64,6 @@ namespace ScottBrady.Identity.Tests.Tokens
             canReadToken.Should().BeTrue();
         }
         
-        
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -99,6 +97,10 @@ namespace ScottBrady.Identity.Tests.Tokens
                 System.Text.Encoding.UTF8.GetBytes(payload).Length + 29 + 16);
         }
 
+        [Fact]
+        public void CreateToken_WhenSecurityTokenDescriptorIsNull_ExpectArgumentNullException()
+            => Assert.Throws<ArgumentNullException>(() => new BrancaTokenHandler().CreateToken(null));
+        
         
         [Theory]
         [InlineData(null)]

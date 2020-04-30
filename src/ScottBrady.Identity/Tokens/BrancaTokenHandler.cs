@@ -3,7 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Macs;
 using Org.BouncyCastle.Crypto.Parameters;
 using ScottBrady.Identity.BouncyCastle;
@@ -13,10 +16,7 @@ namespace ScottBrady.Identity.Tokens
 {
     public class BrancaTokenHandler : TokenHandler
     {
-        // public virtual string CreateToken(JwtPayload tokenDescriptor, EncryptingCredentials encryptingCredentials)
         // public virtual TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters)
-        
-        // consider updating keys to be EncryptionCredentials
         
         // consider support for compression
         
@@ -84,15 +84,72 @@ namespace ScottBrady.Identity.Tokens
             return Base62.Encode(tokenBytes);
         }
 
-        public virtual SecurityToken ReadToken(string token)
+        /// <summary>
+        /// Creates Branca token using JWT rules
+        /// </summary>
+        /// <param name="tokenDescriptor">Token descriptor</param>
+        /// <returns>Base62 encoded Branca Token</returns>
+        public virtual string CreateToken(SecurityTokenDescriptor tokenDescriptor)
         {
-            // return new BrancaToken();
-            throw new NotImplementedException();
-        }
+            if (tokenDescriptor == null) throw new ArgumentNullException(nameof(tokenDescriptor));
 
-        public virtual BrancaToken ReadBrancaToken(string token)
-        {
-            throw new NotImplementedException();
+            JObject payload;
+            if (tokenDescriptor.Subject != null)
+            {
+                // TODO
+                payload = JObject.FromObject(tokenDescriptor.Subject.Claims.ToDictionary(x => x.Type, x => x.Value));
+            }
+            else
+            {
+                payload = new JObject();
+            }
+
+            if (tokenDescriptor.Claims != null && tokenDescriptor.Claims.Count > 0)
+            {
+                payload.Merge(JObject.FromObject(tokenDescriptor.Claims), new JsonMergeSettings {MergeArrayHandling = MergeArrayHandling.Replace});
+            }
+
+            if (tokenDescriptor.Audience != null)
+            {
+                // if (payload.TryGetValue(JwtRegisteredClaimNames.Aud, out var _))
+                payload[JwtRegisteredClaimNames.Aud] = tokenDescriptor.Audience;
+            }
+            
+            if (tokenDescriptor.Expires.HasValue)
+            {
+                // if (payload.ContainsKey(JwtRegisteredClaimNames.Exp))
+                payload[JwtRegisteredClaimNames.Exp] = EpochTime.GetIntDate(tokenDescriptor.Expires.Value);
+            }
+
+            if (tokenDescriptor.Issuer != null)
+            {
+                // if (payload.ContainsKey(JwtRegisteredClaimNames.Iss))
+                payload[JwtRegisteredClaimNames.Iss] = tokenDescriptor.Issuer;
+            }
+
+            if (tokenDescriptor.IssuedAt.HasValue)
+            {
+                // if (payload.ContainsKey(JwtRegisteredClaimNames.Iat))
+                payload[JwtRegisteredClaimNames.Iat] = EpochTime.GetIntDate(tokenDescriptor.IssuedAt.Value);
+            }
+
+            if (tokenDescriptor.NotBefore.HasValue)
+            {
+                // if (payload.ContainsKey(JwtRegisteredClaimNames.Nbf))
+                payload[JwtRegisteredClaimNames.Nbf] = EpochTime.GetIntDate(tokenDescriptor.NotBefore.Value);
+            }
+            
+            /*var now = EpochTime.GetIntDate(DateTime.UtcNow);
+            if (!payload.TryGetValue(JwtRegisteredClaimNames.Exp, out _))
+                payload.Add(JwtRegisteredClaimNames.Exp, now + TimeSpan.FromMinutes(TokenLifetimeInMinutes).TotalSeconds);
+
+            if (!payload.TryGetValue(JwtRegisteredClaimNames.Iat, out _))
+                payload.Add(JwtRegisteredClaimNames.Iat, now);
+
+            if (!payload.TryGetValue(JwtRegisteredClaimNames.Nbf, out _))
+                payload.Add(JwtRegisteredClaimNames.Nbf, now);*/
+
+            return CreateToken(payload.ToString(Formatting.None), (tokenDescriptor.EncryptingCredentials.Key as SymmetricSecurityKey).Key);
         }
 
         /// <summary>
@@ -159,7 +216,16 @@ namespace ScottBrady.Identity.Tokens
             }
         }
         
-        private static bool IsValidKey(byte[] key) => key?.Length == 32;
+        protected virtual bool IsValidKey(byte[] key) => key?.Length == 32;
+
+        protected virtual bool IsValidKey(EncryptingCredentials encryptingCredentials)
+        {
+            if (encryptingCredentials == null) return false;
+            if (!(encryptingCredentials.Key is AsymmetricSecurityKey key)) return false;
+            if (key.KeySize != 32) return false;
+
+            return true;
+        }
 
         private static byte[] GuaranteedRead(Stream stream, int length)
         {
