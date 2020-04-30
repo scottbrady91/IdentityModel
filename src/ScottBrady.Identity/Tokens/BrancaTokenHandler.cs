@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Macs;
@@ -15,6 +16,10 @@ namespace ScottBrady.Identity.Tokens
         // public virtual string CreateToken(JwtPayload tokenDescriptor, EncryptingCredentials encryptingCredentials)
         // public virtual TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters)
         
+        // consider updating keys to be EncryptionCredentials
+        
+        // consider support for compression
+        
         public virtual bool CanReadToken(string token)
         {
             if (string.IsNullOrWhiteSpace(token)) return false;
@@ -26,11 +31,57 @@ namespace ScottBrady.Identity.Tokens
             return true;
         }
 
-        public virtual string CreateToken(string payload, EncryptingCredentials encryptingCredentials)
+        /// <summary>
+        /// Branca specification-level token generation
+        /// </summary>
+        /// <param name="payload">The payload to be encrypted into the Branca token</param>
+        /// <param name="key">32-byte private key used to encrypt and decrypt the Branca token</param>
+        /// <returns>Base62 encoded Branca Token</returns>
+        public virtual string CreateToken(string payload, byte[] key)
         {
-            // encryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(new byte[0]), "");
+            if (string.IsNullOrWhiteSpace(payload)) throw new ArgumentNullException(nameof(payload));
+            if (!IsValidKey(key)) throw new InvalidOperationException("Invalid encryption key");
+
+            var nonce = new byte[24];
+            RandomNumberGenerator.Create().GetBytes(nonce);
+
+            var timestamp = Convert.ToUInt32(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             
-            throw new NotImplementedException();
+            // header
+            var header = new byte[29];
+            using (var stream = new MemoryStream(header))
+            {
+                // version
+                stream.WriteByte(0xBA);
+                
+                // timestamp
+                stream.Write(BitConverter.GetBytes(timestamp), 0, 4);
+                
+                // nonce
+                stream.Write(nonce, 0, nonce.Length);
+            }
+            
+            var keyMaterial = new KeyParameter(key);
+            var parameters = new ParametersWithIV(keyMaterial, nonce);
+
+            var engine = new XChaChaEngine();
+            engine.Init(true, parameters);
+
+            var plaintextBytes = Encoding.UTF8.GetBytes(payload);
+            var ciphertext = new byte[plaintextBytes.Length + 16];
+            
+            engine.ProcessBytes(plaintextBytes, 0, plaintextBytes.Length, ciphertext, 0);
+            
+            var poly = new Poly1305();
+            poly.Init(keyMaterial);
+            poly.BlockUpdate(header, 0, header.Length);
+            poly.DoFinal(ciphertext, plaintextBytes.Length);
+
+            var tokenBytes = new byte[header.Length + ciphertext.Length];
+            Buffer.BlockCopy(header, 0, tokenBytes, 0, header.Length);
+            Buffer.BlockCopy(ciphertext, 0, tokenBytes, header.Length, ciphertext.Length);
+            
+            return Base62.Encode(tokenBytes);
         }
 
         public virtual SecurityToken ReadToken(string token)
@@ -49,9 +100,10 @@ namespace ScottBrady.Identity.Tokens
         /// </summary>
         /// <param name="token">Base62 encoded Branca token</param>
         /// <param name="key">32-byte private key used to encrypt and decrypt the Branca token</param>
-        /// <returns></returns>
+        /// <returns>Pared and decrypted Branca Token</returns>
         public virtual BrancaToken DecryptToken(string token, byte[] key)
         {
+            if (string.IsNullOrWhiteSpace(token)) throw new ArgumentNullException(nameof(token));
             if (!IsValidKey(key)) throw new InvalidOperationException("Invalid decryption key");
             
             var tokenBytes = Base62.Decode(token);

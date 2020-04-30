@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using ScottBrady.Identity.Tokens;
@@ -64,8 +65,51 @@ namespace ScottBrady.Identity.Tests.Tokens
         }
         
         
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void CreateToken_WhenPayloadIsNullOrWhitespace_ExpectArgumentNullException(string payload)
+        {
+            var handler = new BrancaTokenHandler();
+            Assert.Throws<ArgumentNullException>(() => handler.CreateToken(payload, System.Text.Encoding.UTF8.GetBytes(ValidKey)));
+        }
         
+        [Fact]
+        public void CreateToken_WhenKeyIsNull_ExpectInvalidOperationException() 
+            => Assert.Throws<InvalidOperationException>(() => new BrancaTokenHandler().CreateToken("test", null));
+
+        [Fact]
+        public void CreateToken_WhenKeyIsNot32Bytes_ExpectInvalidOperationException()
+            => Assert.Throws<InvalidOperationException>(() =>
+                new BrancaTokenHandler().CreateToken("test", System.Text.Encoding.UTF8.GetBytes("iamonly14bytes")));
+
+        [Fact]
+        public void CreateToken_WhenTokenGenerated_ExpectBas62EncodedTokenWithCorrectLength()
+        {
+            var payload = Guid.NewGuid().ToString();
+            var key = System.Text.Encoding.UTF8.GetBytes(ValidKey);
+            var handler = new BrancaTokenHandler();
+
+            var token = handler.CreateToken(payload, key);
+
+            token.Any(x => !Base62.CharacterSet.Contains(x)).Should().BeFalse();
+            Base62.Decode(token).Length.Should().Be(
+                System.Text.Encoding.UTF8.GetBytes(payload).Length + 29 + 16);
+        }
+
         
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void DecryptToken_WhenTokenIsNullOrWhitespace_ExpectArgumentNullException(string token)
+        {
+            var handler = new BrancaTokenHandler();
+            Assert.Throws<ArgumentNullException>(() => handler.DecryptToken(token, System.Text.Encoding.UTF8.GetBytes(ValidKey)));
+        }
+
         [Fact]
         public void DecryptToken_WhenKeyIsNull_ExpectInvalidOperationException() 
             => Assert.Throws<InvalidOperationException>(() => new BrancaTokenHandler().DecryptToken(ValidToken, null));
@@ -101,6 +145,20 @@ namespace ScottBrady.Identity.Tests.Tokens
         {
             var parsedToken = new BrancaTokenHandler().DecryptToken(ValidToken, System.Text.Encoding.UTF8.GetBytes(ValidKey));
             parsedToken.Payload.Should().Be(ExpectedPayload);
+        }
+
+        [Fact]
+        public void EnryptAndDecryptToken_ExpectCorrectPayloadAndTimestamp()
+        {
+            var payload = Guid.NewGuid().ToString();
+            var key = System.Text.Encoding.UTF8.GetBytes(ValidKey);
+            var handler = new BrancaTokenHandler();
+
+            var token = handler.CreateToken(payload, key);
+            var decryptedPayload = handler.DecryptToken(token, key);
+
+            decryptedPayload.Payload.Should().Be(payload);
+            decryptedPayload.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 1000);
         }
     }
 }
