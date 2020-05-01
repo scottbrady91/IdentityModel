@@ -180,5 +180,43 @@ namespace ScottBrady.Identity.Tests.Tokens
             decryptedPayload.Payload.Should().Be(payload);
             decryptedPayload.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 1000);
         }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void ValidateToken_WhenTokenIsNullOrWhitespace_ExpectFailureWithArgumentNullException(string token)
+        {
+            var result = new BrancaTokenHandler().ValidateToken(token, new TokenValidationParameters());
+
+            result.IsValid.Should().BeFalse();
+            result.Exception.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void ValidateToken_WhenTokenValidationParametersAreNull_ExpectFailureWithArgumentNullException()
+        {
+            var result = new BrancaTokenHandler().ValidateToken(ValidToken, null);
+            
+            result.Exception.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void ValidateToken_WhenTokenCannotBeRead_ExpectFailureWithInvalidOperationException()
+        {
+            var result = new BrancaTokenHandler().ValidateToken("=====", new TokenValidationParameters());
+            
+            result.Exception.Should().BeOfType<InvalidOperationException>();
+        }
+
+        /*[Fact]
+        public void ValidateToken_WhenValidToken_TEST()
+        {
+            var result = new BrancaTokenHandler().ValidateToken(
+                ValidToken,
+                new TokenValidationParameters {TokenDecryptionKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(ValidKey))});
+            
+            
+        }*/
     }
 }
