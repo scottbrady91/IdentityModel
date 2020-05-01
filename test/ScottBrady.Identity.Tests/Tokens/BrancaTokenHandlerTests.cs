@@ -2,6 +2,7 @@
 using System.Linq;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using ScottBrady.Identity.Tokens;
 using Xunit;
 
@@ -100,7 +101,24 @@ namespace ScottBrady.Identity.Tests.Tokens
         [Fact]
         public void CreateToken_WhenSecurityTokenDescriptorIsNull_ExpectArgumentNullException()
             => Assert.Throws<ArgumentNullException>(() => new BrancaTokenHandler().CreateToken(null));
-        
+
+        [Fact]
+        public void CreateAndDecryptToken_WithSecurityTokenDescriptor_ExpectCorrectBrancaTimestampAndNoIatClaim()
+        {
+            var key = System.Text.Encoding.UTF8.GetBytes(ValidKey);
+            var handler = new BrancaTokenHandler();
+            
+            var token = handler.CreateToken(new SecurityTokenDescriptor
+            {
+                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(key), "chacha")
+            });
+
+            var parsedToken = handler.DecryptToken(token, key);
+            var jObject = JObject.Parse(parsedToken.Payload);
+            jObject["iat"].Should().BeNull();
+            
+            parsedToken.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 1000);
+        }
         
         [Theory]
         [InlineData(null)]

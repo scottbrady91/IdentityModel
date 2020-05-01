@@ -92,64 +92,17 @@ namespace ScottBrady.Identity.Tokens
         public virtual string CreateToken(SecurityTokenDescriptor tokenDescriptor)
         {
             if (tokenDescriptor == null) throw new ArgumentNullException(nameof(tokenDescriptor));
-
-            JObject payload;
-            if (tokenDescriptor.Subject != null)
-            {
-                // TODO
-                payload = JObject.FromObject(tokenDescriptor.Subject.Claims.ToDictionary(x => x.Type, x => x.Value));
-            }
-            else
-            {
-                payload = new JObject();
-            }
-
-            if (tokenDescriptor.Claims != null && tokenDescriptor.Claims.Count > 0)
-            {
-                payload.Merge(JObject.FromObject(tokenDescriptor.Claims), new JsonMergeSettings {MergeArrayHandling = MergeArrayHandling.Replace});
-            }
-
-            if (tokenDescriptor.Audience != null)
-            {
-                // if (payload.TryGetValue(JwtRegisteredClaimNames.Aud, out var _))
-                payload[JwtRegisteredClaimNames.Aud] = tokenDescriptor.Audience;
-            }
+            if (IsValidKey(tokenDescriptor.EncryptingCredentials)) throw new InvalidOperationException("Branca tokens require symmetric key");
             
-            if (tokenDescriptor.Expires.HasValue)
-            {
-                // if (payload.ContainsKey(JwtRegisteredClaimNames.Exp))
-                payload[JwtRegisteredClaimNames.Exp] = EpochTime.GetIntDate(tokenDescriptor.Expires.Value);
-            }
-
-            if (tokenDescriptor.Issuer != null)
-            {
-                // if (payload.ContainsKey(JwtRegisteredClaimNames.Iss))
-                payload[JwtRegisteredClaimNames.Iss] = tokenDescriptor.Issuer;
-            }
-
-            if (tokenDescriptor.IssuedAt.HasValue)
-            {
-                // if (payload.ContainsKey(JwtRegisteredClaimNames.Iat))
-                payload[JwtRegisteredClaimNames.Iat] = EpochTime.GetIntDate(tokenDescriptor.IssuedAt.Value);
-            }
-
-            if (tokenDescriptor.NotBefore.HasValue)
-            {
-                // if (payload.ContainsKey(JwtRegisteredClaimNames.Nbf))
-                payload[JwtRegisteredClaimNames.Nbf] = EpochTime.GetIntDate(tokenDescriptor.NotBefore.Value);
-            }
+            var jwtStylePayload = tokenDescriptor.ToJwtPayload();
             
-            /*var now = EpochTime.GetIntDate(DateTime.UtcNow);
-            if (!payload.TryGetValue(JwtRegisteredClaimNames.Exp, out _))
-                payload.Add(JwtRegisteredClaimNames.Exp, now + TimeSpan.FromMinutes(TokenLifetimeInMinutes).TotalSeconds);
+            // Remove iat claim in favour of timestamp
+            var jObject = JObject.Parse(jwtStylePayload);
+            jObject.Remove(JwtRegisteredClaimNames.Iat);
 
-            if (!payload.TryGetValue(JwtRegisteredClaimNames.Iat, out _))
-                payload.Add(JwtRegisteredClaimNames.Iat, now);
+            var symmetricKey = (SymmetricSecurityKey) tokenDescriptor.EncryptingCredentials.Key;
 
-            if (!payload.TryGetValue(JwtRegisteredClaimNames.Nbf, out _))
-                payload.Add(JwtRegisteredClaimNames.Nbf, now);*/
-
-            return CreateToken(payload.ToString(Formatting.None), (tokenDescriptor.EncryptingCredentials.Key as SymmetricSecurityKey).Key);
+            return CreateToken(jObject.ToString(Formatting.None), symmetricKey.Key);
         }
 
         /// <summary>
