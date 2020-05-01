@@ -19,6 +19,7 @@ namespace ScottBrady.Identity.Tokens
         // public virtual TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters)
         
         // consider support for compression
+        // consider custom BrancaSecurityTokenDescriptor
         
         public virtual bool CanReadToken(string token)
         {
@@ -92,7 +93,7 @@ namespace ScottBrady.Identity.Tokens
         public virtual string CreateToken(SecurityTokenDescriptor tokenDescriptor)
         {
             if (tokenDescriptor == null) throw new ArgumentNullException(nameof(tokenDescriptor));
-            if (IsValidKey(tokenDescriptor.EncryptingCredentials)) throw new InvalidOperationException("Branca tokens require symmetric key");
+            if (!IsValidKey(tokenDescriptor.EncryptingCredentials)) throw new InvalidOperationException("Branca tokens require symmetric key");
             
             var jwtStylePayload = tokenDescriptor.ToJwtPayload();
             
@@ -168,16 +169,20 @@ namespace ScottBrady.Identity.Tokens
                     timestamp);
             }
         }
+
+        public virtual BrancaToken ValidateToken(string token)
+        {
+            throw new NotImplementedException();
+        }
         
         protected virtual bool IsValidKey(byte[] key) => key?.Length == 32;
 
         protected virtual bool IsValidKey(EncryptingCredentials encryptingCredentials)
         {
             if (encryptingCredentials == null) return false;
-            if (!(encryptingCredentials.Key is AsymmetricSecurityKey key)) return false;
-            if (key.KeySize != 32) return false;
+            if (!(encryptingCredentials.Key is SymmetricSecurityKey symmetricKey)) return false;
 
-            return true;
+            return IsValidKey(symmetricKey.Key);
         }
 
         private static byte[] GuaranteedRead(Stream stream, int length)
