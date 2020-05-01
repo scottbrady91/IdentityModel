@@ -4,4 +4,6 @@
 ✔ Ready
 
 ## Branca Tokens
-❌ Not ready...
+✔ Spec-level token handling
+❌ JWT style token handling
+❌ Auth Handler
