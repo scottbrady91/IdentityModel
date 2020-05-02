@@ -1,4 +1,4 @@
-# ScottBrady.Identity
+# ScottBrady.IdentityModel
 
 ## Base62 Encoding
 ✔ Ready
@@ -8,4 +8,4 @@
 
 ✔ JWT style token handling
 
-❌ Auth Handler
+✔ ASP.NET Core sample
