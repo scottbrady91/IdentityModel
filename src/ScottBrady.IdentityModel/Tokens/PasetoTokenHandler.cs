@@ -27,13 +27,34 @@ namespace ScottBrady.IdentityModel.Tokens
             throw new NotImplementedException();
         }
         
-        public virtual ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+        public virtual ClaimsPrincipal ValidateToken(string token, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
         {
             throw new NotImplementedException();
         }
 
         public virtual TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters)
         {
+            // get strategy for version + purpose
+            
+            
+            // public
+            
+            // extract header (e.g. "v2.public.")
+            
+            // check version
+            
+            // check purpose
+            
+            // decode payload
+            
+            // extract signature from payload (leftmost 64 bytes)
+            
+            // extract message from payload
+            
+            // pack header, message and footer (using PAE?)
+            
+            // verify signature
+            
             throw new NotImplementedException();
         }
     }
