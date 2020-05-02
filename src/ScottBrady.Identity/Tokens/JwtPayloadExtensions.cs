@@ -43,7 +43,7 @@ namespace ScottBrady.Identity.Tokens
             payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Exp,
                 tokenDescriptor.Expires.HasValue 
                     ? EpochTime.GetIntDate(tokenDescriptor.Expires.Value)
-                    : now + TimeSpan.FromMinutes(60).TotalSeconds);
+                    : now + (long) TimeSpan.FromMinutes(60).TotalSeconds);
             payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Iat, 
                 tokenDescriptor.IssuedAt.HasValue
                 ? EpochTime.GetIntDate(tokenDescriptor.IssuedAt.Value)

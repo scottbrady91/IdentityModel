@@ -1,0 +1,49 @@
+﻿@model ScottBrady.Identity.Samples.AspNetCore.Controllers.TokenModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="px-5">
+    <h1 class="display-4 text-center">ScottBrady.Identity</h1>
+    <p class="text-center">Identity & Crypto helpers</p>
+    <p>
+        <a asp-action="Branca">Get Branca token</a>
+    </p>
+    @if (Model != null)
+    {
+        <h2>@Model.Type Token</h2>
+        <h3 class="h4">Token</h3>
+        <pre id="token">@Model.Token</pre>
+        <h3 class="h4">Payload</h3>
+        <pre>@Model.Payload</pre>
+        <p>
+            <a onclick="api();" href="javascript:void(0);">Call API</a> <span id="result"></span>
+        </p>
+    }
+</div>
+
+@section Scripts
+{
+    <script>
+        function api() {
+            $.ajax({
+                url: "https://localhost:5001/Home/CallApi",
+                type: "GET",
+                dataType: "json",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("Authorization", "Bearer " + document.getElementById("token").innerHTML);
+                },
+                complete: function (xhr) {
+                    if (xhr.status === 200) {
+                        document.getElementById("result").innerHTML = "Success";
+                    }
+                    else if (xhr.status === 401) {
+                        document.getElementById("result").innerHTML = "Unauthorized";
+                    } else {
+                        document.getElementById("result").innerHTML = "Failed";
+                    }
+                }
+            });
+        }
+    </script>
+}
