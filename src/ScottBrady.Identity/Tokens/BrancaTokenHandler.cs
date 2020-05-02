@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -16,7 +17,7 @@ using SecurityAlgorithms = ScottBrady.Identity.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.Identity.Tokens
 {
-    public class BrancaTokenHandler : JwtPayloadTokenHandler
+    public class BrancaTokenHandler : JwtPayloadTokenHandler, ISecurityTokenValidator
     {
         // consider support for compression
         // consider custom BrancaSecurityTokenDescriptor
@@ -29,6 +30,8 @@ namespace ScottBrady.Identity.Tokens
 
             return true;
         }
+
+        public bool CanValidateToken => true;
 
         /// <summary>
         /// Branca specification-level token generation
@@ -171,6 +174,19 @@ namespace ScottBrady.Identity.Tokens
                     timestamp);
             }
         }
+        
+        public virtual ClaimsPrincipal ValidateToken(string token, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+        {
+            var result = ValidateToken(token, validationParameters);
+
+            if (result.IsValid)
+            {
+                validatedToken = result.SecurityToken;
+                return new ClaimsPrincipal(result.ClaimsIdentity);
+            }
+
+            throw result.Exception;
+        }
 
         public virtual TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters)
         {
@@ -212,10 +228,13 @@ namespace ScottBrady.Identity.Tokens
             var innerValidationResult = ValidateTokenPayload(brancaToken, validationParameters);
             if (!innerValidationResult.IsValid) return innerValidationResult;
 
+            var identity = innerValidationResult.ClaimsIdentity;
+            if (validationParameters.SaveSigninToken) identity.BootstrapContext = token;
+
             return new TokenValidationResult
             {
                 SecurityToken = brancaToken,
-                ClaimsIdentity = innerValidationResult.ClaimsIdentity,
+                ClaimsIdentity = identity,
                 IsValid = true
             };
         }

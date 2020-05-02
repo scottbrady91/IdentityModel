@@ -71,6 +71,10 @@ namespace ScottBrady.Identity.Tests.Tokens
 
             canReadToken.Should().BeTrue();
         }
+
+        [Fact]
+        public void CanValidateToken_ExpectTrue()
+            => new BrancaTokenHandler().CanValidateToken.Should().BeTrue();
         
         [Theory]
         [InlineData(null)]
@@ -264,6 +268,84 @@ namespace ScottBrady.Identity.Tests.Tokens
             result.IsValid.Should().BeTrue();
             result.ClaimsIdentity.Should().Be(expectedIdentity);
             result.SecurityToken.Should().NotBeNull();
+        }
+
+        [Fact]
+        public void ValidateToken_WhenSaveSignInTokenIsTrue_ExpectIdentityBootstrapContext()
+        {
+            const string expectedToken = ValidToken;
+            var expectedIdentity = new ClaimsIdentity("test");
+            
+            var mockHandler = new Mock<BrancaTokenHandler> {CallBase = true};
+            mockHandler.Protected()
+                .Setup<TokenValidationResult>("ValidateTokenPayload",
+                    ItExpr.IsAny<BrancaSecurityToken>(),
+                    ItExpr.IsAny<TokenValidationParameters>())
+                .Returns(new TokenValidationResult
+                {
+                    ClaimsIdentity = expectedIdentity,
+                    IsValid = true
+                });
+
+            var result = mockHandler.Object.ValidateToken(
+                expectedToken,
+                new TokenValidationParameters
+                {
+                    TokenDecryptionKey = new SymmetricSecurityKey(validKey),
+                    SaveSigninToken = true
+                });
+
+            result.IsValid.Should().BeTrue();
+            result.ClaimsIdentity.BootstrapContext.Should().Be(expectedToken);
+        }
+
+        [Fact]
+        public void ValidateToken_ISecurityTokenValidator_WhenSuccess_ExpectInnerTokenAndIdentity()
+        {
+            var token = Guid.NewGuid().ToString();
+            var validationParameters = new TokenValidationParameters {ValidIssuer = Guid.NewGuid().ToString()};
+
+            var expectedIdentity = new ClaimsIdentity(new List<Claim> {new Claim("sub", "123")}, "test");
+            var expectedSecurityToken = new MockableJwtPayloadSecurityToken();
+
+            var mockHandler = new Mock<BrancaTokenHandler> {CallBase = true};
+            mockHandler.Setup(x => x.ValidateToken(token, validationParameters))
+                .Returns(new TokenValidationResult
+                {
+                    IsValid = true,
+                    ClaimsIdentity = expectedIdentity,
+                    SecurityToken = expectedSecurityToken
+                });
+
+            var claimsPrincipal = mockHandler.Object.ValidateToken(token, validationParameters, out var parsedToken);
+
+            claimsPrincipal.Identity.Should().Be(expectedIdentity);
+            parsedToken.Should().Be(expectedSecurityToken);
+        }
+
+        [Fact]
+        public void ValidateToken_ISecurityTokenValidator_WhenFailure_ExpectInnerException()
+        {
+            const string token = ValidToken;
+            var validationParameters = new TokenValidationParameters();
+
+            var expectedException = new InvalidOperationException("test");
+
+            var mockHandler = new Mock<BrancaTokenHandler> {CallBase = true};
+            mockHandler.Setup(x => x.ValidateToken(token, validationParameters))
+                .Returns(new TokenValidationResult
+                {
+                    IsValid = false,
+                    Exception = expectedException
+                });
+
+            SecurityToken parsedToken = null;
+            var exception = Assert.Throws(
+                expectedException.GetType(),
+                () => mockHandler.Object.ValidateToken(token, validationParameters, out parsedToken));
+            
+            parsedToken.Should().BeNull();
+            exception.Should().Be(expectedException);
         }
         
         [Fact]
