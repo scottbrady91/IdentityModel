@@ -11,6 +11,7 @@ using Moq.Protected;
 using Newtonsoft.Json.Linq;
 using ScottBrady.Identity.Tokens;
 using Xunit;
+using SecurityAlgorithms = ScottBrady.Identity.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.Identity.Tests.Tokens
 {
@@ -115,7 +116,7 @@ namespace ScottBrady.Identity.Tests.Tokens
             
             var token = handler.CreateToken(new SecurityTokenDescriptor
             {
-                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), "chacha")
+                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), SecurityAlgorithms.XChaCha20Poly1305)
             });
 
             var parsedToken = handler.DecryptToken(token, validKey);
@@ -283,7 +284,7 @@ namespace ScottBrady.Identity.Tests.Tokens
                 Expires = expires,
                 NotBefore = notBefore,
                 Claims = new Dictionary<string, object> {{"sub", subject}},
-                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), "chacha")
+                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), SecurityAlgorithms.XChaCha20Poly1305)
             });
 
             var validatedToken = handler.ValidateToken(token, new TokenValidationParameters
@@ -362,11 +363,126 @@ namespace ScottBrady.Identity.Tests.Tokens
             keys.Count.Should().Be(1);
             keys.Should().Contain(x => x.Key.SequenceEqual(expectedKey));
         }
+
+        [Fact]
+        public void IsValidKey_WhenKeyIsNot32Bytes_ExpectFalse()
+        {
+            var key = new byte[16];
+            new Random().NextBytes(key);
+
+            var isValidKey = new TestBrancaTokenHandler().IsValidKey(key);
+
+            isValidKey.Should().BeFalse();
+        }
+
+        [Fact]
+        public void IsValidKey_WhenKeyIsValid_ExpectTrue()
+        {
+            var key = new byte[32];
+            new Random().NextBytes(key);
+
+            var isValidKey = new TestBrancaTokenHandler().IsValidKey(key);
+
+            isValidKey.Should().BeTrue();
+        }
+
+        [Fact]
+        public void IsValidKey_WhenSecurityKeyIsNot32Bytes_ExpectFalse()
+        {
+            var keyBytes = new byte[16];
+            new Random().NextBytes(keyBytes);
+            var key = new SymmetricSecurityKey(keyBytes);
+
+            var isValidKey = new TestBrancaTokenHandler().IsValidKey(key);
+
+            isValidKey.Should().BeFalse();
+        }
+
+        [Fact]
+        public void IsValidKey_WhenSecurityKeyIsNotSymmetricSecurityKey_ExpectFalse()
+        {
+            var key = new RsaSecurityKey(RSA.Create());
+
+            var isValidKey = new TestBrancaTokenHandler().IsValidKey(key);
+
+            isValidKey.Should().BeFalse();
+        }
+
+        [Fact]
+        public void IsValidKey_WhenSecurityKeyIsValid_ExpectTrue()
+        {
+            var keyBytes = new byte[32];
+            new Random().NextBytes(keyBytes);
+            var key = new SymmetricSecurityKey(keyBytes);
+
+            var isValidKey = new TestBrancaTokenHandler().IsValidKey(key);
+
+            isValidKey.Should().BeTrue();
+        }
+
+        [Fact]
+        public void IsValidKey_WhenEcryptingCredentialsKeyIsNot32Bytes_ExpectFalse()
+        {
+            var keyBytes = new byte[16];
+            new Random().NextBytes(keyBytes);
+            var key = new SymmetricSecurityKey(keyBytes);
+            var credentials = new EncryptingCredentials(key, SecurityAlgorithms.XChaCha20Poly1305);
+
+            var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
+
+            isValidKey.Should().BeFalse();
+        }
+
+        [Fact]
+        public void IsValidKey_WhenEcryptingCredentialsHasKeyWrappingSet_ExpectFalse()
+        {
+            var keyBytes = new byte[32];
+            new Random().NextBytes(keyBytes);
+            var key = new SymmetricSecurityKey(keyBytes);
+            var credentials = new EncryptingCredentials(
+                key, 
+                Microsoft.IdentityModel.Tokens.SecurityAlgorithms.Aes256KeyWrap,
+                SecurityAlgorithms.XChaCha20Poly1305);
+
+            var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
+
+            isValidKey.Should().BeFalse();
+        }
+
+        [Fact]
+        public void IsValidKey_WhenEcryptingCredentialsHasIncorrectEncryptionAlgorithm_ExpectFalse()
+        {
+            var keyBytes = new byte[32];
+            new Random().NextBytes(keyBytes);
+            var key = new SymmetricSecurityKey(keyBytes);
+            var credentials = new EncryptingCredentials(key, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.Aes128Encryption);
+
+            var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
+
+            isValidKey.Should().BeFalse();
+        }
+
+        [Fact]
+        public void IsValidKey_WhenEcryptingCredentialsIsValid_ExpectTrue()
+        {
+            var keyBytes = new byte[32];
+            new Random().NextBytes(keyBytes);
+            var key = new SymmetricSecurityKey(keyBytes);
+            var credentials = new EncryptingCredentials(key, SecurityAlgorithms.XChaCha20Poly1305);
+
+            var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
+
+            isValidKey.Should().BeTrue();
+        }
     }
 
     public class TestBrancaTokenHandler : BrancaTokenHandler
     {
         public new IEnumerable<SymmetricSecurityKey> GetDecryptionKeys(string token, TokenValidationParameters validationParameters) 
             => base.GetDecryptionKeys(token, validationParameters);
+
+        public new bool IsValidKey(byte[] key) => base.IsValidKey(key);
+        public new bool IsValidKey(SecurityKey key) => base.IsValidKey(key);
+        public new bool IsValidKey(EncryptingCredentials credentials) => base.IsValidKey(credentials);
     }
 }

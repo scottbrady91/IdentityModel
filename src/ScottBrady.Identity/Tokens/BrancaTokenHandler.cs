@@ -10,8 +10,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Macs;
 using Org.BouncyCastle.Crypto.Parameters;
-using ScottBrady.Identity.BouncyCastle;
+using ScottBrady.Identity.Crypto;
 using ScottBrady.Identity.Extensions;
+using SecurityAlgorithms = ScottBrady.Identity.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.Identity.Tokens
 {
@@ -90,7 +91,10 @@ namespace ScottBrady.Identity.Tokens
         public virtual string CreateToken(SecurityTokenDescriptor tokenDescriptor)
         {
             if (tokenDescriptor == null) throw new ArgumentNullException(nameof(tokenDescriptor));
-            if (!IsValidKey(tokenDescriptor.EncryptingCredentials.Key)) throw new InvalidOperationException("Branca tokens require symmetric key");
+
+            if (!IsValidKey(tokenDescriptor.EncryptingCredentials))
+                throw new SecurityTokenEncryptionFailedException(
+                    "Invalid encrypting credentials. Branca tokens require a symmetric key using the XC20P algorithm and no key wrapping");
 
             var jwtStylePayload = tokenDescriptor.ToJwtPayload();
 
@@ -245,6 +249,19 @@ namespace ScottBrady.Identity.Tokens
             if (!(securityKey is SymmetricSecurityKey symmetricKey)) return false;
 
             return IsValidKey(symmetricKey.Key);
+        }
+
+        protected virtual bool IsValidKey(EncryptingCredentials credentials)
+        {
+            if (credentials == null) return false;
+            if (credentials.Enc != SecurityAlgorithms.XChaCha20Poly1305) return false;
+            if (string.IsNullOrWhiteSpace(credentials.Alg)
+                || credentials.Alg != Microsoft.IdentityModel.Tokens.SecurityAlgorithms.None)
+            {
+                return false;
+            }
+
+            return IsValidKey(credentials.Key);
         }
 
         private static byte[] GuaranteedRead(Stream stream, int length)

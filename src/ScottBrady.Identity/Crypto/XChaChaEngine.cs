@@ -1,6 +1,6 @@
 using Org.BouncyCastle.Crypto.Engines;
 
-namespace ScottBrady.Identity.BouncyCastle
+namespace ScottBrady.Identity.Crypto
 {
     public class XChaChaEngine : ChaChaEngine
     {
