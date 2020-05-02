@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -7,18 +8,29 @@ namespace ScottBrady.Identity.Tokens
 {
     public abstract class JwtPayloadTokenHandler : TokenHandler
     {
+        /// <summary>
+        /// Validates a tokens lifetime, audience, and issuer using JWT payload validation rules.
+        /// Also checks for token replay
+        /// </summary>
         protected virtual TokenValidationResult ValidateTokenPayload(JwtPayloadSecurityToken token, TokenValidationParameters validationParameters)
         {
-            if (token == null) throw new ArgumentNullException(nameof(token));
-            if (validationParameters == null) throw new ArgumentNullException(nameof(validationParameters));
+            if (token == null) return new TokenValidationResult {Exception = new ArgumentNullException(nameof(token))};
+            if (validationParameters == null) return new TokenValidationResult {Exception = new ArgumentNullException(nameof(validationParameters))};
 
             var expires = token.ValidTo == DateTime.MinValue ? null : new DateTime?(token.ValidTo);
             var notBefore = token.ValidFrom == DateTime.MinValue ? null : new DateTime?(token.ValidFrom);
-            
-            Validators.ValidateLifetime(notBefore, expires, token, validationParameters);
-            Validators.ValidateAudience(token.Audiences, token, validationParameters);
-            Validators.ValidateIssuer(token.Issuer, token, validationParameters);
-            Validators.ValidateTokenReplay(expires, token.TokenHash, validationParameters);
+
+            try
+            {
+                ValidateLifetime(notBefore, expires, token, validationParameters);
+                ValidateAudience(token.Audiences, token, validationParameters);
+                ValidateIssuer(token.Issuer, token, validationParameters);
+                ValidateTokenReplay(expires, token.TokenHash, validationParameters);
+            }
+            catch (Exception e)
+            {
+                return new TokenValidationResult {Exception = e};
+            }
             
             return new TokenValidationResult
             {
@@ -27,6 +39,21 @@ namespace ScottBrady.Identity.Tokens
                 IsValid = true
             };
         }
+        
+        protected virtual void ValidateLifetime(DateTime? notBefore, DateTime? expires, SecurityToken securityToken, TokenValidationParameters validationParameters)
+            => Validators.ValidateLifetime(notBefore, expires, securityToken, validationParameters);
+
+        protected virtual void ValidateAudience(IEnumerable<string> audiences, SecurityToken securityToken, TokenValidationParameters validationParameters)
+            => Validators.ValidateAudience(audiences, securityToken, validationParameters);
+
+        protected virtual string ValidateIssuer(string issuer, SecurityToken securityToken, TokenValidationParameters validationParameters)
+            => Validators.ValidateIssuer(issuer, securityToken, validationParameters);
+
+        protected virtual void ValidateTokenReplay(DateTime? expirationTime, string securityToken, TokenValidationParameters validationParameters)
+            => Validators.ValidateTokenReplay(expirationTime, securityToken, validationParameters);
+
+        protected virtual void ValidateIssuerSecurityKey(SecurityKey securityKey, SecurityToken securityToken, TokenValidationParameters validationParameters)
+            => Validators.ValidateIssuerSecurityKey(securityKey, securityToken, validationParameters);
         
         protected virtual ClaimsIdentity CreateClaimsIdentity(JwtPayloadSecurityToken token, TokenValidationParameters validationParameters)
         {

@@ -44,6 +44,6 @@ namespace ScottBrady.Identity.Tokens
         public override DateTime ValidTo => InnerToken.ValidTo;
         
         protected JsonWebToken InnerToken { get; }
-        public string TokenHash { get; }
+        public virtual string TokenHash { get; }
     }
 }

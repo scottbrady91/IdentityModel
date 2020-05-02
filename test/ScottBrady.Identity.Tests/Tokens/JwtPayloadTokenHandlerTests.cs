@@ -5,6 +5,7 @@ using System.Security.Claims;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
+using Moq.Protected;
 using ScottBrady.Identity.Tokens;
 using Xunit;
 
@@ -16,14 +17,14 @@ namespace ScottBrady.Identity.Tests.Tokens
         public void CreateClaimsIdentity_WhenTokenIsNull_ExpectArgumentNullException()
         {
             var handler = new TestJwtPayloadTokenHandler();
-            Assert.Throws<ArgumentNullException>(() => handler.CreateClaimsIdentity(null, new TokenValidationParameters()));
+            Assert.Throws<ArgumentNullException>(() => handler.TestCreateClaimsIdentity(null, new TokenValidationParameters()));
         }
         
         [Fact]
         public void CreateClaimsIdentity_WhenTokenValidationParametersAreNull_ExpectArgumentNullException()
         {
             var handler = new TestJwtPayloadTokenHandler();
-            Assert.Throws<ArgumentNullException>(() => handler.CreateClaimsIdentity(new MockableJwtPayloadSecurityToken(), null));
+            Assert.Throws<ArgumentNullException>(() => handler.TestCreateClaimsIdentity(new MockableJwtPayloadSecurityToken(), null));
         }
 
         [Fact]
@@ -36,7 +37,7 @@ namespace ScottBrady.Identity.Tests.Tokens
             
             var handler = new TestJwtPayloadTokenHandler();
 
-            var identity = handler.CreateClaimsIdentity(mockToken.Object, new TokenValidationParameters());
+            var identity = handler.TestCreateClaimsIdentity(mockToken.Object, new TokenValidationParameters());
 
             identity.Claims.All(x => x.Issuer == expectedIssuer).Should().BeTrue();
             identity.Claims.All(x => x.OriginalIssuer == expectedIssuer).Should().BeTrue();
@@ -51,7 +52,7 @@ namespace ScottBrady.Identity.Tests.Tokens
 
             var handler = new TestJwtPayloadTokenHandler();
 
-            var identity = handler.CreateClaimsIdentity(mockToken.Object, new TokenValidationParameters());
+            var identity = handler.TestCreateClaimsIdentity(mockToken.Object, new TokenValidationParameters());
 
             identity.Claims.All(x => x.Issuer == ClaimsIdentity.DefaultIssuer).Should().BeTrue();
             identity.Claims.All(x => x.OriginalIssuer == ClaimsIdentity.DefaultIssuer).Should().BeTrue();
@@ -69,43 +70,163 @@ namespace ScottBrady.Identity.Tests.Tokens
 
             var handler = new TestJwtPayloadTokenHandler();
 
-            var identity = handler.CreateClaimsIdentity(mockToken.Object, new TokenValidationParameters());
+            var identity = handler.TestCreateClaimsIdentity(mockToken.Object, new TokenValidationParameters());
 
             var mappedClaim = identity.Claims.Single(x => x.Type == claimWithProperty.Type && x.Value == claimWithProperty.Value);
             mappedClaim.Properties.Should().Contain(expectedProperty);
         }
 
         [Fact]
-        public void ValidateTokenPayload_WhenTokenIsNull_ExpectArgumentNullException()
-            => Assert.Throws<ArgumentNullException>(
-                () => new TestJwtPayloadTokenHandler().ValidateTokenPayload(null, new TokenValidationParameters()));
-        
-        [Fact]
-        public void ValidateTokenPayload_WhenTokenValidationParametersAreNull_ExpectArgumentNullException()
-            => Assert.Throws<ArgumentNullException>(
-                () => new TestJwtPayloadTokenHandler().ValidateTokenPayload(new MockableJwtPayloadSecurityToken(), null));
-
-        [Fact]
-        public void ValidateTokenPayload_WhenTokenHasExpired()
+        public void ValidateTokenPayload_WhenTokenIsNull_ExpectResultWithArgumentNullException()
         {
-            var issued = DateTime.UtcNow.AddDays(-3);
-            var expires = DateTime.UtcNow.AddDays(-2);
+            var result = new TestJwtPayloadTokenHandler().TestValidateTokenPayload(null, new TokenValidationParameters());
 
-            var mockToken = new Mock<MockableJwtPayloadSecurityToken>();
+            result.IsValid.Should().BeFalse();
+            result.Exception.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void ValidateTokenPayload_WhenTokenValidationParametersAreNull_ExpectResultWithArgumentNullException()
+        {
+            var token = CreateMockToken().Object;
             
-            var handler = new TestJwtPayloadTokenHandler();
+            var result = new TestJwtPayloadTokenHandler().TestValidateTokenPayload(token, null);
+            
+            result.IsValid.Should().BeFalse();
+            result.Exception.Should().BeOfType<ArgumentNullException>();
+        }
 
-            var result = handler.ValidateTokenPayload(mockToken.Object, new TokenValidationParameters());
+        [Fact]
+        public void ValidateTokenPayload_WhenInvalidLifetime_ExpectFailureResultWithCorrectException()
+        {
+            var expectedException = new InvalidOperationException("correct error");
+            
+            var token = CreateMockToken().Object;
+            var mockHandler = CreateMockHandler();
+            mockHandler.Protected()
+                .Setup("ValidateLifetime",
+                    ItExpr.IsAny<DateTime?>(),
+                    ItExpr.IsAny<DateTime?>(),
+                    ItExpr.IsAny<SecurityToken>(),
+                    ItExpr.IsAny<TokenValidationParameters>())
+                .Throws(expectedException);
+            
+            var result = mockHandler.Object.TestValidateTokenPayload(token, new TokenValidationParameters());
+
+            result.IsValid.Should().BeFalse();
+            result.Exception.Should().Be(expectedException);
+        }
+
+        [Fact]
+        public void ValidateTokenPayload_WhenInvalidAudience_ExpectFailureResultWithCorrectException()
+        {
+            var expectedException = new InvalidOperationException("correct error");
+            
+            var token = CreateMockToken().Object;
+            var mockHandler = CreateMockHandler();
+            mockHandler.Protected()
+                .Setup("ValidateAudience",
+                    ItExpr.IsAny<IEnumerable<string>>(),
+                    ItExpr.IsAny<SecurityToken>(),
+                    ItExpr.IsAny<TokenValidationParameters>())
+                .Throws(expectedException);
+            
+            var result = mockHandler.Object.TestValidateTokenPayload(token, new TokenValidationParameters());
+
+            result.IsValid.Should().BeFalse();
+            result.Exception.Should().Be(expectedException);
+        }
+
+        [Fact]
+        public void ValidateTokenPayload_WhenInvalidIssuer_ExpectFailureResultWithCorrectException()
+        {
+            var expectedException = new InvalidOperationException("correct error");
+            
+            var token = CreateMockToken().Object;
+            var mockHandler = CreateMockHandler();
+            mockHandler.Protected()
+                .Setup("ValidateIssuer",
+                    ItExpr.IsAny<string>(),
+                    ItExpr.IsAny<SecurityToken>(),
+                    ItExpr.IsAny<TokenValidationParameters>())
+                .Throws(expectedException);
+            
+            var result = mockHandler.Object.TestValidateTokenPayload(token, new TokenValidationParameters());
+
+            result.IsValid.Should().BeFalse();
+            result.Exception.Should().Be(expectedException);
+        }
+
+        [Fact]
+        public void ValidateTokenPayload_WhenTokenReplay_ExpectFailureResultWithCorrectException()
+        {
+            var expectedException = new InvalidOperationException("correct error");
+            
+            var token = CreateMockToken().Object;
+            var mockHandler = CreateMockHandler();
+            mockHandler.Protected()
+                .Setup("ValidateTokenReplay",
+                    ItExpr.IsAny<DateTime?>(),
+                    ItExpr.IsAny<string>(),
+                    ItExpr.IsAny<TokenValidationParameters>())
+                .Throws(expectedException);
+            
+            var result = mockHandler.Object.TestValidateTokenPayload(token, new TokenValidationParameters());
+
+            result.IsValid.Should().BeFalse();
+            result.Exception.Should().Be(expectedException);
+        }
+
+        [Fact]
+        public void ValidateTokenPayload_WhenValidToken_ExpectSuccessResult()
+        {
+            var expectedIdentity = new ClaimsIdentity("test");
+            
+            var token = CreateMockToken().Object;
+            var mockHandler = CreateMockHandler();
+            mockHandler.Protected()
+                .Setup<ClaimsIdentity>("CreateClaimsIdentity",
+                    ItExpr.IsAny<JwtPayloadSecurityToken>(),
+                    ItExpr.IsAny<TokenValidationParameters>())
+                .Returns(expectedIdentity);
+            
+            var result = mockHandler.Object.TestValidateTokenPayload(token, new TokenValidationParameters());
 
             result.IsValid.Should().BeTrue();
+            result.ClaimsIdentity.Should().Be(expectedIdentity);
+            result.SecurityToken.Should().Be(token);
+        }
+
+        private Mock<MockableJwtPayloadSecurityToken> CreateMockToken()
+        {
+            var mockToken = new Mock<MockableJwtPayloadSecurityToken>();
+            
+            mockToken.Setup(x => x.ValidTo).Returns(null);
+            mockToken.Setup(x => x.ValidFrom).Returns(null);
+            mockToken.Setup(x => x.Audiences).Returns(new []{"you"});
+            mockToken.Setup(x => x.Issuer).Returns("me");
+            mockToken.Setup(x => x.TokenHash).Returns("xyz");
+            
+            return mockToken;
+        }
+
+        private Mock<TestJwtPayloadTokenHandler> CreateMockHandler()
+        {
+            var mockHandler = new Mock<TestJwtPayloadTokenHandler> {CallBase = false};
+            mockHandler.Setup(x => x.TestValidateTokenPayload(It.IsAny<JwtPayloadSecurityToken>(), It.IsAny<TokenValidationParameters>()))
+                .CallBase();
+            mockHandler.Setup(x => x.TestCreateClaimsIdentity(It.IsAny<JwtPayloadSecurityToken>(), It.IsAny<TokenValidationParameters>()))
+                .CallBase();
+            
+            return mockHandler;
         }
     }
 
-    internal class TestJwtPayloadTokenHandler : JwtPayloadTokenHandler
+    public class TestJwtPayloadTokenHandler : JwtPayloadTokenHandler
     {
-        public new TokenValidationResult ValidateTokenPayload(JwtPayloadSecurityToken token, TokenValidationParameters validationParameters)
+        public new virtual TokenValidationResult TestValidateTokenPayload(JwtPayloadSecurityToken token, TokenValidationParameters validationParameters)
             => base.ValidateTokenPayload(token, validationParameters);
-        public new ClaimsIdentity CreateClaimsIdentity(JwtPayloadSecurityToken jwtToken, TokenValidationParameters validationParameters)
+        public new virtual ClaimsIdentity TestCreateClaimsIdentity(JwtPayloadSecurityToken jwtToken, TokenValidationParameters validationParameters)
             => base.CreateClaimsIdentity(jwtToken, validationParameters);
     }
     

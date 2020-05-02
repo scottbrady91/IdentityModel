@@ -172,47 +172,48 @@ namespace ScottBrady.Identity.Tokens
         {
             if (string.IsNullOrWhiteSpace(token)) return new TokenValidationResult {Exception = new ArgumentNullException(nameof(token))};
             if (validationParameters == null) return new TokenValidationResult {Exception = new ArgumentNullException(nameof(validationParameters))};
-            if (!CanReadToken(token)) return new TokenValidationResult {Exception = new InvalidOperationException("Unable to read token")};
+            if (!CanReadToken(token)) return new TokenValidationResult {Exception = new SecurityTokenException("Unable to read token")};
 
             // get decryption keys
             var securityKeys = GetDecryptionKeys(token, validationParameters);
 
             BrancaToken decryptedToken = null;
 
+            foreach (var securityKey in securityKeys)
+            {
+                try
+                {
+                    decryptedToken = DecryptToken(token, securityKey.Key);
+                    if (decryptedToken != null) break;
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+            }
+
+            if (decryptedToken == null)
+                return new TokenValidationResult {Exception = new SecurityTokenDecryptionFailedException("Unable to decrypt token")};
+
+            BrancaSecurityToken brancaToken;
             try
             {
-                foreach (var securityKey in securityKeys)
-                {
-                    try
-                    {
-                        decryptedToken = DecryptToken(token, securityKey.Key);
-                        if (decryptedToken != null) break;
-                    }
-                    catch (Exception e)
-                    {
-                    }
-                }
-            
-                if (decryptedToken == null) return new TokenValidationResult{/*?*/};
-
-                var brancaToken = new BrancaSecurityToken(decryptedToken);
-                var innerValidationResult = ValidateTokenPayload(brancaToken, validationParameters);
-
-                // TODO
-                
-                return new TokenValidationResult
-                {
-                    SecurityToken = brancaToken,
-                    ClaimsIdentity = innerValidationResult.ClaimsIdentity,
-                    IsValid = true
-                };
+                brancaToken = new BrancaSecurityToken(decryptedToken);
             }
             catch (Exception e)
             {
                 return new TokenValidationResult {Exception = e};
             }
 
-            throw new NotImplementedException();
+            var innerValidationResult = ValidateTokenPayload(brancaToken, validationParameters);
+            if (!innerValidationResult.IsValid) return innerValidationResult;
+
+            return new TokenValidationResult
+            {
+                SecurityToken = brancaToken,
+                ClaimsIdentity = innerValidationResult.ClaimsIdentity,
+                IsValid = true
+            };
         }
 
         protected virtual IEnumerable<SymmetricSecurityKey> GetDecryptionKeys(string token, TokenValidationParameters validationParameters)
@@ -235,7 +236,7 @@ namespace ScottBrady.Identity.Tokens
 
             return keys.Where(IsValidKey).Select(x => (SymmetricSecurityKey) x).ToList();
         }
-        
+
         protected virtual bool IsValidKey(byte[] key) => key?.Length == 32;
 
         protected virtual bool IsValidKey(SecurityKey securityKey)
