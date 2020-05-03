@@ -120,7 +120,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             
             var token = handler.CreateToken(new SecurityTokenDescriptor
             {
-                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), Crypto.SecurityAlgorithms.XChaCha20Poly1305)
+                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), SecurityAlgorithms.XChaCha20Poly1305)
             });
 
             var parsedToken = handler.DecryptToken(token, validKey);
@@ -366,7 +366,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
                 Expires = expires,
                 NotBefore = notBefore,
                 Claims = new Dictionary<string, object> {{"sub", subject}},
-                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), Crypto.SecurityAlgorithms.XChaCha20Poly1305)
+                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), SecurityAlgorithms.XChaCha20Poly1305)
             });
 
             var validatedToken = handler.ValidateToken(token, new TokenValidationParameters
@@ -390,52 +390,13 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
         }
 
         [Fact]
-        public void GetDecryptionKeys_WhenKeyResolverReturnsKey_ExpectKeyFromResolver()
+        public void GetBrancaDecryptionKeys_WheInvalidKeysInParameters_ExpectInvalidKeysRemoved()
         {
             var expectedKey = new byte[32];
             new Random().NextBytes(expectedKey);
             
             var handler = new TestBrancaTokenHandler();
-            var keys = handler.GetDecryptionKeys("test", new TokenValidationParameters
-            {
-                TokenDecryptionKeyResolver =
-                    (token, securityToken, kid, parameters) => new[] {new SymmetricSecurityKey(expectedKey)},
-                TokenDecryptionKey = new SymmetricSecurityKey(validKey)
-            }).ToList();
-
-            keys.Count.Should().Be(1);
-            keys.Should().Contain(x => x.Key.SequenceEqual(expectedKey));
-        }
-
-        [Fact]
-        public void GetDecryptionKeys_WheKeysInParameters_ExpectAllKeys()
-        {
-            var expectedKey1 = new byte[32];
-            var expectedKey2 = new byte[32];
-            new Random().NextBytes(expectedKey1);
-            new Random().NextBytes(expectedKey2);
-            
-            var handler = new TestBrancaTokenHandler();
-            var keys = handler.GetDecryptionKeys("test", new TokenValidationParameters
-            {
-                TokenDecryptionKeyResolver = (token, securityToken, kid, parameters) => new List<SecurityKey>(),
-                TokenDecryptionKey = new SymmetricSecurityKey(expectedKey1),
-                TokenDecryptionKeys = new[] {new SymmetricSecurityKey(expectedKey2)}
-            }).ToList();
-
-            keys.Count.Should().Be(2);
-            keys.Should().Contain(x => x.Key.SequenceEqual(expectedKey1));
-            keys.Should().Contain(x => x.Key.SequenceEqual(expectedKey2));
-        }
-
-        [Fact]
-        public void GetDecryptionKeys_WheInvalidKeysInParameters_ExpectInvalidKeysRemoved()
-        {
-            var expectedKey = new byte[32];
-            new Random().NextBytes(expectedKey);
-            
-            var handler = new TestBrancaTokenHandler();
-            var keys = handler.GetDecryptionKeys("test", new TokenValidationParameters
+            var keys = handler.GetBrancaDecryptionKeys("test", new TokenValidationParameters
             {
                 TokenDecryptionKeyResolver = (token, securityToken, kid, parameters) => new List<SecurityKey>(),
                 TokenDecryptionKey = new SymmetricSecurityKey(expectedKey),
@@ -508,7 +469,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             var keyBytes = new byte[16];
             new Random().NextBytes(keyBytes);
             var key = new SymmetricSecurityKey(keyBytes);
-            var credentials = new EncryptingCredentials(key, Crypto.SecurityAlgorithms.XChaCha20Poly1305);
+            var credentials = new EncryptingCredentials(key, SecurityAlgorithms.XChaCha20Poly1305);
 
             var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
 
@@ -524,7 +485,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             var credentials = new EncryptingCredentials(
                 key, 
                 Microsoft.IdentityModel.Tokens.SecurityAlgorithms.Aes256KeyWrap,
-                Crypto.SecurityAlgorithms.XChaCha20Poly1305);
+                SecurityAlgorithms.XChaCha20Poly1305);
 
             var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
 
@@ -550,7 +511,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             var keyBytes = new byte[32];
             new Random().NextBytes(keyBytes);
             var key = new SymmetricSecurityKey(keyBytes);
-            var credentials = new EncryptingCredentials(key, Crypto.SecurityAlgorithms.XChaCha20Poly1305);
+            var credentials = new EncryptingCredentials(key, SecurityAlgorithms.XChaCha20Poly1305);
 
             var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
 
@@ -560,8 +521,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
 
     public class TestBrancaTokenHandler : BrancaTokenHandler
     {
-        public new IEnumerable<SymmetricSecurityKey> GetDecryptionKeys(string token, TokenValidationParameters validationParameters) 
-            => base.GetDecryptionKeys(token, validationParameters);
+        public new IEnumerable<SymmetricSecurityKey> GetBrancaDecryptionKeys(string token, TokenValidationParameters validationParameters) 
+            => base.GetBrancaDecryptionKeys(token, validationParameters);
 
         public new bool IsValidKey(byte[] key) => base.IsValidKey(key);
         public new bool IsValidKey(SecurityKey key) => base.IsValidKey(key);

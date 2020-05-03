@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -82,6 +83,48 @@ namespace ScottBrady.IdentityModel.Tokens
             }
 
             return identity;
+        }
+        
+        protected virtual IEnumerable<SecurityKey> GetDecryptionKeys(string token, TokenValidationParameters validationParameters)
+        {
+            List<SecurityKey> keys = null;
+
+            if (validationParameters.TokenDecryptionKeyResolver != null)
+            {
+                keys = validationParameters.TokenDecryptionKeyResolver(token, null, null, validationParameters)?.ToList();
+            }
+
+            if (keys == null || !keys.Any())
+            {
+                keys = new List<SecurityKey>();
+                if (validationParameters.TokenDecryptionKey != null)
+                    keys.Add(validationParameters.TokenDecryptionKey);
+                if (validationParameters.TokenDecryptionKeys != null && validationParameters.TokenDecryptionKeys.Any())
+                    keys.AddRange(validationParameters.TokenDecryptionKeys);
+            }
+
+            return keys;
+        }
+
+        protected virtual IEnumerable<SecurityKey> GetSigningKeys(string token, TokenValidationParameters validationParameters)
+        {
+            List<SecurityKey> keys = null;
+            
+            if (validationParameters.IssuerSigningKeyResolver != null)
+            {
+                keys = validationParameters.IssuerSigningKeyResolver(token, null, null, validationParameters)?.ToList();
+            }
+ 
+            if (keys == null || !keys.Any())
+            {
+                keys = new List<SecurityKey>();
+                if (validationParameters.IssuerSigningKey != null)
+                    keys.Add(validationParameters.IssuerSigningKey);
+                if (validationParameters.IssuerSigningKeys != null && validationParameters.IssuerSigningKeys.Any())
+                    keys.AddRange(validationParameters.IssuerSigningKeys);
+            }
+
+            return keys;
         }
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens
+namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {
     public class PasetoTokenHandlerTests
     {

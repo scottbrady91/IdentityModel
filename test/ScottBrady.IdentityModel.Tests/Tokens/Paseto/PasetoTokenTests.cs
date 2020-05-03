@@ -3,7 +3,7 @@ using FluentAssertions;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens
+namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {
     public class PasetoTokenTests
     {
@@ -86,9 +86,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
 
             token.SetPayload(payload);
 
-            token.Payload.Should().NotBeNull();
-
-            token.Payload.Value<string>(expectedKey).Should().Be(expectedValue);
+            token.Payload.Should().Be(payload);
         }
     }
 }

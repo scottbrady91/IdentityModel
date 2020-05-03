@@ -50,15 +50,27 @@ namespace ScottBrady.IdentityModel.Tokens
             }
 
             PasetoSecurityToken pasetoSecurityToken;
-            if (pasetoToken.Purpose == "local") pasetoSecurityToken = strategy.Decrypt(pasetoToken, validationParameters);
-            else if (pasetoToken.Purpose == "public") pasetoSecurityToken = strategy.Verify(pasetoToken, validationParameters);
-            else return new TokenValidationResult {Exception = new SecurityTokenException("Unsupported PASETO purpose")};
-            
-            
-            
-            
-            
-            
+            if (pasetoToken.Purpose == "local")
+            {
+                var keys = GetDecryptionKeys(token, validationParameters);
+                pasetoSecurityToken = strategy.Decrypt(pasetoToken, keys);
+            }
+            else if (pasetoToken.Purpose == "public")
+            {
+                var keys = GetSigningKeys(token, validationParameters);
+                
+                // TODO: kid handling (footer?)
+                
+                pasetoSecurityToken = strategy.Verify(pasetoToken, keys);
+            }
+            else
+            {
+                return new TokenValidationResult {Exception = new SecurityTokenException("Unsupported PASETO purpose")};
+            }
+
+
+
+
             throw new NotImplementedException();
         }
     }

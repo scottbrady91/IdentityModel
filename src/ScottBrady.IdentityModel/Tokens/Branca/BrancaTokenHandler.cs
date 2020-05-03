@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Macs;
 using Org.BouncyCastle.Crypto.Parameters;
-using ScottBrady.IdentityModel.Extensions;
 using ScottBrady.IdentityModel.Crypto;
 using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
@@ -195,7 +194,7 @@ namespace ScottBrady.IdentityModel.Tokens
             if (!CanReadToken(token)) return new TokenValidationResult {Exception = new SecurityTokenException("Unable to read token")};
 
             // get decryption keys
-            var securityKeys = GetDecryptionKeys(token, validationParameters);
+            var securityKeys = GetBrancaDecryptionKeys(token, validationParameters);
 
             BrancaToken decryptedToken = null;
 
@@ -239,24 +238,10 @@ namespace ScottBrady.IdentityModel.Tokens
             };
         }
 
-        protected virtual IEnumerable<SymmetricSecurityKey> GetDecryptionKeys(string token, TokenValidationParameters validationParameters)
+        protected virtual IEnumerable<SymmetricSecurityKey> GetBrancaDecryptionKeys(string token, TokenValidationParameters validationParameters)
         {
-            List<SecurityKey> keys = null;
-
-            if (validationParameters.TokenDecryptionKeyResolver != null)
-            {
-                keys = validationParameters.TokenDecryptionKeyResolver(token, null, null, validationParameters).ToList();
-            }
-
-            if (keys == null || !keys.Any())
-            {
-                keys = new List<SecurityKey>();
-                if (validationParameters.TokenDecryptionKey != null)
-                    keys.Add(validationParameters.TokenDecryptionKey);
-                if (validationParameters.TokenDecryptionKeys != null && validationParameters.TokenDecryptionKeys.Any())
-                    keys.AddRange(validationParameters.TokenDecryptionKeys);
-            }
-
+            var keys = base.GetDecryptionKeys(token, validationParameters);
+            
             return keys.Where(IsValidKey).Select(x => (SymmetricSecurityKey) x).ToList();
         }
 

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens
+namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {
     public class PasetoSecurityTokenTests
     {
@@ -22,7 +22,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
                 iat = "2038-03-17T01:02:03+00:00"
             };
 
-            var token = new PasetoSecurityToken(JsonConvert.SerializeObject(jwt));
+            var innerToken = new TestPasetoToken();
+            innerToken.SetPayload(JsonConvert.SerializeObject(jwt));
+            var token = new PasetoSecurityToken(innerToken);
 
             token.IssuedAt.Should().BeCloseTo(expectedDateTime);
         }
@@ -39,7 +41,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
                 nbf = "2028-03-17T01:02:03+00:00"
             };
 
-            var token = new PasetoSecurityToken(JsonConvert.SerializeObject(jwt));
+            var innerToken = new TestPasetoToken();
+            innerToken.SetPayload(JsonConvert.SerializeObject(jwt));
+            var token = new PasetoSecurityToken(innerToken);
 
             token.ValidFrom.Should().BeCloseTo(expectedDateTime);
         }
@@ -56,9 +60,16 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
                 exp = "2018-03-17T01:02:03+00:00"
             };
 
-            var token = new PasetoSecurityToken(JsonConvert.SerializeObject(jwt));
+            var innerToken = new TestPasetoToken();
+            innerToken.SetPayload(JsonConvert.SerializeObject(jwt));
+            var token = new PasetoSecurityToken(innerToken);
 
             token.ValidTo.Should().BeCloseTo(expectedDateTime);
         }
+    }
+
+    public class TestPasetoToken : PasetoToken
+    {
+        public new void SetPayload(string payload) => Payload = payload;
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
@@ -197,7 +198,77 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             result.SecurityToken.Should().Be(token);
         }
 
-        private Mock<MockableJwtPayloadSecurityToken> CreateMockToken()
+        [Fact]
+        public void GetDecryptionKeys_WhenKeyResolverReturnsKey_ExpectKeyFromResolver()
+        {
+            var expectedKey = new RsaSecurityKey(RSA.Create());
+            
+            var handler = new TestJwtPayloadTokenHandler();
+            var keys = handler.TestGetDecryptionKeys("test", new TokenValidationParameters
+            {
+                TokenDecryptionKeyResolver = (token, securityToken, kid, parameters) => new[] {expectedKey},
+                TokenDecryptionKey = new RsaSecurityKey(RSA.Create())
+            }).ToList();
+
+            keys.Count.Should().Be(1);
+            keys.Should().Contain(expectedKey);
+        }
+
+        [Fact]
+        public void GetDecryptionKeys_WheKeysInParameters_ExpectAllKeys()
+        {
+            var expectedKey1 = new RsaSecurityKey(RSA.Create());
+            var expectedKey2 = new RsaSecurityKey(RSA.Create());
+            
+            var handler = new TestJwtPayloadTokenHandler();
+            var keys = handler.TestGetDecryptionKeys("test", new TokenValidationParameters
+            {
+                TokenDecryptionKeyResolver = (token, securityToken, kid, parameters) => new List<SecurityKey>(),
+                TokenDecryptionKey = expectedKey1,
+                TokenDecryptionKeys = new[] {expectedKey2}
+            }).ToList();
+
+            keys.Count.Should().Be(2);
+            keys.Should().Contain(expectedKey1);
+            keys.Should().Contain(expectedKey2);
+        }
+
+        [Fact]
+        public void GetSigningKeys_WhenKeyResolverReturnsKey_ExpectKeyFromResolver()
+        {
+            var expectedKey = new RsaSecurityKey(RSA.Create());
+            
+            var handler = new TestJwtPayloadTokenHandler();
+            var keys = handler.TestGetSigningKeys("test", new TokenValidationParameters
+            {
+                IssuerSigningKeyResolver = (token, securityToken, kid, parameters) => new[] {expectedKey},
+                IssuerSigningKey = new RsaSecurityKey(RSA.Create())
+            }).ToList();
+
+            keys.Count.Should().Be(1);
+            keys.Should().Contain(expectedKey);
+        }
+
+        [Fact]
+        public void GetSigningKeys_WheKeysInParameters_ExpectAllKeys()
+        {
+            var expectedKey1 = new RsaSecurityKey(RSA.Create());
+            var expectedKey2 = new RsaSecurityKey(RSA.Create());
+            
+            var handler = new TestJwtPayloadTokenHandler();
+            var keys = handler.TestGetSigningKeys("test", new TokenValidationParameters
+            {
+                IssuerSigningKeyResolver = (token, securityToken, kid, parameters) => new List<SecurityKey>(),
+                IssuerSigningKey = expectedKey1,
+                IssuerSigningKeys = new[] {expectedKey2}
+            }).ToList();
+
+            keys.Count.Should().Be(2);
+            keys.Should().Contain(expectedKey1);
+            keys.Should().Contain(expectedKey2);
+        }
+
+        private static Mock<MockableJwtPayloadSecurityToken> CreateMockToken()
         {
             var mockToken = new Mock<MockableJwtPayloadSecurityToken>();
             
@@ -210,7 +281,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             return mockToken;
         }
 
-        private Mock<TestJwtPayloadTokenHandler> CreateMockHandler()
+        private static Mock<TestJwtPayloadTokenHandler> CreateMockHandler()
         {
             var mockHandler = new Mock<TestJwtPayloadTokenHandler> {CallBase = false};
             mockHandler.Setup(x => x.TestValidateTokenPayload(It.IsAny<JwtPayloadSecurityToken>(), It.IsAny<TokenValidationParameters>()))
@@ -228,6 +299,12 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             => base.ValidateTokenPayload(token, validationParameters);
         public virtual ClaimsIdentity TestCreateClaimsIdentity(JwtPayloadSecurityToken jwtToken, TokenValidationParameters validationParameters)
             => base.CreateClaimsIdentity(jwtToken, validationParameters);
+
+        public virtual IEnumerable<SecurityKey> TestGetDecryptionKeys(string token, TokenValidationParameters validationParameters)
+            => base.GetDecryptionKeys(token, validationParameters);
+
+        public virtual IEnumerable<SecurityKey> TestGetSigningKeys(string token, TokenValidationParameters validationParameters)
+            => base.GetSigningKeys(token, validationParameters);
     }
     
     public class MockableJwtPayloadSecurityToken : JwtPayloadSecurityToken

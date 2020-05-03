@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace ScottBrady.IdentityModel.Extensions
+namespace ScottBrady.IdentityModel
 {
     public static class StreamExtensions
     {

@@ -5,6 +5,8 @@ namespace ScottBrady.IdentityModel.Tokens
 {
     public class PasetoToken
     {
+        protected PasetoToken() { }
+        
         public PasetoToken(string token)
         {
             if (string.IsNullOrWhiteSpace(token)) throw new ArgumentNullException(nameof(token));
@@ -27,7 +29,7 @@ namespace ScottBrady.IdentityModel.Tokens
         public string Footer { get; }
         
         public string EncodedPayload { get; }
-        public JObject Payload { get; private set; }
+        public string Payload { get; protected set; }
 
         public void SetPayload(string payload)
         {
@@ -35,7 +37,8 @@ namespace ScottBrady.IdentityModel.Tokens
             
             try
             {
-                Payload = JObject.Parse(payload);
+                JObject.Parse(payload);
+                Payload = payload;
             }
             catch (Exception e)
             {

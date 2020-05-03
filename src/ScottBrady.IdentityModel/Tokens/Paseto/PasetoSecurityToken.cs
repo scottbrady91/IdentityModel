@@ -7,25 +7,19 @@ namespace ScottBrady.IdentityModel.Tokens
 {
     public class PasetoSecurityToken : JwtPayloadSecurityToken
     {
-        internal PasetoSecurityToken() { }
-
-        public PasetoSecurityToken(string payload) : base(payload)
+        public PasetoSecurityToken(PasetoToken token) : base(token.Payload)
         {
-            var tokenParts = payload.Split(new char[] { '.' }, JwtConstants.MaxJwtSegmentCount + 1);
-            
-            /*var tokenParts = token.Split('.');
-            
-            Version = tokenParts[0];
-            Purpose = tokenParts[1];
-            EncodedPayload = tokenParts[2];
-            
-            if (token.Length == 4) Footer = tokenParts[3];*/
+            Version = token.Version;
+            Purpose = token.Purpose;
+            Footer = token.Footer;
+
+            RawToken = token.RawToken;
         }
 
         public virtual string Version { get; }
         public virtual string Purpose { get; }
-        public virtual string EncodedPayload { get; }
         public virtual string Footer { get; }
+        public virtual string RawToken { get; }
         
         public override DateTime IssuedAt => ParsePasetoDateTimeClaim(JwtRegisteredClaimNames.Iat);
         public override DateTime ValidFrom => ParsePasetoDateTimeClaim(JwtRegisteredClaimNames.Nbf);
