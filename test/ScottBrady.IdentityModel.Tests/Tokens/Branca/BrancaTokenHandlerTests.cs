@@ -13,7 +13,7 @@ using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens
+namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
 {
     public class BrancaTokenHandlerTests
     {

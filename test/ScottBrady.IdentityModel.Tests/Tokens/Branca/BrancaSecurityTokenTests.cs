@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens
+namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
 {
     public class BrancaSecurityTokenTests
     {
