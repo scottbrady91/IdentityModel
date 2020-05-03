@@ -8,6 +8,16 @@ namespace ScottBrady.IdentityModel.Tokens
     public abstract class PasetoVersionStrategy
     {
         /// <summary>
+        /// Creates an encrypted local token 
+        /// </summary>
+        public abstract string Encrypt(string payload, string footer, EncryptingCredentials encryptingCredentials);
+
+        /// <summary>
+        /// Creates a signed public token 
+        /// </summary>
+        public abstract string Sign(string payload, string footer, SigningCredentials signingCredentials);
+        
+        /// <summary>
         /// Decrypts a local token
         /// </summary>
         public abstract PasetoSecurityToken Decrypt(PasetoToken token, IEnumerable<SecurityKey> decryptionKeys);

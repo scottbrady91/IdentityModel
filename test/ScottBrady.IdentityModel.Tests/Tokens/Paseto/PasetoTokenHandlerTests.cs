@@ -81,6 +81,22 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         public void CanValidateToken_ExpectTrue()
             => sut.CanValidateToken.Should().BeTrue();
 
+        [Fact]
+        public void CreateToken_WhenSecurityTokenDescriptorIsNull_ExpectArgumentNullException()
+            => Assert.Throws<ArgumentNullException>(() => sut.CreateToken(null));
+
+        [Fact]
+        public void CreateToken_WhenTokenDescriptorIsNotOfTypePasetoSecurityTokenDescriptor_ExpectArgumentException()
+        {
+            var tokenDescriptor = new SecurityTokenDescriptor();
+
+            Assert.Throws<ArgumentException>(() => sut.CreateToken(tokenDescriptor));
+        }
+        
+        
+        
+        
+        
         [Theory]
         [InlineData(null)]
         [InlineData("")]

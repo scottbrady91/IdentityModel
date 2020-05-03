@@ -17,7 +17,7 @@ namespace ScottBrady.IdentityModel.Tokens
 
             RawToken = token.RawToken;
         }
-
+        
         public virtual string Version { get; }
         public virtual string Purpose { get; }
         public virtual string Footer { get; }
@@ -26,10 +26,10 @@ namespace ScottBrady.IdentityModel.Tokens
         public override DateTime IssuedAt => ParsePasetoDateTimeClaim(JwtRegisteredClaimNames.Iat);
         public override DateTime ValidFrom => ParsePasetoDateTimeClaim(JwtRegisteredClaimNames.Nbf);
         public override DateTime ValidTo => ParsePasetoDateTimeClaim(JwtRegisteredClaimNames.Exp);
-
+        
         public override SecurityKey SecurityKey => throw new NotSupportedException();
         public override SecurityKey SigningKey { get; set; }
-
+        
         protected virtual DateTime ParsePasetoDateTimeClaim(string claimType)
         {
             if (InnerToken.TryGetPayloadValue<string>(claimType, out var claimValue))
@@ -42,7 +42,7 @@ namespace ScottBrady.IdentityModel.Tokens
                 
                 throw new SecurityTokenInvalidLifetimeException($"Unable to parse date time from '{claimType}'. Failing value: '{claimValue}'");
             }
-
+            
             return DateTime.MinValue;
         }
     }

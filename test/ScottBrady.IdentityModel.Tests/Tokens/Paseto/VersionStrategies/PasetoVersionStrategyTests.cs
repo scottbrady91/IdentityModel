@@ -43,17 +43,11 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
     
     public class TestPasetoVersionStrategy : PasetoVersionStrategy
     {
-        public override PasetoSecurityToken Decrypt(PasetoToken token, IEnumerable<SecurityKey> decryptionKeys)
-        {
-            throw new System.NotImplementedException();
-        }
+        public override string Encrypt(string payload, string footer, EncryptingCredentials encryptingCredentials) => throw new NotImplementedException();
+        public override string Sign(string payload, string footer, SigningCredentials signingCredentials) => throw new NotImplementedException();
+        public override PasetoSecurityToken Decrypt(PasetoToken token, IEnumerable<SecurityKey> decryptionKeys) => throw new System.NotImplementedException();
+        public override PasetoSecurityToken Verify(PasetoToken token, IEnumerable<SecurityKey> signingKeys) => throw new System.NotImplementedException();
 
-        public override PasetoSecurityToken Verify(PasetoToken token, IEnumerable<SecurityKey> signingKeys)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public static byte[] PreAuthEncodeSpy(IReadOnlyList<byte[]> pieces)
-            => PreAuthEncode(pieces);
+        public static byte[] PreAuthEncodeSpy(IReadOnlyList<byte[]> pieces) => PreAuthEncode(pieces);
     }
 }

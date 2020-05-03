@@ -9,6 +9,16 @@ namespace ScottBrady.IdentityModel.Tokens
 {
     public class PasetoVersion2 : PasetoVersionStrategy
     {
+        public override string Encrypt(string payload, string footer, EncryptingCredentials encryptingCredentials)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string Sign(string payload, string footer, SigningCredentials signingCredentials)
+        {
+            throw new NotImplementedException();
+        }
+
         public override PasetoSecurityToken Decrypt(PasetoToken token, IEnumerable<SecurityKey> decryptionKeys)
         {
             throw new NotImplementedException();
