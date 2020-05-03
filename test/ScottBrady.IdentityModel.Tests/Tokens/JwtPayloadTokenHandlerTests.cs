@@ -268,6 +268,55 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             keys.Should().Contain(expectedKey2);
         }
 
+        [Fact]
+        public void ValidateToken_ISecurityTokenValidator_WhenSuccess_ExpectInnerTokenAndIdentity()
+        {
+            var token = Guid.NewGuid().ToString();
+            var validationParameters = new TokenValidationParameters {ValidIssuer = Guid.NewGuid().ToString()};
+
+            var expectedIdentity = new ClaimsIdentity(new List<Claim> {new Claim("sub", "123")}, "test");
+            var expectedSecurityToken = new MockableJwtPayloadSecurityToken();
+
+            var mockHandler = new Mock<TestJwtPayloadTokenHandler> {CallBase = true};
+            mockHandler.Setup(x => x.ValidateToken(token, validationParameters))
+                .Returns(new TokenValidationResult
+                {
+                    IsValid = true,
+                    ClaimsIdentity = expectedIdentity,
+                    SecurityToken = expectedSecurityToken
+                });
+
+            var claimsPrincipal = mockHandler.Object.ValidateToken(token, validationParameters, out var parsedToken);
+
+            claimsPrincipal.Identity.Should().Be(expectedIdentity);
+            parsedToken.Should().Be(expectedSecurityToken);
+        }
+
+        [Fact]
+        public void ValidateToken_ISecurityTokenValidator_WhenFailure_ExpectInnerException()
+        {
+            var token = Guid.NewGuid().ToString();
+            var validationParameters = new TokenValidationParameters();
+
+            var expectedException = new InvalidOperationException("test");
+
+            var mockHandler = new Mock<TestJwtPayloadTokenHandler> {CallBase = true};
+            mockHandler.Setup(x => x.ValidateToken(token, validationParameters))
+                .Returns(new TokenValidationResult
+                {
+                    IsValid = false,
+                    Exception = expectedException
+                });
+
+            SecurityToken parsedToken = null;
+            var exception = Assert.Throws(
+                expectedException.GetType(),
+                () => mockHandler.Object.ValidateToken(token, validationParameters, out parsedToken));
+            
+            parsedToken.Should().BeNull();
+            exception.Should().Be(expectedException);
+        }
+
         private static Mock<MockableJwtPayloadSecurityToken> CreateMockToken()
         {
             var mockToken = new Mock<MockableJwtPayloadSecurityToken>();
@@ -305,6 +354,16 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
 
         public virtual IEnumerable<SecurityKey> TestGetSigningKeys(string token, TokenValidationParameters validationParameters)
             => base.GetSigningKeys(token, validationParameters);
+
+        public override bool CanReadToken(string securityToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters)
+        {
+            throw new NotImplementedException();
+        }
     }
     
     public class MockableJwtPayloadSecurityToken : JwtPayloadSecurityToken

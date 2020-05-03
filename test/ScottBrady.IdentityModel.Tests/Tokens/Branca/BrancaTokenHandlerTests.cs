@@ -207,6 +207,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
         {
             var result = new BrancaTokenHandler().ValidateToken(ValidToken, null);
             
+            result.IsValid.Should().BeFalse();
             result.Exception.Should().BeOfType<ArgumentNullException>();
         }
 
@@ -215,6 +216,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
         {
             var result = new BrancaTokenHandler().ValidateToken("=====", new TokenValidationParameters());
             
+            result.IsValid.Should().BeFalse();
             result.Exception.Should().BeOfType<SecurityTokenException>();
         }
 
@@ -297,55 +299,6 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
 
             result.IsValid.Should().BeTrue();
             result.ClaimsIdentity.BootstrapContext.Should().Be(expectedToken);
-        }
-
-        [Fact]
-        public void ValidateToken_ISecurityTokenValidator_WhenSuccess_ExpectInnerTokenAndIdentity()
-        {
-            var token = Guid.NewGuid().ToString();
-            var validationParameters = new TokenValidationParameters {ValidIssuer = Guid.NewGuid().ToString()};
-
-            var expectedIdentity = new ClaimsIdentity(new List<Claim> {new Claim("sub", "123")}, "test");
-            var expectedSecurityToken = new MockableJwtPayloadSecurityToken();
-
-            var mockHandler = new Mock<BrancaTokenHandler> {CallBase = true};
-            mockHandler.Setup(x => x.ValidateToken(token, validationParameters))
-                .Returns(new TokenValidationResult
-                {
-                    IsValid = true,
-                    ClaimsIdentity = expectedIdentity,
-                    SecurityToken = expectedSecurityToken
-                });
-
-            var claimsPrincipal = mockHandler.Object.ValidateToken(token, validationParameters, out var parsedToken);
-
-            claimsPrincipal.Identity.Should().Be(expectedIdentity);
-            parsedToken.Should().Be(expectedSecurityToken);
-        }
-
-        [Fact]
-        public void ValidateToken_ISecurityTokenValidator_WhenFailure_ExpectInnerException()
-        {
-            const string token = ValidToken;
-            var validationParameters = new TokenValidationParameters();
-
-            var expectedException = new InvalidOperationException("test");
-
-            var mockHandler = new Mock<BrancaTokenHandler> {CallBase = true};
-            mockHandler.Setup(x => x.ValidateToken(token, validationParameters))
-                .Returns(new TokenValidationResult
-                {
-                    IsValid = false,
-                    Exception = expectedException
-                });
-
-            SecurityToken parsedToken = null;
-            var exception = Assert.Throws(
-                expectedException.GetType(),
-                () => mockHandler.Object.ValidateToken(token, validationParameters, out parsedToken));
-            
-            parsedToken.Should().BeNull();
-            exception.Should().Be(expectedException);
         }
         
         [Fact]

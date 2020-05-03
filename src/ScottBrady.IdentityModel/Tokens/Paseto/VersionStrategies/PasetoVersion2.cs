@@ -43,7 +43,7 @@ namespace ScottBrady.IdentityModel.Tokens
             {
                 Encoding.UTF8.GetBytes("v2.public."), 
                 message,
-                Base64UrlEncoder.DecodeBytes(string.Empty)
+                Base64UrlEncoder.DecodeBytes(token.Footer ?? string.Empty)
             });
 
             // verify signature using valid keys

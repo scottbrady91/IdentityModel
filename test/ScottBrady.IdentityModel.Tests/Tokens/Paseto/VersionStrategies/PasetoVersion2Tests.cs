@@ -16,7 +16,6 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         private const string ValidPublicPayload = "eyJzdWIiOiIxMjMiLCJleHAiOiIyMDIwLTA1LTAyVDE2OjIzOjQwLjI1Njg1MTVaIn08nP0mX2YJvYOcMLBpiFbFs1C2gyNAJg_kpuniow671AfrEZWRDZWmLAQbuKRQNiJ2gIrXVeC-tO20zrVQ58wK";
         private readonly string validToken = $"{ValidVersion}.{ValidPublicPurpose}.{ValidPublicPayload}";
         
-        private const string ValidSigningPrivateKey = "TYXei5+8Qd2ZqKIlEuJJ3S50WYuocFTrqK+3/gHVH9B2hpLtAgscF2c9QuWCzV9fQxal3XBqTXivXJPpp79vgw==";
         private const string ValidSigningPublicKey = "doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M=";
 
         private readonly List<SecurityKey> validSigningKeys = new List<SecurityKey>
@@ -128,6 +127,19 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 
             securityToken.Should().NotBeNull();
             securityToken.RawToken.Should().Be(token.RawToken);
+        }
+
+        [Fact]
+        public void Verify_WhenFooterPresentAndSignatureIsValid_ExpectCorrectSecurityToken()
+        {
+            var tokenWithFooter = new PasetoToken(
+                "v2.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAxOS0wMS0wMVQwMDowMDowMCswMDowMCJ9flsZsx_gYCR0N_Ec2QxJFFpvQAs7h9HtKwbVK2n1MJ3Rz-hwe8KUqjnd8FAnIJZ601tp7lGkguU63oGbomhoBw.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9");
+            var publicKey = Convert.FromBase64String("Hrnbu7wEfAP9cGBOAHHwmH4Wsot1ciXBHwBBXQ4gsaI=");
+
+            var securityToken = sut.Verify(tokenWithFooter, new[] {new EdDsaSecurityKey(new Ed25519PublicKeyParameters(publicKey, 0))});
+
+            securityToken.Should().NotBeNull();
+            securityToken.RawToken.Should().Be(tokenWithFooter.RawToken);
         }
     }
 }

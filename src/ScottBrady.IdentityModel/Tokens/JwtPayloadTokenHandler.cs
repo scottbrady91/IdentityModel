@@ -7,8 +7,26 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
-    public abstract class JwtPayloadTokenHandler : TokenHandler
+    public abstract class JwtPayloadTokenHandler : TokenHandler, ISecurityTokenValidator
     {
+        public abstract bool CanReadToken(string securityToken);
+        public bool CanValidateToken => true;
+
+        public virtual ClaimsPrincipal ValidateToken(string token, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+        {
+            var result = ValidateToken(token, validationParameters);
+
+            if (result.IsValid)
+            {
+                validatedToken = result.SecurityToken;
+                return new ClaimsPrincipal(result.ClaimsIdentity);
+            }
+
+            throw result.Exception;
+        }
+
+        public abstract TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters);
+        
         /// <summary>
         /// Validates a tokens lifetime, audience, and issuer using JWT payload validation rules.
         /// Also checks for token replay

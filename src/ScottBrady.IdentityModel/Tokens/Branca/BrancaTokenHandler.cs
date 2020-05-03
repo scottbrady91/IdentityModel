@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -16,12 +15,9 @@ using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
-    public class BrancaTokenHandler : JwtPayloadTokenHandler, ISecurityTokenValidator
+    public class BrancaTokenHandler : JwtPayloadTokenHandler
     {
-        // consider support for compression
-        // consider custom BrancaSecurityTokenDescriptor
-
-        public virtual bool CanReadToken(string token)
+        public override bool CanReadToken(string token)
         {
             if (string.IsNullOrWhiteSpace(token)) return false;
             if (token.Length > MaximumTokenSizeInBytes) return false;
@@ -29,8 +25,6 @@ namespace ScottBrady.IdentityModel.Tokens
 
             return true;
         }
-
-        public bool CanValidateToken => true;
 
         /// <summary>
         /// Branca specification-level token generation
@@ -173,21 +167,8 @@ namespace ScottBrady.IdentityModel.Tokens
                     timestamp);
             }
         }
-        
-        public virtual ClaimsPrincipal ValidateToken(string token, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
-        {
-            var result = ValidateToken(token, validationParameters);
 
-            if (result.IsValid)
-            {
-                validatedToken = result.SecurityToken;
-                return new ClaimsPrincipal(result.ClaimsIdentity);
-            }
-
-            throw result.Exception;
-        }
-
-        public virtual TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters)
+        public override TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters)
         {
             if (string.IsNullOrWhiteSpace(token)) return new TokenValidationResult {Exception = new ArgumentNullException(nameof(token))};
             if (validationParameters == null) return new TokenValidationResult {Exception = new ArgumentNullException(nameof(validationParameters))};

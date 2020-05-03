@@ -7,6 +7,8 @@ namespace ScottBrady.IdentityModel.Tokens
 {
     public class PasetoSecurityToken : JwtPayloadSecurityToken
     {
+        protected PasetoSecurityToken() { }
+        
         public PasetoSecurityToken(PasetoToken token) : base(token.Payload)
         {
             Version = token.Version;
@@ -28,7 +30,7 @@ namespace ScottBrady.IdentityModel.Tokens
         public override SecurityKey SecurityKey => throw new NotSupportedException();
         public override SecurityKey SigningKey { get; set; }
 
-        public DateTime ParsePasetoDateTimeClaim(string claimType)
+        protected virtual DateTime ParsePasetoDateTimeClaim(string claimType)
         {
             if (InnerToken.TryGetPayloadValue<string>(claimType, out var claimValue))
             {
