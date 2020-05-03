@@ -11,6 +11,8 @@ namespace ScottBrady.IdentityModel.Tokens
 
         public PasetoSecurityToken(string payload) : base(payload)
         {
+            var tokenParts = payload.Split(new char[] { '.' }, JwtConstants.MaxJwtSegmentCount + 1);
+            
             /*var tokenParts = token.Split('.');
             
             Version = tokenParts[0];

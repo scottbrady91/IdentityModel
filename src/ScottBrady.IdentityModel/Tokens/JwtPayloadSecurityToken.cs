@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-[assembly:InternalsVisibleTo("ScottBrady.IdentityModel.Tests")]
 namespace ScottBrady.IdentityModel.Tokens
 {
     public abstract class JwtPayloadSecurityToken : SecurityToken
     {
-        internal JwtPayloadSecurityToken() { }
+        protected JwtPayloadSecurityToken() { }
         
         public JwtPayloadSecurityToken(string payload)
         {
