@@ -13,6 +13,8 @@ namespace ScottBrady.IdentityModel.Tokens
         {
             Version = token.Version;
             Purpose = token.Purpose;
+
+            EncodedFooter = token.EncodedFooter;
             Footer = token.Footer;
 
             RawToken = token.RawToken;
@@ -20,7 +22,10 @@ namespace ScottBrady.IdentityModel.Tokens
         
         public virtual string Version { get; }
         public virtual string Purpose { get; }
+        
+        public virtual string EncodedFooter { get; }
         public virtual string Footer { get; }
+        
         public virtual string RawToken { get; }
         
         public override DateTime IssuedAt => ParsePasetoDateTimeClaim(JwtRegisteredClaimNames.Iat);

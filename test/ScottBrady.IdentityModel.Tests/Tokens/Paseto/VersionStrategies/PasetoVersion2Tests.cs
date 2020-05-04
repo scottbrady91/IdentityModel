@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Parameters;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
+using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {
@@ -16,18 +18,69 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         private const string ValidPublicPayload = "eyJzdWIiOiIxMjMiLCJleHAiOiIyMDIwLTA1LTAyVDE2OjIzOjQwLjI1Njg1MTVaIn08nP0mX2YJvYOcMLBpiFbFs1C2gyNAJg_kpuniow671AfrEZWRDZWmLAQbuKRQNiJ2gIrXVeC-tO20zrVQ58wK";
         private readonly string validToken = $"{ValidVersion}.{ValidPublicPurpose}.{ValidPublicPayload}";
         
+        private const string ValidSigningPrivateKey = "TYXei5+8Qd2ZqKIlEuJJ3S50WYuocFTrqK+3/gHVH9B2hpLtAgscF2c9QuWCzV9fQxal3XBqTXivXJPpp79vgw==";        
         private const string ValidSigningPublicKey = "doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M=";
 
-        private readonly List<SecurityKey> validSigningKeys = new List<SecurityKey>
+        private readonly SigningCredentials validSigningCredentials = new SigningCredentials(
+            new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(Convert.FromBase64String(ValidSigningPrivateKey), 0)), SecurityAlgorithms.EdDSA);
+        private readonly List<SecurityKey> validVerificationKeys = new List<SecurityKey>
         {
             new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Convert.FromBase64String(ValidSigningPublicKey), 0))
         };
         
         private readonly PasetoVersion2 sut = new PasetoVersion2();
+
+        [Fact]
+        public void Sign_WhenPayloadIsNull_ExpectArgumentNullException()
+            => Assert.Throws<ArgumentNullException>(() => sut.Sign(null, null, validSigningCredentials));
+
+        [Fact]
+        public void Sign_WhenSigningCredentialsAreNull_ExpectArgumentNullException()
+            => Assert.Throws<ArgumentNullException>(() => sut.Sign("test", null, null));
+
+        [Fact]
+        public void Sign_WhenSigningCredentialsDoNotContainEdDsaSecurityKey_ExpectSecurityTokenInvalidSigningKeyException()
+        {
+            var signingCredentials = new SigningCredentials(new RsaSecurityKey(RSA.Create()), SecurityAlgorithms.EdDSA);
+
+            Assert.Throws<SecurityTokenInvalidSigningKeyException>(() => sut.Sign("payload", null, signingCredentials));
+        }
+
+        [Fact]
+        public void Sign_WhenSigningCredentialsNotConfigureForEdDSA_ExpectSecurityTokenInvalidSigningKeyException()
+        {
+            var signingCredentials = new SigningCredentials(validSigningCredentials.Key, SecurityAlgorithms.XChaCha20Poly1305);
+
+            Assert.Throws<SecurityTokenInvalidSigningKeyException>(() => sut.Sign("payload", null, signingCredentials));
+        }
+
+        [Fact]
+        public void Sign_WhenSigningCredentialsDoNotContainPrivateKey_ExpectSecurityTokenInvalidSigningKeyException()
+        {
+            var signingCredentials = new SigningCredentials(validVerificationKeys.First(), SecurityAlgorithms.EdDSA);
+
+            Assert.Throws<SecurityTokenInvalidSigningKeyException>(() => sut.Sign("payload", null, signingCredentials));   
+        }
+
+        [Fact]
+        public void Sign_WhenTokenGenerated_ExpectThreeParts()
+        {
+            var token = sut.Sign("payload", null, validSigningCredentials);
+
+            token.Split('.').Length.Should().Be(3);
+        }
+
+        [Fact]
+        public void Sign_WhenTokenGeneratedWithFooter_ExpectFourParts()
+        {
+            var token = sut.Sign("payload", "footer", validSigningCredentials);
+
+            token.Split('.').Length.Should().Be(4);
+        }
         
         [Fact]
         public void Verify_WhenTokenIsNull_ExpectArgumentNullException() 
-            => Assert.Throws<ArgumentNullException>(() => sut.Verify(null, validSigningKeys));
+            => Assert.Throws<ArgumentNullException>(() => sut.Verify(null, validVerificationKeys));
         
         [Fact]
         public void Verify_WhenSecurityKeysAreNull_ExpectArgumentNullException() 
@@ -50,7 +103,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         {
             var token = new PasetoToken($"v3.{ValidPublicPurpose}.{ValidPublicPayload}");
 
-            Assert.Throws<ArgumentException>(() => sut.Verify(token, validSigningKeys));
+            Assert.Throws<ArgumentException>(() => sut.Verify(token, validVerificationKeys));
         }
         
         [Fact]
@@ -58,7 +111,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         {
             var token = new PasetoToken($"{ValidVersion}.local.{ValidPublicPayload}");
 
-            Assert.Throws<ArgumentException>(() => sut.Verify(token, validSigningKeys));
+            Assert.Throws<ArgumentException>(() => sut.Verify(token, validVerificationKeys));
         }
 
         [Fact]
@@ -66,7 +119,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         {
             var token = new PasetoToken($"{ValidVersion}.{ValidPublicPurpose}.ey!!");
 
-            Assert.Throws<FormatException>(() => sut.Verify(token, validSigningKeys));
+            Assert.Throws<FormatException>(() => sut.Verify(token, validVerificationKeys));
         }
 
         [Fact]
@@ -77,7 +130,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             
             var token = new PasetoToken($"{ValidVersion}.{ValidPublicPurpose}.{Base64UrlEncoder.Encode(payloadBytes)}");
             
-            Assert.Throws<SecurityTokenInvalidSignatureException>(() => sut.Verify(token, validSigningKeys));
+            Assert.Throws<SecurityTokenInvalidSignatureException>(() => sut.Verify(token, validVerificationKeys));
         }
 
         [Fact]
@@ -95,7 +148,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 
             var token = new PasetoToken($"{ValidVersion}.{ValidPublicPurpose}.{Base64UrlEncoder.Encode(payload)}");
 
-            Assert.Throws<ArgumentException>(() => sut.Verify(token, validSigningKeys));
+            Assert.Throws<ArgumentException>(() => sut.Verify(token, validVerificationKeys));
         }
 
         [Fact]
@@ -113,7 +166,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 
             var token = new PasetoToken($"{ValidVersion}.{ValidPublicPurpose}.{Base64UrlEncoder.Encode(payload)}");
 
-            Assert.Throws<SecurityTokenInvalidSignatureException>(() => sut.Verify(token, validSigningKeys));
+            Assert.Throws<SecurityTokenInvalidSignatureException>(() => sut.Verify(token, validVerificationKeys));
         }
 
         [Fact]
@@ -123,7 +176,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             // "v2.public.eyJzdWIiOiIxMjMiLCJleHAiOiIyMDIwLTA1LTAzVDEzOjE0OjE0LjE5MDA1OFoiff5U7ni0Bd5yame3wT41v26UMyH56JA4Un077FPn_UkGpx78fVgbegW0FEMLw0J61ms0OJHarRzyRrX4dWn6LgA"
             var token = new PasetoToken(validToken);
 
-            var securityToken = sut.Verify(token, validSigningKeys);
+            var securityToken = sut.Verify(token, validVerificationKeys);
 
             securityToken.Should().NotBeNull();
             securityToken.RawToken.Should().Be(token.RawToken);
@@ -140,6 +193,36 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 
             securityToken.Should().NotBeNull();
             securityToken.RawToken.Should().Be(tokenWithFooter.RawToken);
+        }
+
+        [Fact]
+        public void SignAndVerify_WhenKeysAreValid_ExpectCorrectClaimsFromPayload()
+        {
+            const string expectedClaimType = "test";
+            const string expectedClaimValue = "test_val";
+            var expectedPayload = $"{{ '{expectedClaimType}': '{expectedClaimValue}' }}";
+
+            var token = sut.Sign(expectedPayload, null, validSigningCredentials);
+            var parsedToken = sut.Verify(new PasetoToken(token), validVerificationKeys);
+
+            parsedToken.Claims.Should().Contain(x => x.Type == expectedClaimType && x.Value == expectedClaimValue);
+            parsedToken.RawToken.Should().Be(token);
+        }
+
+        [Fact]
+        public void SignAndVerify_WhenKeysAreValidAndWithFooter_ExpectCorrectClaimsFromPayloadAndCorrectFooter()
+        {
+            const string expectedClaimType = "test";
+            const string expectedClaimValue = "test_val";
+            const string expectedFooter = "{'kid': '123'}";
+            var expectedPayload = $"{{ '{expectedClaimType}': '{expectedClaimValue}' }}";
+
+            var token = sut.Sign(expectedPayload, expectedFooter, validSigningCredentials);
+            var parsedToken = sut.Verify(new PasetoToken(token), validVerificationKeys);
+
+            parsedToken.Claims.Should().Contain(x => x.Type == expectedClaimType && x.Value == expectedClaimValue);
+            parsedToken.RawToken.Should().Be(token);
+            parsedToken.Footer.Should().Be(expectedFooter);
         }
     }
 }

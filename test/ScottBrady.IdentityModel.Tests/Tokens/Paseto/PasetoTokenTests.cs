@@ -1,5 +1,6 @@
 using System;
 using FluentAssertions;
+using Microsoft.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
@@ -36,7 +37,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             pasetoToken.EncodedPayload.Should().Be(expectedPayload);
 
             pasetoToken.Payload.Should().BeNull();
-            pasetoToken.Footer.Should().BeNull();
+            pasetoToken.EncodedFooter.Should().BeNull();
         }
         
         [Fact]
@@ -46,7 +47,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             const string expectedPurpose = "public";
             const string expectedPayload = "fa919c9d3d1248f29213521a40fc2b57";
             const string expectedFooter = "{test}";
-            var token = $"{expectedVersion}.{expectedPurpose}.{expectedPayload}.{expectedFooter}";
+            var token = $"{expectedVersion}.{expectedPurpose}.{expectedPayload}.{Base64UrlEncoder.Encode(expectedFooter)}";
 
             var pasetoToken = new PasetoToken(token);
 
@@ -54,6 +55,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             pasetoToken.Version.Should().Be(expectedVersion);
             pasetoToken.Purpose.Should().Be(expectedPurpose);
             pasetoToken.EncodedPayload.Should().Be(expectedPayload);
+            pasetoToken.EncodedFooter.Should().Be(Base64UrlEncoder.Encode(expectedFooter));
             pasetoToken.Footer.Should().Be(expectedFooter);
 
             pasetoToken.Payload.Should().BeNull();

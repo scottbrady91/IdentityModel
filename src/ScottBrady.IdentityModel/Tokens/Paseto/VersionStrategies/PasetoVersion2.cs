@@ -4,11 +4,15 @@ using System.Linq;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Signers;
+using Org.BouncyCastle.Utilities.Encoders;
+using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
     public class PasetoVersion2 : PasetoVersionStrategy
     {
+        private const string PublicHeader = "v2.public.";
+        
         public override string Encrypt(string payload, string footer, EncryptingCredentials encryptingCredentials)
         {
             throw new NotImplementedException();
@@ -16,7 +20,36 @@ namespace ScottBrady.IdentityModel.Tokens
 
         public override string Sign(string payload, string footer, SigningCredentials signingCredentials)
         {
-            throw new NotImplementedException();
+            if (payload == null) throw new ArgumentNullException(nameof(payload));
+            if (signingCredentials == null) throw new ArgumentNullException(nameof(signingCredentials));
+
+            if (signingCredentials.Key.GetType() != typeof(EdDsaSecurityKey))
+                throw new SecurityTokenInvalidSigningKeyException($"PASETO v2 requires a key of type {typeof(EdDsaSecurityKey)}");
+            if (signingCredentials.Algorithm != SecurityAlgorithms.EdDSA)
+                throw new SecurityTokenInvalidSigningKeyException($"PASETO v2 requires a key for configured for the '{SecurityAlgorithms.EdDSA}' algorithm");
+
+            var privateKey = (EdDsaSecurityKey) signingCredentials.Key;
+            if (privateKey.PrivateKeyStatus != PrivateKeyStatus.Exists)
+                throw new SecurityTokenInvalidSigningKeyException($"Missing private key");
+            
+            var payloadBytes = Encoding.UTF8.GetBytes(payload);
+
+            var messageToSign = PreAuthEncode(new[]
+            {
+                Encoding.UTF8.GetBytes(PublicHeader),
+                payloadBytes,
+                Encoding.UTF8.GetBytes(footer ?? string.Empty)
+            });
+            
+            var signer = new Ed25519Signer();
+            signer.Init(true, privateKey.KeyParameters);
+            signer.BlockUpdate(messageToSign, 0, messageToSign.Length);
+            var signature = signer.GenerateSignature();
+
+            var token = $"{PublicHeader}{Base64UrlEncoder.Encode(payloadBytes.Combine(signature))}";
+            if (!string.IsNullOrWhiteSpace(footer)) token += $".{Base64UrlEncoder.Encode(footer)}";
+
+            return token;
         }
 
         public override PasetoSecurityToken Decrypt(PasetoToken token, IEnumerable<SecurityKey> decryptionKeys)
@@ -51,9 +84,9 @@ namespace ScottBrady.IdentityModel.Tokens
             // pack
             var signedMessage = PreAuthEncode(new[]
             {
-                Encoding.UTF8.GetBytes("v2.public."), 
+                Encoding.UTF8.GetBytes(PublicHeader), 
                 message,
-                Base64UrlEncoder.DecodeBytes(token.Footer ?? string.Empty)
+                Base64UrlEncoder.DecodeBytes(token.EncodedFooter ?? string.Empty)
             });
 
             // verify signature using valid keys

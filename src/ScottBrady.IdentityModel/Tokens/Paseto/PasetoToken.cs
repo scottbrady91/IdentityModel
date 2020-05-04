@@ -1,4 +1,5 @@
 using System;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 
 namespace ScottBrady.IdentityModel.Tokens
@@ -19,17 +20,23 @@ namespace ScottBrady.IdentityModel.Tokens
             Version = tokenParts[0];
             Purpose = tokenParts[1];
             EncodedPayload = tokenParts[2];
-            if (tokenParts.Length == 4) Footer = tokenParts[3];
+            if (tokenParts.Length == 4)
+            {
+                EncodedFooter = tokenParts[3];
+                Footer = Base64UrlEncoder.Decode(EncodedFooter);
+            }
         }
         
         public string RawToken { get; }
         
         public string Version { get; }
         public string Purpose { get; }
-        public string Footer { get; }
         
         public string EncodedPayload { get; }
         public string Payload { get; protected set; }
+        
+        public string EncodedFooter { get; }
+        public string Footer { get; }
 
         public void SetPayload(string payload)
         {

@@ -92,10 +92,76 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 
             Assert.Throws<ArgumentException>(() => sut.CreateToken(tokenDescriptor));
         }
-        
-        
-        
-        
+
+        [Fact]
+        public void CreateToken_WhenTokenVersionIsNotSupported_ExpectSecurityTokenException()
+        {
+            var tokenDescriptor = new PasetoSecurityTokenDescriptor("v42", PasetoConstants.Purposes.Public);
+
+            Assert.Throws<SecurityTokenException>(() => sut.CreateToken(tokenDescriptor));
+        }
+
+        [Fact]
+        public void CreateToken_WhenTokenPurposeNotSupported_ExpectSecurityTokenException()
+        {
+            var tokenDescriptor = new PasetoSecurityTokenDescriptor(TestVersion, "external");
+            
+            Assert.Throws<SecurityTokenException>(() => sut.CreateToken(tokenDescriptor));
+        }
+
+        [Fact]
+        public void CreateToken_WhenLocalEncryptionThrowsException_ExpectSameException()
+        {
+            var expectedException = new ApplicationException("local");
+            var tokenDescriptor = new PasetoSecurityTokenDescriptor(TestVersion, PasetoConstants.Purposes.Local);
+
+            mockVersionStrategy.Setup(x => x.Encrypt(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<EncryptingCredentials>()))
+                .Throws(expectedException);
+
+            var exception = Assert.Throws(expectedException.GetType(), () => sut.CreateToken(tokenDescriptor));
+            exception.Should().Be(expectedException);
+        }
+
+        [Fact]
+        public void CreateToken_WhenPublicSigningThrowsException_ExpectSameException()
+        {
+            var expectedException = new ApplicationException("public");
+            var tokenDescriptor = new PasetoSecurityTokenDescriptor(TestVersion, PasetoConstants.Purposes.Public);
+
+            mockVersionStrategy.Setup(x => x.Sign(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SigningCredentials>()))
+                .Throws(expectedException);
+
+            var exception = Assert.Throws(expectedException.GetType(), () => sut.CreateToken(tokenDescriptor));
+            exception.Should().Be(expectedException);
+        }
+
+        [Fact]
+        public void CreateToken_WhenLocalEncryptionSucceeds_ExpectLocalToken()
+        {
+            const string expectedToken = "local";
+            var tokenDescriptor = new PasetoSecurityTokenDescriptor(TestVersion, PasetoConstants.Purposes.Local);
+
+            mockVersionStrategy.Setup(x => x.Encrypt(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<EncryptingCredentials>()))
+                .Returns(expectedToken);
+
+            var token = sut.CreateToken(tokenDescriptor);
+
+            token.Should().Be(expectedToken);
+        }
+
+        [Fact]
+        public void CreateToken_WhenPublicSigningSucceeds_ExpectPublicToken()
+        {
+            const string expectedToken = "public";
+            var tokenDescriptor = new PasetoSecurityTokenDescriptor(TestVersion, PasetoConstants.Purposes.Public);
+
+            mockVersionStrategy.Setup(x => x.Sign(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<SigningCredentials>()))
+                .Returns(expectedToken);
+
+            var token = sut.CreateToken(tokenDescriptor);
+
+            token.Should().Be(expectedToken);
+        }
         
         [Theory]
         [InlineData(null)]

@@ -45,7 +45,6 @@ namespace ScottBrady.IdentityModel.Tokens
             }
             else if (pasetoSecurityTokenDescriptor.Purpose == "public")
             {
-                // TODO: create parsed token or return PasetoSecurityToken?
                 token = strategy.Sign(payload, null, pasetoSecurityTokenDescriptor.SigningCredentials);
             }
             else
