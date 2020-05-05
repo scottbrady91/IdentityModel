@@ -10,7 +10,7 @@
 
 ✔ ASP.NET Core sample
 
-## PASETO
-❌ JWT style token handling
+## PASETO (v2.public)
+✔ JWT style token handling
 
-❌ ASP.NET Core sample
+✔ ASP.NET Core sample
