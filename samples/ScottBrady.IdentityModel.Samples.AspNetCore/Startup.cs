@@ -17,8 +17,17 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
             services.AddAuthentication()
                 .AddJwtBearer("branca-bearer", options =>
                 {
+                    options.SecurityTokenValidators.Clear();
                     options.SecurityTokenValidators.Add(new BrancaTokenHandler());
-                    options.TokenValidationParameters.TokenDecryptionKey = sampleOptions.EncryptingCredentials.Key;
+                    options.TokenValidationParameters.TokenDecryptionKey = sampleOptions.BrancaEncryptingCredentials.Key;
+                    options.TokenValidationParameters.ValidIssuer = "me";
+                    options.TokenValidationParameters.ValidAudience = "you";
+                })
+                .AddJwtBearer("paseto-bearer", options =>
+                {
+                    options.SecurityTokenValidators.Clear();
+                    options.SecurityTokenValidators.Add(new PasetoTokenHandler());
+                    options.TokenValidationParameters.IssuerSigningKey = sampleOptions.PasetoV2PublicKey;
                     options.TokenValidationParameters.ValidIssuer = "me";
                     options.TokenValidationParameters.ValidAudience = "you";
                 });

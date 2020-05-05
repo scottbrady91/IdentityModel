@@ -5,8 +5,10 @@ using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Moq.Protected;
+using Org.BouncyCastle.Crypto.Parameters;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
+using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {
@@ -84,14 +86,6 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         [Fact]
         public void CreateToken_WhenSecurityTokenDescriptorIsNull_ExpectArgumentNullException()
             => Assert.Throws<ArgumentNullException>(() => sut.CreateToken(null));
-
-        [Fact]
-        public void CreateToken_WhenTokenDescriptorIsNotOfTypePasetoSecurityTokenDescriptor_ExpectArgumentException()
-        {
-            var tokenDescriptor = new SecurityTokenDescriptor();
-
-            Assert.Throws<ArgumentException>(() => sut.CreateToken(tokenDescriptor));
-        }
 
         [Fact]
         public void CreateToken_WhenTokenVersionIsNotSupported_ExpectSecurityTokenException()
@@ -327,6 +321,41 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 
             result.IsValid.Should().BeTrue();
             result.ClaimsIdentity.BootstrapContext.Should().Be(expectedToken);
+        }
+
+        [Fact]
+        public void CreateAndValidateToken_WhenV2PublicToken_ExpectCorrectClaims()
+        {
+            const string expectedClaimType = "name";
+            const string expectedClaimValue = "scott";
+            const string issuer = "me";
+            const string audience = "you";
+
+            var signingCredentials = new SigningCredentials(
+                new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(
+                    Convert.FromBase64String("TYXei5+8Qd2ZqKIlEuJJ3S50WYuocFTrqK+3/gHVH9B2hpLtAgscF2c9QuWCzV9fQxal3XBqTXivXJPpp79vgw=="), 0)), SecurityAlgorithms.EdDSA);
+            var verificationKeys =
+                new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M="), 0));
+
+            PasetoTokenHandler.VersionStrategies.Add(PasetoConstants.Versions.V2, new PasetoVersion2());
+            var handler = new PasetoTokenHandler();
+            var token = handler.CreateToken(new PasetoSecurityTokenDescriptor(PasetoConstants.Versions.V2, PasetoConstants.Purposes.Public)
+            {
+                Issuer = issuer,
+                Audience = audience,
+                Claims = new Dictionary<string, object> {{expectedClaimType, expectedClaimValue}},
+                SigningCredentials = signingCredentials
+            });
+
+            var result = handler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidIssuer = issuer,
+                ValidAudience = audience,
+                IssuerSigningKey = verificationKeys
+            });
+
+            result.IsValid.Should().BeTrue();
+            result.ClaimsIdentity.HasClaim(expectedClaimType, expectedClaimValue).Should().BeTrue();
         }
 
         private static string CreateTestToken(string version = TestVersion, string purpose = "public", string payload = "ey")

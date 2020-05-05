@@ -9,11 +9,14 @@
     <p>
         <a asp-action="Branca">Get Branca token</a>
     </p>
+    <p>
+        <a asp-action="Paseto">Get PASETO</a>
+    </p>
     @if (Model != null)
     {
         <h2>@Model.Type Token</h2>
         <h3 class="h4">Token</h3>
-        <pre id="token">@Model.Token</pre>
+        <pre id="token" class="no-overflow">@Model.Token</pre>
         <h3 class="h4">Payload</h3>
         <pre>@Model.Payload</pre>
         <p>

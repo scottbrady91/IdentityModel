@@ -22,7 +22,7 @@ namespace ScottBrady.IdentityModel.Tokens
             return true;
         }
 
-        public virtual string CreateToken(SecurityTokenDescriptor tokenDescriptor)
+        public virtual string CreateToken(PasetoSecurityTokenDescriptor tokenDescriptor)
         {
             if (tokenDescriptor == null) throw new ArgumentNullException(nameof(tokenDescriptor));
             if (!(tokenDescriptor is PasetoSecurityTokenDescriptor pasetoSecurityTokenDescriptor))
@@ -35,7 +35,7 @@ namespace ScottBrady.IdentityModel.Tokens
             }
             
             // create payload
-            var payload = tokenDescriptor.ToJwtPayload();
+            var payload = tokenDescriptor.ToJwtPayload(JwtDateTimeFormat.Iso);
 
             // generate token
             string token;

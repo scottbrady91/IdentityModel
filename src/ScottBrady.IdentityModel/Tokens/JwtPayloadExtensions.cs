@@ -14,7 +14,7 @@ namespace ScottBrady.IdentityModel.Tokens
         /// Creates a JWT payload from a SecurityTokenDescriptor.
         /// Inspired by logic found in Microsoft.IdentityModel.JsonWebTokens.JsonWebTokenHandler
         /// </summary>
-        public static string ToJwtPayload(this SecurityTokenDescriptor tokenDescriptor)
+        public static string ToJwtPayload(this SecurityTokenDescriptor tokenDescriptor, JwtDateTimeFormat dateTimeFormat = JwtDateTimeFormat.Unix)
         {
             if (tokenDescriptor == null) throw new ArgumentNullException(nameof(tokenDescriptor));
             
@@ -38,21 +38,17 @@ namespace ScottBrady.IdentityModel.Tokens
             if (tokenDescriptor.Audience != null)
                 payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Aud, tokenDescriptor.Audience);
 
-            var now = EpochTime.GetIntDate(DateTime.UtcNow);
+            Func<DateTime?, DateTime, JToken> dateTimeFormatFunc = null;
+            if (dateTimeFormat == JwtDateTimeFormat.Unix) dateTimeFormatFunc = GetUnixClaimValueOrDefault;
+            if (dateTimeFormat == JwtDateTimeFormat.Iso) dateTimeFormatFunc = GetIsoClaimValueOrDefault;
+            if (dateTimeFormatFunc == null) throw new NotSupportedException("Unsupported DateTime formatting type");
             
-            payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Exp,
-                tokenDescriptor.Expires.HasValue 
-                    ? EpochTime.GetIntDate(tokenDescriptor.Expires.Value)
-                    : now + (long) TimeSpan.FromMinutes(60).TotalSeconds);
-            payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Iat, 
-                tokenDescriptor.IssuedAt.HasValue
-                ? EpochTime.GetIntDate(tokenDescriptor.IssuedAt.Value)
-                : now);
-            payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Nbf, 
-                tokenDescriptor.NotBefore.HasValue
-                ? EpochTime.GetIntDate(tokenDescriptor.NotBefore.Value)
-                : now);
-            
+            var now = DateTime.UtcNow;
+
+            payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Exp, dateTimeFormatFunc(tokenDescriptor.Expires, now.AddMinutes(60)));
+            payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Iat, dateTimeFormatFunc(tokenDescriptor.IssuedAt, now));
+            payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Nbf, dateTimeFormatFunc(tokenDescriptor.NotBefore, now));
+
             return payload.ToString(Formatting.None);
         }
 
@@ -92,8 +88,24 @@ namespace ScottBrady.IdentityModel.Tokens
 
         private static void AddClaimIfNotPresent(this JObject payload, string type, JToken value)
         {
-            if (payload.TryGetValue(type, StringComparison.Ordinal, out var _)) return;
+            if (payload.TryGetValue(type, StringComparison.Ordinal, out _)) return;
             payload[type] = value;
         }
+
+        private static Func<DateTime?, DateTime, JToken> GetUnixClaimValueOrDefault
+            => (value, defaultValue) => value.HasValue
+                ? EpochTime.GetIntDate(value.Value)
+                : EpochTime.GetIntDate(defaultValue);
+        
+        private static Func<DateTime?, DateTime, JToken> GetIsoClaimValueOrDefault
+            => (value, defaultValue) => value.HasValue
+                ? value.Value.ToString("yyyy-MM-ddTHH:mm:sszzz")
+                : defaultValue.ToString("yyyy-MM-ddTHH:mm:sszzz");
     }
+
+    public enum JwtDateTimeFormat
+    {
+        Unix,
+        Iso
+    } 
 }

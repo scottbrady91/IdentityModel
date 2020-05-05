@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Converters;
 using ScottBrady.IdentityModel.Tokens;
+using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
 {
@@ -20,6 +22,7 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
             return View();
         }
 
+        [HttpGet]
         public IActionResult Branca()
         {
             var handler = new BrancaTokenHandler();
@@ -28,10 +31,10 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
             {
                Issuer = "me",
                Audience = "you",
-               EncryptingCredentials = options.EncryptingCredentials
+               EncryptingCredentials = options.BrancaEncryptingCredentials
             });
 
-            var parsedToken = handler.DecryptToken(token, ((SymmetricSecurityKey) options.EncryptingCredentials.Key).Key);
+            var parsedToken = handler.DecryptToken(token, ((SymmetricSecurityKey) options.BrancaEncryptingCredentials.Key).Key);
 
             return View("Index", new TokenModel
             {
@@ -42,7 +45,30 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
         }
 
         [HttpGet]
-        [Authorize(AuthenticationSchemes = "branca-bearer")]
+        public IActionResult Paseto()
+        {
+            var handler = new PasetoTokenHandler();
+
+            var descriptor = new PasetoSecurityTokenDescriptor(PasetoConstants.Versions.V2, PasetoConstants.Purposes.Public)
+            {
+                Issuer = "me",
+                Audience = "you",
+                SigningCredentials = new SigningCredentials(options.PasetoV2PrivateKey, SecurityAlgorithms.EdDSA)
+            };
+
+            var token = handler.CreateToken(descriptor);
+            var payload = descriptor.ToJwtPayload(JwtDateTimeFormat.Iso);
+
+            return View("Index", new TokenModel
+            {
+                Type = "PASETO",
+                Token = token,
+                Payload = payload
+            });
+        }
+
+        [HttpGet]
+        [Authorize(AuthenticationSchemes = "branca-bearer,paseto-bearer")]
         public IActionResult CallApi()
         {
             return Ok();
