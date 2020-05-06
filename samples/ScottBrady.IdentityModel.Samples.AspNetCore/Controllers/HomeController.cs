@@ -53,7 +53,7 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
             {
                 Issuer = "me",
                 Audience = "you",
-                SigningCredentials = new SigningCredentials(options.PasetoV2PrivateKey, SecurityAlgorithms.EdDSA)
+                SigningCredentials = new SigningCredentials(options.PasetoV2PrivateKey, SecurityAlgorithms.EdDsa)
             };
 
             var token = handler.CreateToken(descriptor);

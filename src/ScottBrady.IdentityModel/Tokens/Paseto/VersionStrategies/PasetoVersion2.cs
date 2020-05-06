@@ -25,8 +25,8 @@ namespace ScottBrady.IdentityModel.Tokens
 
             if (signingCredentials.Key.GetType() != typeof(EdDsaSecurityKey))
                 throw new SecurityTokenInvalidSigningKeyException($"PASETO v2 requires a key of type {typeof(EdDsaSecurityKey)}");
-            if (signingCredentials.Algorithm != SecurityAlgorithms.EdDSA)
-                throw new SecurityTokenInvalidSigningKeyException($"PASETO v2 requires a key for configured for the '{SecurityAlgorithms.EdDSA}' algorithm");
+            if (signingCredentials.Algorithm != SecurityAlgorithms.EdDsa)
+                throw new SecurityTokenInvalidSigningKeyException($"PASETO v2 requires a key for configured for the '{SecurityAlgorithms.EdDsa}' algorithm");
 
             var privateKey = (EdDsaSecurityKey) signingCredentials.Key;
             if (privateKey.PrivateKeyStatus != PrivateKeyStatus.Exists)

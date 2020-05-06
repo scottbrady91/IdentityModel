@@ -22,7 +22,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         private const string ValidSigningPublicKey = "doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M=";
 
         private readonly SigningCredentials validSigningCredentials = new SigningCredentials(
-            new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(Convert.FromBase64String(ValidSigningPrivateKey), 0)), SecurityAlgorithms.EdDSA);
+            new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(Convert.FromBase64String(ValidSigningPrivateKey), 0)), SecurityAlgorithms.EdDsa);
         private readonly List<SecurityKey> validVerificationKeys = new List<SecurityKey>
         {
             new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Convert.FromBase64String(ValidSigningPublicKey), 0))
@@ -41,7 +41,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         [Fact]
         public void Sign_WhenSigningCredentialsDoNotContainEdDsaSecurityKey_ExpectSecurityTokenInvalidSigningKeyException()
         {
-            var signingCredentials = new SigningCredentials(new RsaSecurityKey(RSA.Create()), SecurityAlgorithms.EdDSA);
+            var signingCredentials = new SigningCredentials(new RsaSecurityKey(RSA.Create()), SecurityAlgorithms.EdDsa);
 
             Assert.Throws<SecurityTokenInvalidSigningKeyException>(() => sut.Sign("payload", null, signingCredentials));
         }
@@ -57,7 +57,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         [Fact]
         public void Sign_WhenSigningCredentialsDoNotContainPrivateKey_ExpectSecurityTokenInvalidSigningKeyException()
         {
-            var signingCredentials = new SigningCredentials(validVerificationKeys.First(), SecurityAlgorithms.EdDSA);
+            var signingCredentials = new SigningCredentials(validVerificationKeys.First(), SecurityAlgorithms.EdDsa);
 
             Assert.Throws<SecurityTokenInvalidSigningKeyException>(() => sut.Sign("payload", null, signingCredentials));   
         }

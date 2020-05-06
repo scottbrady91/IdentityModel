@@ -333,7 +333,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 
             var signingCredentials = new SigningCredentials(
                 new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(
-                    Convert.FromBase64String("TYXei5+8Qd2ZqKIlEuJJ3S50WYuocFTrqK+3/gHVH9B2hpLtAgscF2c9QuWCzV9fQxal3XBqTXivXJPpp79vgw=="), 0)), SecurityAlgorithms.EdDSA);
+                    Convert.FromBase64String("TYXei5+8Qd2ZqKIlEuJJ3S50WYuocFTrqK+3/gHVH9B2hpLtAgscF2c9QuWCzV9fQxal3XBqTXivXJPpp79vgw=="), 0)), SecurityAlgorithms.EdDsa);
             var verificationKeys =
                 new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M="), 0));
 
