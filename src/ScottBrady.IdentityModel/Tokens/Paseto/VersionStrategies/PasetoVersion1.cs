@@ -87,8 +87,15 @@ namespace ScottBrady.IdentityModel.Tokens
             // verify signature using valid keys
             foreach (var publicKey in keys)
             {
-                var isValidSignature = publicKey.Rsa.VerifyData(signedMessage, signature, HashAlgorithmName.SHA384, RSASignaturePadding.Pss);
-                if (isValidSignature) return new PasetoSecurityToken(token);
+                try
+                {
+                    var isValidSignature = publicKey.Rsa.VerifyData(signedMessage, signature, HashAlgorithmName.SHA384, RSASignaturePadding.Pss);
+                    if (isValidSignature) return new PasetoSecurityToken(token);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
             }
             
             throw new SecurityTokenInvalidSignatureException("Invalid PASETO signature");
