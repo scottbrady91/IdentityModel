@@ -6,9 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Moq.Protected;
 using Org.BouncyCastle.Crypto.Parameters;
+using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
-using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {
@@ -333,7 +333,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 
             var signingCredentials = new SigningCredentials(
                 new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(
-                    Convert.FromBase64String("TYXei5+8Qd2ZqKIlEuJJ3S50WYuocFTrqK+3/gHVH9B2hpLtAgscF2c9QuWCzV9fQxal3XBqTXivXJPpp79vgw=="), 0)), SecurityAlgorithms.EdDsa);
+                    Convert.FromBase64String("TYXei5+8Qd2ZqKIlEuJJ3S50WYuocFTrqK+3/gHVH9B2hpLtAgscF2c9QuWCzV9fQxal3XBqTXivXJPpp79vgw=="), 0)), ExtendedSecurityAlgorithms.EdDsa);
             var verificationKeys =
                 new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M="), 0));
 

@@ -2,8 +2,8 @@ using System;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Parameters;
+using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
-using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.IdentityModel.Samples.AspNetCore
 {
@@ -22,12 +22,15 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
 
                     encryptingCredentials = new EncryptingCredentials(
                         new SymmetricSecurityKey(key),
-                        SecurityAlgorithms.XChaCha20Poly1305);
+                        ExtendedSecurityAlgorithms.XChaCha20Poly1305);
                 }
                 
                 return encryptingCredentials;
             }
         }
+        
+        public RsaSecurityKey PasetoV1PrivateKey = new RsaSecurityKey(RSA.Create());
+        public RsaSecurityKey PasetoV1PublicKey => new RsaSecurityKey(RSA.Create(PasetoV1PrivateKey.Rsa.ExportParameters(false)));
 
         public EdDsaSecurityKey PasetoV2PublicKey = new EdDsaSecurityKey(
             new Ed25519PublicKeyParameters(

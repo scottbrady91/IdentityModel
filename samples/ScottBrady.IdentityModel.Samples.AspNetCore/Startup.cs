@@ -23,7 +23,15 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
                     options.TokenValidationParameters.ValidIssuer = "me";
                     options.TokenValidationParameters.ValidAudience = "you";
                 })
-                .AddJwtBearer("paseto-bearer", options =>
+                .AddJwtBearer("paseto-bearer-v1", options =>
+                {
+                    options.SecurityTokenValidators.Clear();
+                    options.SecurityTokenValidators.Add(new PasetoTokenHandler());
+                    options.TokenValidationParameters.IssuerSigningKey = sampleOptions.PasetoV1PublicKey;
+                    options.TokenValidationParameters.ValidIssuer = "me";
+                    options.TokenValidationParameters.ValidAudience = "you";
+                })
+                .AddJwtBearer("paseto-bearer-v2", options =>
                 {
                     options.SecurityTokenValidators.Clear();
                     options.SecurityTokenValidators.Add(new PasetoTokenHandler());

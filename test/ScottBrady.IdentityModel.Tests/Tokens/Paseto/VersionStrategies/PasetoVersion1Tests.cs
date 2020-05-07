@@ -2,34 +2,43 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Parameters;
-using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {
-    public class PasetoVersion2Tests
+    public class PasetoVersion1Tests
     {
-        private const string ValidVersion = "v2";
+        private const string ValidVersion = "v1";
         private const string ValidPublicPurpose = "public";
-        private const string ValidPublicPayload = "eyJzdWIiOiIxMjMiLCJleHAiOiIyMDIwLTA1LTAyVDE2OjIzOjQwLjI1Njg1MTVaIn08nP0mX2YJvYOcMLBpiFbFs1C2gyNAJg_kpuniow671AfrEZWRDZWmLAQbuKRQNiJ2gIrXVeC-tO20zrVQ58wK";
+        private const string ValidPublicPayload = "eyJzdWIiOiIxMjMiLCJleHAiOiIyMDIwLTA1LTA3VDE3OjExOjM4LjM3MTE3MTJaIn1HginqDCa4m01vI75OaWrFyAYCA1k9_sx36XVDEcHosOkk6coBDwDfoOaSFA_wE3nkfyuy3fTr7g6BpdzPbIb5qhI4Wpdy_zhhyEz7kC8ZSaDNN0tnBT0sL1c6hSuWKGh3tT6qPmjUmJwIv2ZjosozSmRF7bhWKJDsvTzQN6EFBddcvQpPQok9Ekdgzd70_Yxjl9YlUizF7WOiDm-R6m3xy_Mk8IRGQwiArYGmJRmR82W97ajqdBUJD8kbaFQglDxwEMcX-T4AqXCttjhdQi-JcXX34SDTyxE-8m02X8eNrKg64L6ZAFDAzbaa2bz3EUo5ULW2XaG4DW2zZ4nFd9m2";
         private readonly string validToken = $"{ValidVersion}.{ValidPublicPurpose}.{ValidPublicPayload}";
-        
-        private const string ValidSigningPrivateKey = "TYXei5+8Qd2ZqKIlEuJJ3S50WYuocFTrqK+3/gHVH9B2hpLtAgscF2c9QuWCzV9fQxal3XBqTXivXJPpp79vgw==";        
-        private const string ValidSigningPublicKey = "doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M=";
 
-        private readonly SigningCredentials validSigningCredentials = new SigningCredentials(
-            new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(Convert.FromBase64String(ValidSigningPrivateKey), 0)), ExtendedSecurityAlgorithms.EdDsa);
-        private readonly List<SecurityKey> validVerificationKeys = new List<SecurityKey>
+        private const string ValidSigningPrivateKey =
+            "PFJTQUtleVZhbHVlPjxNb2R1bHVzPm9VQ002dEdieFc5eGZqWm1mbmQzTThLQkFzd0ZmbHVLY2IwV1RNMXMzeVh2c3dZci9MbkFVVGVhNjF4QWRma3BSbVVuT3VrODRwZUN5OEVkMzdZcXVHL05WMldsT0dRckxMRkh3UklIMGdmU0IzMjFpdlVzN2xqbDc5S25TRmpEU0ZqcUJNTEJTSS93ZlhobCtYTGZrTjczaGJmeTNSRzVTUDU4Vm5UUEQveWFRczlmNVdVVHhCSFBKNWx4Ump3cVpTemJjZE05cHNtcVFHWGcveUVCejFsMlJQaCtTK0R1aEw5TU1iRWdTb0lXanFKaWEzUFllRDF5WEt3RjlPdjlaa3V4L21ZZjRkRW9pWUZXV05jS3ZSSGFTVFBjTFd0NnZpUXZsekREd09FUG9HdlI4SkNreUJ2a1J0Q1VBeVAyMEpkYzFGK0xqdEp3dkIyNTRBTjU1UT09PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48UD54Mlp3Y1N1Ni9KeTB5UFRqcVJXTlA1OVhtMk5hNDFEajdQeThsNHBXbWZKWkExTWxBMzRMNUpLVEpJMHZEWStyMTBhN1JRcVJSeHpseEVnQStvMHQwbW5uckRZbGJYbDB4OGlON04vb2w2OHZ0NEJtWFZCWGdxYURpNUJoaWtvLzVzd3EvOVhBd1ZKYm1zVFBCSjVGdi9DQWxUSytNbStacUt6MzlHVTYvMHM9PC9QPjxRPnp3WU80MVdGRUFyTS80R3hDOW1HZEhJeEFKR2RBaWoyZWJ0NjMrQk9QRUxpelZySjdudVR0ZGtxZnlhRHR5eXpGTWxVRHV2VVpIMU1YNnlsUldsQWQrSlhZcUFRZVlML2poYXZYL0llL2NsRE5YRnlRbTNoeitrOFRZZDV2KzFId0RjVTNWVUJlQnVTa3d3bmgrSXBHMU5HeWk4b0RJZldYZThIUXRsdVBZOD08L1E+PERQPllPbGN4T1FvSVJaWWwwTE9VeU55WHZXbXNwTDdYWGUzRHp0V3ZhQXlydWVtYzRNNWZoVUkycktTYVRWbEpRWXEwcHBCOGpCTW8yOWNES1dpTkNQaG5WNXpock5hUlhhK1Ywc1dENFpUbVVVL3Y4UGIvSVpMd2VnRUR4VEJFMkU2NVlWZGNMSUcyTzZhTHdKd1N5SlJiQlFMcW5mYkVOQkVza0krMEwxU2l6az08L0RQPjxEUT5XRTJyT0FpWVV6bG9LMnYwU3F1a0VETk05NE1reDNFVmdPTVpERGt1NWNGWjRHSGpWQmZkNzJrTUdXUWlOcFdZWlR0aTRXSnlHOUxlS3NrSFRjNFJNNUdWMkhtUnpXSzFBclJtWmJSdXg2MTdQMlorYUJ0YWdFWnA5Ri9lN0tDWFJFTzZZSllMcEdHT2FhNTdoaGhQbEZvM0RiS0RrS1M0S1NUMW9ld0FlNzA9PC9EUT48SW52ZXJzZVE+SVpvNFVZRzVOVWt6TlA3LzVXTzhkVW9BUFJJU2htVithNTh5dWZWRjZtMUl3NTRJVDNTVWhXOVh5dFdMa0ZsWmJZakhxMmZlaUhDOUw0OGFUTG1SMmlIejVKUjJKN2pENnJGbis1SFNZR2l0OGpZbnBvNGpvVjZwaDAraWhOVnMzbkk3OEZVcFhmVDdWd0hhZDF4SXJ0QzA0VHBPODFjSjZpbi91TTRBVDI4PTwvSW52ZXJzZVE+PEQ+bEtQSEFmR2prRlJSSHRHUW13VU9pVlRDelV3NXlDY2pzQUpuMnZZRlpKRTRxaUtIUzVnQ0VodWFuMWZUUjZ3Y2d2cGROaTJuWlF2YWttMTZWeXc1cHZmUUpiN1psT2lvNzdLZS9QYmM1SnMyM0piaFVLejk5TnRYWVVFaDJFdVIvMCtPc0VMQ0hsd29oOUFDMS9VdTVnRFIwNTRqcmVwWGpGU2hVcVNyOWdRaG5sejhreHlhdUpaK3hKQWorSWVnd3lzRkp0ZWVLUldJZjdDZ3ZESFZrMk8rcjBJcTZldTBWTFMxbHladlNNOWJyWDlxOVRYUzMvODJFQ2M2UW9PbUk5NEFTOXhmcGZWeGIyZjJEQ0dSN0dZL1M2WWJTRGpJMXpMQWxQRzZiWVJRTFlsR1FVd3NvdHkrYzFZK1ZCc1R3VEk4WTFneTVOemdES2x6S3I3ZXhRPT08L0Q+PC9SU0FLZXlWYWx1ZT4=";
+        private const string ValidSigningPublicKey =
+            "PFJTQUtleVZhbHVlPjxNb2R1bHVzPm9VQ002dEdieFc5eGZqWm1mbmQzTThLQkFzd0ZmbHVLY2IwV1RNMXMzeVh2c3dZci9MbkFVVGVhNjF4QWRma3BSbVVuT3VrODRwZUN5OEVkMzdZcXVHL05WMldsT0dRckxMRkh3UklIMGdmU0IzMjFpdlVzN2xqbDc5S25TRmpEU0ZqcUJNTEJTSS93ZlhobCtYTGZrTjczaGJmeTNSRzVTUDU4Vm5UUEQveWFRczlmNVdVVHhCSFBKNWx4Ump3cVpTemJjZE05cHNtcVFHWGcveUVCejFsMlJQaCtTK0R1aEw5TU1iRWdTb0lXanFKaWEzUFllRDF5WEt3RjlPdjlaa3V4L21ZZjRkRW9pWUZXV05jS3ZSSGFTVFBjTFd0NnZpUXZsekREd09FUG9HdlI4SkNreUJ2a1J0Q1VBeVAyMEpkYzFGK0xqdEp3dkIyNTRBTjU1UT09PC9Nb2R1bHVzPjxFeHBvbmVudD5BUUFCPC9FeHBvbmVudD48L1JTQUtleVZhbHVlPg==";
+
+        private readonly SigningCredentials validSigningCredentials;
+        private readonly List<SecurityKey> validVerificationKeys;
+        
+        private readonly PasetoVersion1 sut = new PasetoVersion1();
+
+        public PasetoVersion1Tests()
         {
-            new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Convert.FromBase64String(ValidSigningPublicKey), 0))
-        };
-        
-        private readonly PasetoVersion2 sut = new PasetoVersion2();
+            var privateKey = RSA.Create();
+            privateKey.FromXmlString(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(ValidSigningPrivateKey)));
 
+            var publicKey = RSA.Create();
+            publicKey.FromXmlString(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(ValidSigningPublicKey)));
+
+            validSigningCredentials = new SigningCredentials(new RsaSecurityKey(privateKey), SecurityAlgorithms.RsaSsaPssSha384);
+            validVerificationKeys = new List<SecurityKey> {new RsaSecurityKey(publicKey)};
+        }
+        
         [Fact]
         public void Sign_WhenPayloadIsNull_ExpectArgumentNullException()
             => Assert.Throws<ArgumentNullException>(() => sut.Sign(null, null, validSigningCredentials));
@@ -39,17 +48,17 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             => Assert.Throws<ArgumentNullException>(() => sut.Sign("test", null, null));
 
         [Fact]
-        public void Sign_WhenSigningCredentialsDoNotContainEdDsaSecurityKey_ExpectSecurityTokenInvalidSigningKeyException()
+        public void Sign_WhenSigningCredentialsDoNotContainRsaSecurityKey_ExpectSecurityTokenInvalidSigningKeyException()
         {
-            var signingCredentials = new SigningCredentials(new RsaSecurityKey(RSA.Create()), ExtendedSecurityAlgorithms.EdDsa);
+            var signingCredentials = new SigningCredentials(new ECDsaSecurityKey(ECDsa.Create()), SecurityAlgorithms.EcdsaSha256);
 
             Assert.Throws<SecurityTokenInvalidSigningKeyException>(() => sut.Sign("payload", null, signingCredentials));
         }
 
         [Fact]
-        public void Sign_WhenSigningCredentialsNotConfigureForEdDSA_ExpectSecurityTokenInvalidSigningKeyException()
+        public void Sign_WhenSigningCredentialsNotConfiguredForPs384_ExpectSecurityTokenInvalidSigningKeyException()
         {
-            var signingCredentials = new SigningCredentials(validSigningCredentials.Key, ExtendedSecurityAlgorithms.XChaCha20Poly1305);
+            var signingCredentials = new SigningCredentials(validSigningCredentials.Key, SecurityAlgorithms.RsaSha384);
 
             Assert.Throws<SecurityTokenInvalidSigningKeyException>(() => sut.Sign("payload", null, signingCredentials));
         }
@@ -57,7 +66,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         [Fact]
         public void Sign_WhenSigningCredentialsDoNotContainPrivateKey_ExpectSecurityTokenInvalidSigningKeyException()
         {
-            var signingCredentials = new SigningCredentials(validVerificationKeys.First(), ExtendedSecurityAlgorithms.EdDsa);
+            var signingCredentials = new SigningCredentials(validVerificationKeys.First(), SecurityAlgorithms.RsaSsaPssSha384);
 
             Assert.Throws<SecurityTokenInvalidSigningKeyException>(() => sut.Sign("payload", null, signingCredentials));   
         }
@@ -89,11 +98,11 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         [Fact]
         public void Verify_WhenSecurityKeysAreEmpty_ExpectArgumentNullException() 
             => Assert.Throws<ArgumentNullException>(() => sut.Verify(new PasetoToken(validToken), new List<SecurityKey>()));
-
+        
         [Fact]
-        public void Verify_WhenNoEdDsaSecurityKeysPresent_ExpectSecurityTokenInvalidSigningKeyException()
+        public void Verify_WhenNoRsaSecurityKeysPresent_ExpectSecurityTokenInvalidSigningKeyException()
         {
-            var keys = new List<SecurityKey> {new RsaSecurityKey(RSA.Create())};
+            var keys = new List<SecurityKey> {new ECDsaSecurityKey(ECDsa.Create())};
 
             Assert.Throws<SecurityTokenInvalidSigningKeyException>(() => sut.Verify(new PasetoToken(validToken), keys));
         }
@@ -115,14 +124,6 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         }
 
         [Fact]
-        public void Verify_WhenPayloadIsNotBase64UrlEncodedValue_ExpectFormatException()
-        {
-            var token = new PasetoToken($"{ValidVersion}.{ValidPublicPurpose}.ey!!");
-
-            Assert.Throws<FormatException>(() => sut.Verify(token, validVerificationKeys));
-        }
-
-        [Fact]
         public void Verify_WhenPayloadDoesNotContainEnoughBytes_ExpectSecurityTokenInvalidSignatureException()
         {
             var payloadBytes = new byte[32];
@@ -139,7 +140,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             var payloadValue = "<xml>test</xml>";
             var payloadValueBytes = System.Text.Encoding.UTF8.GetBytes(payloadValue);
             
-            var signature = new byte[64];
+            var signature = new byte[256];
             new Random().NextBytes(signature);
 
             var payload = new byte[payloadValueBytes.Length + signature.Length];
@@ -157,7 +158,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             var payloadValue = "{ 'test': 'test' }";
             var payloadValueBytes = System.Text.Encoding.UTF8.GetBytes(payloadValue);
             
-            var signature = new byte[64];
+            var signature = new byte[256];
             new Random().NextBytes(signature);
 
             var payload = new byte[payloadValueBytes.Length + signature.Length];
@@ -172,27 +173,12 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         [Fact]
         public void Verify_WhenSignatureIsValid_ExpectCorrectSecurityToken()
         {
-            // "wxFZtnkkIXbcNh4WTYbTS8WgEyWaYRhfT1603kN6SdQ="
-            // "v2.public.eyJzdWIiOiIxMjMiLCJleHAiOiIyMDIwLTA1LTAzVDEzOjE0OjE0LjE5MDA1OFoiff5U7ni0Bd5yame3wT41v26UMyH56JA4Un077FPn_UkGpx78fVgbegW0FEMLw0J61ms0OJHarRzyRrX4dWn6LgA"
             var token = new PasetoToken(validToken);
 
             var securityToken = sut.Verify(token, validVerificationKeys);
 
             securityToken.Should().NotBeNull();
             securityToken.RawToken.Should().Be(token.RawToken);
-        }
-
-        [Fact]
-        public void Verify_WhenFooterPresentAndSignatureIsValid_ExpectCorrectSecurityToken()
-        {
-            var tokenWithFooter = new PasetoToken(
-                "v2.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAxOS0wMS0wMVQwMDowMDowMCswMDowMCJ9flsZsx_gYCR0N_Ec2QxJFFpvQAs7h9HtKwbVK2n1MJ3Rz-hwe8KUqjnd8FAnIJZ601tp7lGkguU63oGbomhoBw.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9");
-            var publicKey = Convert.FromBase64String("Hrnbu7wEfAP9cGBOAHHwmH4Wsot1ciXBHwBBXQ4gsaI=");
-
-            var securityToken = sut.Verify(tokenWithFooter, new[] {new EdDsaSecurityKey(new Ed25519PublicKeyParameters(publicKey, 0))});
-
-            securityToken.Should().NotBeNull();
-            securityToken.RawToken.Should().Be(tokenWithFooter.RawToken);
         }
 
         [Fact]

@@ -9,9 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Moq.Protected;
 using Newtonsoft.Json.Linq;
+using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
-using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
 {
@@ -120,7 +120,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             
             var token = handler.CreateToken(new SecurityTokenDescriptor
             {
-                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), SecurityAlgorithms.XChaCha20Poly1305)
+                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), ExtendedSecurityAlgorithms.XChaCha20Poly1305)
             });
 
             var parsedToken = handler.DecryptToken(token, validKey);
@@ -319,7 +319,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
                 Expires = expires,
                 NotBefore = notBefore,
                 Claims = new Dictionary<string, object> {{"sub", subject}},
-                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), SecurityAlgorithms.XChaCha20Poly1305)
+                EncryptingCredentials = new EncryptingCredentials(new SymmetricSecurityKey(validKey), ExtendedSecurityAlgorithms.XChaCha20Poly1305)
             });
 
             var validatedToken = handler.ValidateToken(token, new TokenValidationParameters
@@ -422,7 +422,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var keyBytes = new byte[16];
             new Random().NextBytes(keyBytes);
             var key = new SymmetricSecurityKey(keyBytes);
-            var credentials = new EncryptingCredentials(key, SecurityAlgorithms.XChaCha20Poly1305);
+            var credentials = new EncryptingCredentials(key, ExtendedSecurityAlgorithms.XChaCha20Poly1305);
 
             var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
 
@@ -438,7 +438,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var credentials = new EncryptingCredentials(
                 key, 
                 Microsoft.IdentityModel.Tokens.SecurityAlgorithms.Aes256KeyWrap,
-                SecurityAlgorithms.XChaCha20Poly1305);
+                ExtendedSecurityAlgorithms.XChaCha20Poly1305);
 
             var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
 
@@ -464,7 +464,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var keyBytes = new byte[32];
             new Random().NextBytes(keyBytes);
             var key = new SymmetricSecurityKey(keyBytes);
-            var credentials = new EncryptingCredentials(key, SecurityAlgorithms.XChaCha20Poly1305);
+            var credentials = new EncryptingCredentials(key, ExtendedSecurityAlgorithms.XChaCha20Poly1305);
 
             var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
 

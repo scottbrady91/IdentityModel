@@ -8,7 +8,8 @@ namespace ScottBrady.IdentityModel.Tokens
     {
         public static readonly Dictionary<string, PasetoVersionStrategy> VersionStrategies = new Dictionary<string, PasetoVersionStrategy>
         {
-            {"v2", new PasetoVersion2()}
+            {PasetoConstants.Versions.V1, new PasetoVersion1()},
+            {PasetoConstants.Versions.V2, new PasetoVersion2()}
         };
 
         public override bool CanReadToken(string token)

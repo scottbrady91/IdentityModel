@@ -2,9 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Converters;
+using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
-using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
 {
@@ -45,15 +44,23 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
         }
 
         [HttpGet]
-        public IActionResult Paseto()
+        public IActionResult Paseto(string version)
         {
             var handler = new PasetoTokenHandler();
 
-            var descriptor = new PasetoSecurityTokenDescriptor(PasetoConstants.Versions.V2, PasetoConstants.Purposes.Public)
+            SigningCredentials signingCredentials;
+            if (version == PasetoConstants.Versions.V1)
+                signingCredentials = new SigningCredentials(options.PasetoV1PrivateKey, SecurityAlgorithms.RsaSsaPssSha384);
+            else if (version == PasetoConstants.Versions.V2)
+                signingCredentials = new SigningCredentials(options.PasetoV2PrivateKey, ExtendedSecurityAlgorithms.EdDsa);
+            else 
+                throw new NotSupportedException("Unsupported version");
+            
+            var descriptor = new PasetoSecurityTokenDescriptor(version, PasetoConstants.Purposes.Public)
             {
                 Issuer = "me",
                 Audience = "you",
-                SigningCredentials = new SigningCredentials(options.PasetoV2PrivateKey, SecurityAlgorithms.EdDsa)
+                SigningCredentials = signingCredentials
             };
 
             var token = handler.CreateToken(descriptor);
@@ -68,7 +75,7 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
         }
 
         [HttpGet]
-        [Authorize(AuthenticationSchemes = "branca-bearer,paseto-bearer")]
+        [Authorize(AuthenticationSchemes = "branca-bearer,paseto-bearer-v1,paseto-bearer-v2")]
         public IActionResult CallApi()
         {
             return Ok();

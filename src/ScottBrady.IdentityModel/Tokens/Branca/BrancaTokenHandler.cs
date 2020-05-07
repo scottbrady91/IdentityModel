@@ -11,7 +11,6 @@ using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Macs;
 using Org.BouncyCastle.Crypto.Parameters;
 using ScottBrady.IdentityModel.Crypto;
-using SecurityAlgorithms = ScottBrady.IdentityModel.Crypto.SecurityAlgorithms;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
@@ -239,7 +238,7 @@ namespace ScottBrady.IdentityModel.Tokens
         protected virtual bool IsValidKey(EncryptingCredentials credentials)
         {
             if (credentials == null) return false;
-            if (credentials.Enc != SecurityAlgorithms.XChaCha20Poly1305) return false;
+            if (credentials.Enc != ExtendedSecurityAlgorithms.XChaCha20Poly1305) return false;
             if (string.IsNullOrWhiteSpace(credentials.Alg)
                 || credentials.Alg != Microsoft.IdentityModel.Tokens.SecurityAlgorithms.None)
             {

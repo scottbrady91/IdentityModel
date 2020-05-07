@@ -10,7 +10,10 @@
         <a asp-action="Branca">Get Branca token</a>
     </p>
     <p>
-        <a asp-action="Paseto">Get PASETO</a>
+        <a asp-action="Paseto" asp-route-version="v1">Get PASETO v1.public</a>
+    </p>
+    <p>
+        <a asp-action="Paseto" asp-route-version="v2">Get PASETO v2.public</a>
     </p>
     @if (Model != null)
     {

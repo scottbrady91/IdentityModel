@@ -1,6 +1,6 @@
 namespace ScottBrady.IdentityModel.Crypto
 {
-    public static class SecurityAlgorithms
+    public static class ExtendedSecurityAlgorithms
     {
         // https://tools.ietf.org/html/draft-amringer-jose-chacha-02#section-4.1
         public const string ChaCha20Poly1305 = "C20P";
