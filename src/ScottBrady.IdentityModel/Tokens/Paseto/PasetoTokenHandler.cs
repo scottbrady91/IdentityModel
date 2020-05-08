@@ -6,11 +6,16 @@ namespace ScottBrady.IdentityModel.Tokens
 {
     public class PasetoTokenHandler : JwtPayloadTokenHandler
     {
-        public static readonly Dictionary<string, PasetoVersionStrategy> VersionStrategies = new Dictionary<string, PasetoVersionStrategy>
+        private readonly Dictionary<string, PasetoVersionStrategy> SupportedVersions;
+
+        public PasetoTokenHandler(Dictionary<string, PasetoVersionStrategy> supportedVersions = null)
         {
-            {PasetoConstants.Versions.V1, new PasetoVersion1()},
-            {PasetoConstants.Versions.V2, new PasetoVersion2()}
-        };
+            SupportedVersions = supportedVersions ?? new Dictionary<string, PasetoVersionStrategy>
+            {
+                {PasetoConstants.Versions.V1, new PasetoVersion1()},
+                {PasetoConstants.Versions.V2, new PasetoVersion2()}
+            };
+        }
 
         public override bool CanReadToken(string token)
         {
@@ -30,7 +35,7 @@ namespace ScottBrady.IdentityModel.Tokens
                 throw new ArgumentException($"Token descriptor must be of type '{typeof(PasetoSecurityTokenDescriptor)}'", nameof(tokenDescriptor));
 
             // get strategy for version + purpose
-            if (!VersionStrategies.TryGetValue(pasetoSecurityTokenDescriptor.Version, out var strategy))
+            if (!SupportedVersions.TryGetValue(pasetoSecurityTokenDescriptor.Version, out var strategy))
             {
                 throw new SecurityTokenException("Unsupported PASETO version");
             }
@@ -65,7 +70,7 @@ namespace ScottBrady.IdentityModel.Tokens
             var pasetoToken = new PasetoToken(token);
 
             // get strategy for version + purpose
-            if (!VersionStrategies.TryGetValue(pasetoToken.Version, out var strategy))
+            if (!SupportedVersions.TryGetValue(pasetoToken.Version, out var strategy))
             {
                 return new TokenValidationResult {Exception = new SecurityTokenException("Unsupported PASETO version")};
             }

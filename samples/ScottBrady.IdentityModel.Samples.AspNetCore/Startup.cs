@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using ScottBrady.IdentityModel.Tokens;
@@ -26,7 +27,9 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
                 .AddJwtBearer("paseto-bearer-v1", options =>
                 {
                     options.SecurityTokenValidators.Clear();
-                    options.SecurityTokenValidators.Add(new PasetoTokenHandler());
+                    options.SecurityTokenValidators.Add(new PasetoTokenHandler(
+                        new Dictionary<string, PasetoVersionStrategy> {{PasetoConstants.Versions.V1, new PasetoVersion1()}}));
+                    
                     options.TokenValidationParameters.IssuerSigningKey = sampleOptions.PasetoV1PublicKey;
                     options.TokenValidationParameters.ValidIssuer = "me";
                     options.TokenValidationParameters.ValidAudience = "you";
@@ -34,7 +37,9 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
                 .AddJwtBearer("paseto-bearer-v2", options =>
                 {
                     options.SecurityTokenValidators.Clear();
-                    options.SecurityTokenValidators.Add(new PasetoTokenHandler());
+                    options.SecurityTokenValidators.Add(new PasetoTokenHandler(
+                        new Dictionary<string, PasetoVersionStrategy> {{PasetoConstants.Versions.V2, new PasetoVersion2()}}));
+                    
                     options.TokenValidationParameters.IssuerSigningKey = sampleOptions.PasetoV2PublicKey;
                     options.TokenValidationParameters.ValidIssuer = "me";
                     options.TokenValidationParameters.ValidAudience = "you";

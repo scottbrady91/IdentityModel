@@ -22,10 +22,13 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         
         public PasetoTokenHandlerTests()
         {
-            mockedSut = new Mock<PasetoTokenHandler> {CallBase = true};
+            mockedSut = new Mock<PasetoTokenHandler>(
+                new Dictionary<string, PasetoVersionStrategy>{{TestVersion, mockVersionStrategy.Object}})
+            {
+                CallBase = true
+            };
+            
             sut = mockedSut.Object;
-            PasetoTokenHandler.VersionStrategies.Clear();
-            PasetoTokenHandler.VersionStrategies.Add(TestVersion, mockVersionStrategy.Object);
         }
         
         [Theory]
@@ -337,7 +340,6 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             var verificationKeys =
                 new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M="), 0));
 
-            PasetoTokenHandler.VersionStrategies.Add(PasetoConstants.Versions.V2, new PasetoVersion2());
             var handler = new PasetoTokenHandler();
             var token = handler.CreateToken(new PasetoSecurityTokenDescriptor(PasetoConstants.Versions.V2, PasetoConstants.Purposes.Public)
             {
