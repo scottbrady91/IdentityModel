@@ -26,7 +26,7 @@ string token = handler.CreateToken(new SecurityTokenDescriptor
     NotBefore = DateTime.UtcNow,
     Claims = new Dictionary<string, object> {{"sub", "123"}},
     EncryptingCredentials = new EncryptingCredentials(
-        new SymmetricSecurityKey(key), SecurityAlgorithms.XChaCha20Poly1305)
+        new SymmetricSecurityKey(key), ExtendedSecurityAlgorithms.XChaCha20Poly1305)
 });
 
 ClaimsPrincipal principal = handler.ValidateToken(
@@ -57,7 +57,7 @@ string token = handler.CreateToken(new PasetoSecurityTokenDescriptor(
     NotBefore = DateTime.UtcNow,
     Claims = new Dictionary<string, object> {{"sub", "123"}},
     SigningCredentials = new SigningCredentials(
-        new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(privateKey, 0)), SecurityAlgorithms.EdDsa)
+        new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(privateKey, 0)), ExtendedSecurityAlgorithms.EdDsa)
 });
 
 ClaimsPrincipal principal = handler.ValidateToken(
