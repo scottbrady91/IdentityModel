@@ -1,5 +1,7 @@
 # ScottBrady.IdentityModel
 
+[![NuGet](https://img.shields.io/nuget/v/ScottBrady.IdentityModel.svg)](https://www.nuget.org/packages/ScottBrady.IdentityModel/)
+
 Helper libraries for tokens and cryptography in .NET.
 
 - Branca tokens with JWT style validation
