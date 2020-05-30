@@ -43,7 +43,7 @@ ClaimsPrincipal principal = handler.ValidateToken(
 
 ## PASETO
 
-[PASETO](https://paseto.io/) is a competing standard to JOSE & JWT that offers a versioned ciphersuite. This library currently implements `v2` for the `public` purpose, suitable for zero-trust systems such as an OAuth authorization server.
+[PASETO](https://paseto.io/) is a competing standard to JOSE & JWT that offers a versioned ciphersuite. This library currently implements `v1` and `v2` for the `public` purpose, suitable for zero-trust systems such as an OAuth authorization server.
 
 ```csharp
 var handler = new PasetoTokenHandler();
