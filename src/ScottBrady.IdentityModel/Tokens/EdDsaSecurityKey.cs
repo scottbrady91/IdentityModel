@@ -2,22 +2,32 @@ using System;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
+using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
     public class EdDsaSecurityKey : AsymmetricSecurityKey
     {
-        public EdDsaSecurityKey(Ed25519PrivateKeyParameters keyParameters)
+        private EdDsaSecurityKey()
         {
-            KeyParameters = keyParameters ?? throw new ArgumentNullException(nameof(keyParameters));
+            CryptoProviderFactory.CustomCryptoProvider = new ExtendedCryptoProvider();
         }
-        
-        public EdDsaSecurityKey(Ed25519PublicKeyParameters keyParameters)
+
+        public EdDsaSecurityKey(Ed25519PrivateKeyParameters keyParameters) : this()
         {
             KeyParameters = keyParameters ?? throw new ArgumentNullException(nameof(keyParameters));
+            Curve = ExtendedSecurityAlgorithms.Curves.Ed25519;
+        }
+
+        public EdDsaSecurityKey(Ed25519PublicKeyParameters keyParameters) : this()
+        {
+            KeyParameters = keyParameters ?? throw new ArgumentNullException(nameof(keyParameters));
+            Curve = ExtendedSecurityAlgorithms.Curves.Ed25519;
         }
         
         public virtual AsymmetricKeyParameter KeyParameters { get; }
+        public string Curve { get; }
+        
         public override int KeySize => throw new NotImplementedException();
         
         [Obsolete("HasPrivateKey method is deprecated, please use PrivateKeyStatus.")]
