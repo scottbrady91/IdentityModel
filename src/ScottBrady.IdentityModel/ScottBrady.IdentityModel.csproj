@@ -6,10 +6,11 @@
     <Description>Token helpers for Branca, PASETO, and Ed25519.</Description>
     <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>https://github.com/scottbrady91/IdentityModel</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/scottbrady91/IdentityModel/releases</PackageReleaseNotes>
     <Copyright>Copyright 2020 (c) Scott Brady</Copyright>
     <PackageTags>Branca PASETO Base62</PackageTags>
     <IncludeSymbols>true</IncludeSymbols>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
