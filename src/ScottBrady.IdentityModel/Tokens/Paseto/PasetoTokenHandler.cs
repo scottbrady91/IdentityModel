@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens

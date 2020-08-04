@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Logging;
 using ScottBrady.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Samples.AspNetCore
@@ -9,6 +10,8 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            IdentityModelEventSource.ShowPII = true;
+            
             services.AddControllersWithViews()
                 .AddRazorRuntimeCompilation();
 
@@ -40,6 +43,12 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
                     options.SecurityTokenValidators.Add(new PasetoTokenHandler(
                         new Dictionary<string, PasetoVersionStrategy> {{PasetoConstants.Versions.V2, new PasetoVersion2()}}));
                     
+                    options.TokenValidationParameters.IssuerSigningKey = sampleOptions.PasetoV2PublicKey;
+                    options.TokenValidationParameters.ValidIssuer = "me";
+                    options.TokenValidationParameters.ValidAudience = "you";
+                })
+                .AddJwtBearer("eddsa", options =>
+                {
                     options.TokenValidationParameters.IssuerSigningKey = sampleOptions.PasetoV2PublicKey;
                     options.TokenValidationParameters.ValidIssuer = "me";
                     options.TokenValidationParameters.ValidAudience = "you";

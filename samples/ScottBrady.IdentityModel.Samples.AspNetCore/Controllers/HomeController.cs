@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
@@ -73,9 +74,32 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
                 Payload = payload
             });
         }
+        
+        [HttpGet]
+        public IActionResult EdDsaJwt()
+        {
+            var handler = new JsonWebTokenHandler();
+
+            var descriptor = new SecurityTokenDescriptor
+            {
+                Issuer = "me",
+                Audience = "you",
+                SigningCredentials = new SigningCredentials(options.PasetoV2PrivateKey, ExtendedSecurityAlgorithms.EdDsa)
+            };
+
+            var token = handler.CreateToken(descriptor);
+            var payload = descriptor.ToJwtPayload(JwtDateTimeFormat.Iso);
+
+            return View("Index", new TokenModel
+            {
+                Type = "EdDSA JWT",
+                Token = token,
+                Payload = payload
+            });
+        }
 
         [HttpGet]
-        [Authorize(AuthenticationSchemes = "branca-bearer,paseto-bearer-v1,paseto-bearer-v2")]
+        [Authorize(AuthenticationSchemes = "branca-bearer,paseto-bearer-v1,paseto-bearer-v2,eddsa")]
         public IActionResult CallApi()
         {
             return Ok();

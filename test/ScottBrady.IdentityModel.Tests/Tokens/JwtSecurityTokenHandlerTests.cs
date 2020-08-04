@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using FluentAssertions;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -12,7 +12,7 @@ using Xunit;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens
 {
-    public class JsonWebTokenHandlerTests
+    public class JwtSecurityTokenHandlerTests
     {
         [Fact]
         public void WhenEdDsaTokenGenerated_ExpectEdDsaTokenVerifiable()
@@ -25,14 +25,15 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             keyPairGenerator.Init(new Ed25519KeyGenerationParameters(new SecureRandom()));
             var keyPair = keyPairGenerator.GenerateKeyPair();
             
-            var handler = new JsonWebTokenHandler();
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); // ffs
+            var handler = new JwtSecurityTokenHandler();
 
-            var jwt = handler.CreateToken(new SecurityTokenDescriptor
+            var jwt = handler.CreateEncodedJwt(new SecurityTokenDescriptor
             {
                 Issuer = issuer,
                 Audience = audience,
                 Expires = DateTime.UtcNow.AddMinutes(30),
-                Claims = new Dictionary<string, object> {{"sub", subject}},
+                Subject = new ClaimsIdentity(new[] {new Claim("sub", subject)}),
                 SigningCredentials = new SigningCredentials(
                     new EdDsaSecurityKey((Ed25519PrivateKeyParameters) keyPair.Private),
                     ExtendedSecurityAlgorithms.EdDsa)
@@ -45,10 +46,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
                 ValidateLifetime = true,
                 RequireExpirationTime = true,
                 IssuerSigningKey = new EdDsaSecurityKey((Ed25519PublicKeyParameters) keyPair.Public)
-            });
-
-            validationResult.IsValid.Should().BeTrue();
-            validationResult.ClaimsIdentity.Claims.Should().Contain(x => x.Type == "sub" && x.Value == subject);
+            }, out _);
+            
+            validationResult.Claims.Should().Contain(x => x.Type == "sub" && x.Value == subject);
         }
     }
 }

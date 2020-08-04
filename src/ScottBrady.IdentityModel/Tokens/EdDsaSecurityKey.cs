@@ -13,6 +13,7 @@ namespace ScottBrady.IdentityModel.Tokens
             CryptoProviderFactory.CustomCryptoProvider = new ExtendedCryptoProvider();
         }
 
+        // TODO: Deprecate leaky abstraction
         public EdDsaSecurityKey(Ed25519PrivateKeyParameters keyParameters) : this()
         {
             KeyParameters = keyParameters ?? throw new ArgumentNullException(nameof(keyParameters));
