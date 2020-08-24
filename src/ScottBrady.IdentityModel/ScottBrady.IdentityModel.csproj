@@ -10,7 +10,7 @@
     <Copyright>Copyright 2020 (c) Scott Brady</Copyright>
     <PackageTags>Branca PASETO Base62</PackageTags>
     <IncludeSymbols>true</IncludeSymbols>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
   </PropertyGroup>
 
