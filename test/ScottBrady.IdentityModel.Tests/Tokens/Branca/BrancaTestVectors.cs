@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Tokens;
@@ -94,6 +95,18 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var exception = Assert.Throws<SecurityTokenException>(() => handler.DecryptToken(token, key));
             
             exception.Message.Should().Be("Unsupported Branca version");
+        }
+
+        [Fact]
+        public void ValidateToken_CiphertextModification_ExpectSecurityTokenException()
+        {
+            var handler = new BrancaTokenHandler();
+            
+            var token = handler.CreateToken("test", key);
+            var decoded = Base62.Decode(token);
+            decoded[decoded.Length - 17] ^= 1; // Last byte before the Poly1305 tag
+
+            Assert.Throws<CryptographicException>(() => handler.DecryptToken(Base62.Encode(decoded), key));
         }
     }
 }
