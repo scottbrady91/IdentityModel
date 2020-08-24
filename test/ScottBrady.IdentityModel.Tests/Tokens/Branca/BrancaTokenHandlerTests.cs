@@ -18,7 +18,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
 {
     public class BrancaTokenHandlerTests
     {
-        private const string ValidToken = "5K6Oid5pXkASEGvv63CHxpKhSX9passYQ4QhdSdCuOEnHlvBrvX414fWX6zUceAdg3DY9yTVQcmVZn0xr9lsBKBHDzOLNAGVlCs1SHlWIuFDfB8yGXO8EyNPnH9CBMueSEtNmISgcjM1ZmfmcD2EtE6";
+        private const string ValidToken = "5K6fDIqRhrSuqGE3FbuxAPd19P2toAsbBxOn4bgSame9ti6QZUQJkrggCypBJIEXF6tvhgjeMZTV76UkiqXNSvqHebeplccFrhepHkxU1SlSSFoAMKs5TUomcg6ZgDhiaYDs3IlypSxafP4uvKmu0VD";
         private readonly byte[] validKey = System.Text.Encoding.UTF8.GetBytes("supersecretkeyyoushouldnotcommit");
         private const string ExpectedPayload = "{\"user\":\"scott@scottbrady91.com\",\"scope\":[\"read\",\"write\",\"delete\"]}";
 
@@ -238,7 +238,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
         [Fact]
         public void ValidateToken_WhenTokenPayloadIsNotJson_ExpectFailureWithArgumentException()
         {
-            const string tokenWithInvalidPayload = "9FvacDjvxjhWG5cqkP3WBrIb6cuCBl9sPjJvkrGX0XI8tbLJQe6Pb2EcbeyOGkbextBqDdHa66pF0HBMg";
+            const string tokenWithInvalidPayload = "Mvm6wbsyZMgClkmtiBf0lW3rEkvnCK5RgytoerJJex40b9yqh6GbSlfkFJHgFX9ocF";
 
             var result = new BrancaTokenHandler().ValidateToken(
                 tokenWithInvalidPayload,
