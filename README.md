@@ -4,10 +4,10 @@
 
 Helper libraries for tokens and cryptography in .NET.
 
+- EdDSA support for JWTs
 - Branca tokens with JWT style validation
 - PASETO (v2.public) with JWT style validation
 - Base62 encoding
-- XChaCha20-Poly1305 engine for Bouncy Castle
 - [Samples](https://github.com/scottbrady91/IdentityModel/tree/master/samples/ScottBrady.IdentityModel.Samples.AspNetCore) in ASP.NET Core
 
 **Feature requests welcome.**
