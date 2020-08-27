@@ -25,20 +25,29 @@ namespace ScottBrady.IdentityModel.Tokens
         }
 
         /// <summary>
-        /// Branca specification-level token generation
+        /// Branca specification-level token generation.
+        /// Timestamp set to UtcNow
         /// </summary>
         /// <param name="payload">The payload to be encrypted into the Branca token</param>
         /// <param name="key">32-byte private key used to encrypt and decrypt the Branca token</param>
         /// <returns>Base62 encoded Branca Token</returns>
-        public virtual string CreateToken(string payload, byte[] key)
+        public virtual string CreateToken(string payload, byte[] key) 
+            => CreateToken(payload, DateTime.UtcNow, key);
+
+        /// <summary>
+        /// Branca specification-level token generation
+        /// </summary>
+        /// <param name="payload">The payload to be encrypted into the Branca token</param>
+        /// <param name="timestamp">The timestamp included in the Branca token (iat: issued at)</param>
+        /// <param name="key">32-byte private key used to encrypt and decrypt the Branca token</param>
+        /// <returns>Base62 encoded Branca Token</returns>
+        public virtual string CreateToken(string payload, DateTimeOffset timestamp, byte[] key)
         {
             if (string.IsNullOrWhiteSpace(payload)) throw new ArgumentNullException(nameof(payload));
             if (!IsValidKey(key)) throw new InvalidOperationException("Invalid encryption key");
 
             var nonce = new byte[24];
             RandomNumberGenerator.Create().GetBytes(nonce);
-
-            var timestamp = Convert.ToUInt32(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 
             // header
             var header = new byte[29];
@@ -47,8 +56,9 @@ namespace ScottBrady.IdentityModel.Tokens
                 // version
                 stream.WriteByte(0xBA);
 
-                // timestamp
-                stream.Write(BitConverter.GetBytes(timestamp).Reverse().ToArray(), 0, 4);
+                // timestamp (big endian uint32)
+                var brancaTimestamp = Convert.ToUInt32(timestamp.ToUniversalTime().ToUnixTimeSeconds());
+                stream.Write(BitConverter.GetBytes(brancaTimestamp).Reverse().ToArray(), 0, 4);
 
                 // nonce
                 stream.Write(nonce, 0, nonce.Length);

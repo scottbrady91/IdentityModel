@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -189,6 +189,20 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
 
             decryptedPayload.Payload.Should().Be(payload);
             decryptedPayload.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 1000);
+        }
+
+        [Fact]
+        public void EnryptAndDecryptToken_WithExplicitTimestamp_ExpectCorrectPayloadAndTimestamp()
+        {
+            var payload = Guid.NewGuid().ToString();
+            var timestamp = new DateTime(2020, 08, 22).ToUniversalTime();
+            var handler = new BrancaTokenHandler();
+
+            var token = handler.CreateToken(payload, timestamp, validKey);
+            var decryptedPayload = handler.DecryptToken(token, validKey);
+
+            decryptedPayload.Payload.Should().Be(payload);
+            decryptedPayload.Timestamp.Should().Be(timestamp);
         }
 
         [Theory]
