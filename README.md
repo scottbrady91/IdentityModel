@@ -16,6 +16,8 @@ Helper libraries for tokens and cryptography in .NET.
 
 [Branca](https://branca.io/) is token construct suitable for internal systems. The payload is encrypted using XChaCha20-Poly1305. Must use a 32-byte symmetric key.
 
+*The initial version of this .NET Branca implementation was a port of the Java Branca libraries. I have since found out that these do not conform to the Branca specification and have updated my .NET Branca library accordingly (version 1.3).*
+
 ```csharp
 var handler = new BrancaTokenHandler();
 var key = Encoding.UTF8.GetBytes("supersecretkeyyoushouldnotcommit");
