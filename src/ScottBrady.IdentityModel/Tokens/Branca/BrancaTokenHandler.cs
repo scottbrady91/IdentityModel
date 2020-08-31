@@ -60,7 +60,7 @@ namespace ScottBrady.IdentityModel.Tokens
                 stream.WriteByte(0xBA);
 
                 // timestamp (big endian uint32)
-                var brancaTimestamp = Convert.ToUInt32(timestamp.ToUniversalTime().ToUnixTimeSeconds());
+                var brancaTimestamp = BrancaToken.GetBrancaTimestamp(timestamp);
                 stream.Write(BitConverter.GetBytes(brancaTimestamp).Reverse().ToArray(), 0, 4);
 
                 // nonce
