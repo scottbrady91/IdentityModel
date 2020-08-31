@@ -205,6 +205,21 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             decryptedPayload.Timestamp.Should().Be(timestamp);
         }
 
+        [Fact]
+        public void EnryptAndDecryptToken_WithExplicitBrancaTimestamp_ExpectCorrectPayloadAndTimestamp()
+        {
+            var payload = Guid.NewGuid().ToString();
+            var timestamp = uint.MinValue;
+            var handler = new BrancaTokenHandler();
+
+            var token = handler.CreateToken(payload, timestamp, validKey);
+            var decryptedPayload = handler.DecryptToken(token, validKey);
+
+            decryptedPayload.Payload.Should().Be(payload);
+            decryptedPayload.Timestamp.Should().Be(new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc));
+            decryptedPayload.BrancaFormatTimestamp.Should().Be(timestamp);
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]

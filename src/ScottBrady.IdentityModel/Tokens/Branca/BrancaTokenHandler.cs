@@ -42,6 +42,16 @@ namespace ScottBrady.IdentityModel.Tokens
         /// <param name="key">32-byte private key used to encrypt and decrypt the Branca token</param>
         /// <returns>Base62 encoded Branca Token</returns>
         public virtual string CreateToken(string payload, DateTimeOffset timestamp, byte[] key)
+            => CreateToken(payload, BrancaToken.GetBrancaTimestamp(timestamp), key);
+        
+        /// <summary>
+        /// Branca specification-level token generation
+        /// </summary>
+        /// <param name="payload">The payload to be encrypted into the Branca token</param>
+        /// <param name="timestamp">The timestamp included in the Branca token (iat: issued at)</param>
+        /// <param name="key">32-byte private key used to encrypt and decrypt the Branca token</param>
+        /// <returns>Base62 encoded Branca Token</returns>
+        public virtual string CreateToken(string payload, uint timestamp, byte[] key)
         {
             if (string.IsNullOrWhiteSpace(payload)) throw new ArgumentNullException(nameof(payload));
             if (!IsValidKey(key)) throw new InvalidOperationException("Invalid encryption key");
@@ -60,8 +70,7 @@ namespace ScottBrady.IdentityModel.Tokens
                 stream.WriteByte(0xBA);
 
                 // timestamp (big endian uint32)
-                var brancaTimestamp = BrancaToken.GetBrancaTimestamp(timestamp);
-                stream.Write(BitConverter.GetBytes(brancaTimestamp).Reverse().ToArray(), 0, 4);
+                stream.Write(BitConverter.GetBytes(timestamp).Reverse().ToArray(), 0, 4);
 
                 // nonce
                 stream.Write(nonce, 0, nonce.Length);

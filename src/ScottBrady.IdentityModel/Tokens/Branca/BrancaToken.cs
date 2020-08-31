@@ -10,13 +10,18 @@ namespace ScottBrady.IdentityModel.Tokens
         public BrancaToken(string payload, uint timestamp)
         {
             Payload = payload ?? throw new ArgumentNullException(nameof(payload));
-            Timestamp = DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
+            Timestamp = GetDateTime(timestamp);
             BrancaFormatTimestamp = timestamp;
         }
         
         public string Payload { get; }
         public DateTime Timestamp { get; }
         public uint BrancaFormatTimestamp { get; }
+
+        public static DateTime GetDateTime(uint timestamp)
+        {
+            return DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
+        }
 
         public static uint GetBrancaTimestamp(DateTimeOffset dateTime)
         {            

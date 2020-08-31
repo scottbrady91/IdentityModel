@@ -8,46 +8,46 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
     public class BrancaTokenTests
     {
         [Fact]
-        public void ctor_ExpectPayloadSet()
+        public void ctor_ExpectPropertiesSet()
         {
             const string payload = "89f7baaee2ab476483d45b945f79d6af";
+            const uint timestamp = uint.MinValue;
 
-            var token = new BrancaToken(payload, uint.MaxValue);
+            var token = new BrancaToken(payload, timestamp);
 
             token.Payload.Should().Be(payload);
+            token.BrancaFormatTimestamp.Should().Be(timestamp);
+            token.Timestamp.Should().Be(new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc));
         }
 
         [Fact]
-        public void ctor_WhenTimestampIsZero_ExpectUnixTimeStart()
+        public void GetDateTime_WhenTimestampIsZero_ExpectUnixTimeStart()
         {
             const uint timestamp = 0;
 
-            var token = new BrancaToken("test", 0);
+            var dateTime = BrancaToken.GetDateTime(timestamp);
 
-            token.Timestamp.Should().Be(new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc));
-            token.BrancaFormatTimestamp.Should().Be(timestamp);
+            dateTime.Should().Be(new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc));
         }
 
         [Fact]
-        public void ctor_WhenTimestampIs27November_ExpectCorrectDateTime()
+        public void GetDateTime_WhenTimestampIs27November_ExpectCorrectDateTime()
         {
             const uint timestamp = 123206400;
             
-            var token = new BrancaToken("test", timestamp);
+            var dateTime = BrancaToken.GetDateTime(timestamp);
 
-            token.Timestamp.Should().Be(new DateTime(1973, 11, 27, 0, 0, 0, DateTimeKind.Utc));
-            token.BrancaFormatTimestamp.Should().Be(timestamp);
+            dateTime.Should().Be(new DateTime(1973, 11, 27, 0, 0, 0, DateTimeKind.Utc));
         }
 
         [Fact]
-        public void ctor_WhenTimestampIsMaxValue_ExpectCorrectDateTime()
+        public void GetDateTime_WhenTimestampIsMaxValue_ExpectCorrectDateTime()
         {
             const uint timestamp = uint.MaxValue;
             
-            var token = new BrancaToken("test", timestamp);
+            var dateTime = BrancaToken.GetDateTime(timestamp);
 
-            token.Timestamp.Should().Be(new DateTime(2106, 02, 07, 06, 28, 15, DateTimeKind.Utc));
-            token.BrancaFormatTimestamp.Should().Be(timestamp);
+            dateTime.Should().Be(new DateTime(2106, 02, 07, 06, 28, 15, DateTimeKind.Utc));
         }
 
         [Fact]
