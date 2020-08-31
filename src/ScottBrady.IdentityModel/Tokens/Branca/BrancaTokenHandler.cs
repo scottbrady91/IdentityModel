@@ -47,7 +47,10 @@ namespace ScottBrady.IdentityModel.Tokens
             if (!IsValidKey(key)) throw new InvalidOperationException("Invalid encryption key");
 
             var nonce = new byte[24];
-            RandomNumberGenerator.Create().GetBytes(nonce);
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(nonce);
+            }
 
             // header
             var header = new byte[29];
