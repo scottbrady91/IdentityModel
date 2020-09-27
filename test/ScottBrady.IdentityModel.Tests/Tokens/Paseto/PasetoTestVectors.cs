@@ -110,7 +110,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
                 ValidateAudience = false,
                 ValidateLifetime = false,
                 
-                IssuerSigningKey = new EdDsaSecurityKey(new Ed25519PublicKeyParameters(HexToBytes(publicKeyHex), 0))
+                IssuerSigningKey = new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Base16.Decode(publicKeyHex), 0))
             });
 
             result.IsValid.Should().BeTrue();
@@ -131,21 +131,10 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
                 ValidateAudience = false,
                 ValidateLifetime = false,
                 
-                IssuerSigningKey = new EdDsaSecurityKey(new Ed25519PublicKeyParameters(HexToBytes(publicKeyHex), 0))
+                IssuerSigningKey = new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Base16.Decode(publicKeyHex), 0))
             });
 
             result.IsValid.Should().BeTrue();
-        }
-
-        private byte[] HexToBytes(string hex)
-        {
-            var hexAsBytes = new byte[hex.Length / 2];
-
-            for (var i = 0; i < hex.Length; i += 2) {
-                hexAsBytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            }
-
-            return hexAsBytes;
         }
     }
 }
