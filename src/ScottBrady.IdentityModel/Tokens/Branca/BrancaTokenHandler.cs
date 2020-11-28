@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,6 +15,8 @@ namespace ScottBrady.IdentityModel.Tokens
 {
     public class BrancaTokenHandler : JwtPayloadTokenHandler
     {
+        private const int TagLength = 16;
+        
         public override bool CanReadToken(string token)
         {
             if (string.IsNullOrWhiteSpace(token)) return false;
@@ -75,13 +77,17 @@ namespace ScottBrady.IdentityModel.Tokens
                 // nonce
                 stream.Write(nonce, 0, nonce.Length);
             }
-            
-            var xChaCha20Poly1305 = new XChaCha20Poly1305(key);
-            var ciphertext = xChaCha20Poly1305.Encrypt(Encoding.UTF8.GetBytes(payload), header, nonce);
 
-            var tokenBytes = new byte[header.Length + ciphertext.Length];
+            var plaintext = Encoding.UTF8.GetBytes(payload);
+            var ciphertext = new byte[plaintext.Length];
+            var tag = new byte[TagLength];
+            
+            new XChaCha20Poly1305(key).Encrypt(nonce, plaintext, ciphertext, tag, header);
+
+            var tokenBytes = new byte[header.Length + ciphertext.Length + TagLength];
             Buffer.BlockCopy(header, 0, tokenBytes, 0, header.Length);
             Buffer.BlockCopy(ciphertext, 0, tokenBytes, header.Length, ciphertext.Length);
+            Buffer.BlockCopy(tag, 0, tokenBytes, tokenBytes.Length - TagLength, tag.Length);
 
             return Base62.Encode(tokenBytes);
         }
@@ -146,14 +152,15 @@ namespace ScottBrady.IdentityModel.Tokens
                 }
 
                 // ciphertext
-                var ciphertextLength = (stream.Length) - stream.Position;
+                var ciphertextLength = stream.Length - stream.Position - TagLength;
                 var ciphertext = GuaranteedRead(stream, (int) ciphertextLength);
+                var tag = GuaranteedRead(stream, TagLength);
 
-                var xChaCha20Poly1305 = new XChaCha20Poly1305(key);
-                var decryptedPlaintext = xChaCha20Poly1305.Decrypt(ciphertext, header, nonce);
+                var plaintext = new byte[ciphertextLength];
+                new XChaCha20Poly1305(key).Decrypt(nonce, ciphertext, tag, plaintext, header);
 
                 return new BrancaToken(
-                    Encoding.UTF8.GetString(decryptedPlaintext),
+                    Encoding.UTF8.GetString(plaintext),
                     timestamp);
             }
         }
