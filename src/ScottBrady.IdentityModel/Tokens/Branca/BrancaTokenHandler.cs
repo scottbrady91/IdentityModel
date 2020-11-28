@@ -230,8 +230,7 @@ namespace ScottBrady.IdentityModel.Tokens
         {
             if (credentials == null) return false;
             if (credentials.Enc != ExtendedSecurityAlgorithms.XChaCha20Poly1305) return false;
-            if (string.IsNullOrWhiteSpace(credentials.Alg)
-                || credentials.Alg != Microsoft.IdentityModel.Tokens.SecurityAlgorithms.None)
+            if (string.IsNullOrWhiteSpace(credentials.Alg) || credentials.Alg != SecurityAlgorithms.None)
             {
                 return false;
             }
@@ -243,20 +242,6 @@ namespace ScottBrady.IdentityModel.Tokens
         {
             if (!stream.TryRead(length, out var bytes)) throw new SecurityTokenException("");
             return bytes;
-        }
-        
-        protected static byte[] PreAuthEncode(IReadOnlyList<byte[]> pieces)
-        {
-            if (pieces == null) throw new ArgumentNullException(nameof(pieces));
-            
-            var output = BitConverter.GetBytes((long) pieces.Count);
-
-            foreach (var piece in pieces)
-            {
-                output = output.Combine(BitConverter.GetBytes((long) piece.Length), piece);
-            }
-
-            return output.ToArray();
         }
     }
 }
