@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace ScottBrady.IdentityModel.AspNetCore.Configuration
+namespace ScottBrady.IdentityModel.AspNetCore.Identity
 {
     public class ExtendedPasswordOptions : PasswordOptions
     {

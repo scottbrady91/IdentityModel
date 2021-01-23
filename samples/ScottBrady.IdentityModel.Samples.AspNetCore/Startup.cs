@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Logging;
-using ScottBrady.IdentityModel.AspNetCore.Configuration;
+using ScottBrady.IdentityModel.AspNetCore.Identity;
 using ScottBrady.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Samples.AspNetCore

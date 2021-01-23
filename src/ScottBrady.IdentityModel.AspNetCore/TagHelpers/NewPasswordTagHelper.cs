@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Options;
-using ScottBrady.IdentityModel.AspNetCore.Configuration;
+using ScottBrady.IdentityModel.AspNetCore.Identity;
 
 namespace ScottBrady.IdentityModel.AspNetCore.TagHelpers
 {
@@ -65,7 +65,7 @@ namespace ScottBrady.IdentityModel.AspNetCore.TagHelpers
             {
                 if (extendedOptions.MaxLength.HasValue && 0 < extendedOptions.MaxLength)
                     passwordRules.AppendFormat(" maxlength: {0};", extendedOptions.MaxLength);
-                if (extendedOptions.MaxConsecutiveChars.HasValue && 0 < extendedOptions.MaxConsecutiveChars)
+                if (extendedOptions.MaxConsecutiveChars.HasValue && 0 <= extendedOptions.MaxConsecutiveChars)
                     passwordRules.AppendFormat(" max-consecutive: {0};", extendedOptions.MaxConsecutiveChars);
             }
             

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Options;
 using Moq;
-using ScottBrady.IdentityModel.AspNetCore.Configuration;
+using ScottBrady.IdentityModel.AspNetCore.Identity;
 using ScottBrady.IdentityModel.AspNetCore.TagHelpers;
 using Xunit;
 
@@ -280,11 +280,11 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.TagHelpers
             testOutput.Attributes["passwordrules"].Value.As<string>().Should().NotContain("maxlength");
         }
 
-        [Fact]
-        public void ProcessIdentityPasswordRules_WhenExtendedOptionsWithMaxConsecutiveChars_ExpectMaxConsecutiveCharsAttribute()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(2)]
+        public void ProcessIdentityPasswordRules_WhenExtendedOptionsWithMaxConsecutiveChars_ExpectMaxConsecutiveCharsAttribute(int? expectedMaxConsecutiveChars)
         {
-            const int expectedMaxConsecutiveChars = 2;
-            
             var sut = CreateSut();
             var options = new ExtendedPasswordOptions {MaxConsecutiveChars = expectedMaxConsecutiveChars};
             
@@ -295,7 +295,6 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.TagHelpers
 
         [Theory]
         [InlineData(null)]
-        [InlineData(0)]
         [InlineData(-1)]
         public void ProcessIdentityPasswordRules_WhenExtendedOptionsWithInvalidMaxConsecutiveChars_ExpectNoMaxConsecutiveCharsAttribute(int? expectedMaxConsecutiveChars)
         {
