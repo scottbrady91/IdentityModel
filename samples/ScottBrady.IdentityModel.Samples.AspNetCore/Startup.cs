@@ -59,18 +59,20 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
                 });
 
             services.AddIdentityCore<IdentityUser>(options =>
-            {
-                options.Password = new ExtendedPasswordOptions
                 {
-                    RequiredLength = 25,
-                    MaxLength = 255,
-                    RequireDigit = true,
-                    RequireLowercase = true,
-                    RequireUppercase = true,
-                    RequireNonAlphanumeric = true,
-                    MaxConsecutiveChars = 1
-                };
-            }).AddEntityFrameworkStores<IdentityDbContext>();
+                    options.Password = new ExtendedPasswordOptions
+                    {
+                        RequiredLength = 3,
+                        MaxLength = 6,
+                        RequireDigit = true,
+                        RequireLowercase = true,
+                        RequireUppercase = true,
+                        RequireNonAlphanumeric = true,
+                        MaxConsecutiveChars = 1
+                    };
+                })
+                .AddPasswordValidator<ExtendedPasswordValidator<IdentityUser>>() // Required for max length and consecutive character checks
+                .AddEntityFrameworkStores<IdentityDbContext>();
             
             services.AddDbContext<IdentityDbContext>(options => options.UseInMemoryDatabase("test"));
         }

@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
@@ -7,40 +7,44 @@ using Microsoft.AspNetCore.Identity;
 namespace ScottBrady.IdentityModel.AspNetCore.Identity
 {
     /// <summary>
-    /// Extends the base ASP.NET Core Identity PasswordValidator with max length and max consecutive character checks.
+    /// ASP.NET Core Identity PasswordValidator for max length and max consecutive character checks.
     /// </summary>
-    public class ExtendedPasswordValidator<TUser> : PasswordValidator<TUser> where TUser : class
+    public class ExtendedPasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class
     {
-        public ExtendedPasswordValidator(IdentityErrorDescriber errors = null) : base(errors) { }
-
         /// <summary>
-        /// Checks the base password validation rules and, if configured, max length and max consecutive characters.
+        /// Validates the password for max length and max consecutive characters.
         /// </summary>
-        public override async Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
+        public Task<IdentityResult> ValidateAsync(UserManager<TUser> manager, TUser user, string password)
         {
             if (manager == null) throw new ArgumentNullException(nameof(manager));
             if (password == null) throw new ArgumentNullException(nameof(password));
             
-            var result = await BaseValidate(manager, user, password);
-
-            var errors = result.Errors.ToList();
+            var errors = new List<IdentityError>();
             
             if (manager.Options.Password is ExtendedPasswordOptions options)
             {
                 if (options.MaxLength.HasValue && 0 < options.MaxLength && options.MaxLength < password.Length)
                 {
-                    errors.Add(new IdentityError {Code = "0", Description = ""});
+                    errors.Add(new IdentityError
+                    {
+                        Code = "PasswordTooLong", 
+                        Description = $"Passwords must be no longer than {options.MaxLength} characters"
+                    });
                 }
 
                 if (options.MaxConsecutiveChars.HasValue 
                     && 0 <= options.MaxConsecutiveChars 
                     && HasConsecutiveCharacters(password, options.MaxConsecutiveChars.Value))
                 {
-                    errors.Add(new IdentityError {Code = "0", Description = ""});
+                    errors.Add(new IdentityError
+                    {
+                        Code = "TooManyConsecutiveCharacters",
+                        Description = $"Password must not contain more than {options.MaxConsecutiveChars} consecutive characters"
+                    });
                 }
             }
 
-            return errors.Count == 0 ? IdentityResult.Success : IdentityResult.Failed(errors.ToArray());
+            return Task.FromResult(errors.Count == 0 ? IdentityResult.Success : IdentityResult.Failed(errors.ToArray()));
         }
         
         /// <summary>
@@ -57,8 +61,5 @@ namespace ScottBrady.IdentityModel.AspNetCore.Identity
             
             return Regex.IsMatch(password,"(.)\\1{"+ max + "}");
         }
-
-        internal virtual Task<IdentityResult> BaseValidate(UserManager<TUser> manager, TUser user, string password) 
-            => base.ValidateAsync(manager, user, password);
     }
 }

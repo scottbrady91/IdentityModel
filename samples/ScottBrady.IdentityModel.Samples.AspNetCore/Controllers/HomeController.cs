@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Crypto;
+using ScottBrady.IdentityModel.Samples.AspNetCore.Models;
 using ScottBrady.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
@@ -11,10 +16,12 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
     public class HomeController : Controller
     {
         private readonly SampleOptions options;
+        private readonly UserManager<IdentityUser> userManager;
 
-        public HomeController(SampleOptions options)
+        public HomeController(SampleOptions options, UserManager<IdentityUser> userManager)
         {
             this.options = options ?? throw new ArgumentNullException(nameof(options));
+            this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
         
         public IActionResult Index()
@@ -104,12 +111,34 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
         {
             return Ok();
         }
-    }
 
-    public class TokenModel
-    {
-        public string Type { get; set; }
-        public string Token { get; set; }
-        public string Payload { get; set; }
+        [HttpGet]
+        public IActionResult PasswordRules()
+        {
+            return View(new PasswordRulesModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PasswordRules(PasswordRulesModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            var errors = new List<string>();
+            foreach (var validator in userManager.PasswordValidators)
+            {
+                var result = await validator.ValidateAsync(userManager, new IdentityUser(), model.Password);
+                if (!result.Succeeded)
+                {
+                    if (result.Errors.Any())
+                    {
+                        errors.AddRange(result.Errors.Select(x => x.Description));
+                    }
+                }
+            }
+
+            model.Errors = errors;
+            model.Message = errors.Any() ? "Password failed server-side validation" : "Password passed server-side validation";
+            return View(model);
+        }
     }
 }

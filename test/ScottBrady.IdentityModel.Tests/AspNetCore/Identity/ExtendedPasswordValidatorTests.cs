@@ -14,8 +14,7 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
 
         private Mock<ExtendedPasswordValidator<IdentityUser>> CreateMockedSut()
         {
-            var sut = new Mock<ExtendedPasswordValidator<IdentityUser>>(null) {CallBase = true};
-            sut.Setup(x => x.BaseValidate(It.IsAny<UserManager<IdentityUser>>(), It.IsAny<IdentityUser>(), It.IsAny<string>())).ReturnsAsync(IdentityResult.Success);
+            var sut = new Mock<ExtendedPasswordValidator<IdentityUser>>() {CallBase = true};
             sut.Setup(x => x.HasConsecutiveCharacters(It.IsAny<string>(), It.IsAny<int>())).Returns(false);
             return sut;
         }
@@ -33,20 +32,8 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             var sut = CreateMockedSut();
             await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Object.ValidateAsync(CreateMockUserManager().Object, new IdentityUser(), null));
         }
-
-        [Fact]
-        public async Task ValidateAsync_WhenBaseValidationFails_ExpectErrorsIncludedInResult()
-        {
-            var expectedError = new IdentityError {Code = "22", Description = "oh no!"};
-            
-            var sut = CreateMockedSut();
-            sut.Setup(x => x.BaseValidate(It.IsAny<UserManager<IdentityUser>>(), It.IsAny<IdentityUser>(), It.IsAny<string>()))
-                .ReturnsAsync(IdentityResult.Failed(expectedError));
-
-            var result = await sut.Object.ValidateAsync(CreateMockUserManager().Object, new IdentityUser(), "pass");
-
-            result.Errors.Should().Contain(expectedError);
-        }
+        
+        
 
 
         [Theory]
@@ -76,6 +63,18 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
         {
             const int maxConsecutiveCharacters = 2;
             const string password = "qqwweerrttyy";
+
+            var sut = CreateSut();
+            var hasConsecutiveCharacters = sut.HasConsecutiveCharacters(password, maxConsecutiveCharacters);
+
+            hasConsecutiveCharacters.Should().BeFalse();
+        }
+        
+        [Fact]
+        public void HasConsecutiveCharacters_WhenConsecutiveCharactersButDifferentCasing_ExpectFalse()
+        {
+            const int maxConsecutiveCharacters = 2;
+            const string password = "QqQwerty";
 
             var sut = CreateSut();
             var hasConsecutiveCharacters = sut.HasConsecutiveCharacters(password, maxConsecutiveCharacters);

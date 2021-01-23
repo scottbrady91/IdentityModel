@@ -14,7 +14,7 @@ namespace ScottBrady.IdentityModel.AspNetCore.TagHelpers
     /// Creates an input element with a type of "password", autocomplete of "new-password",
     /// and transforms ASP.NET Identity password validation rules into the passwordrule attribute.
     /// </summary>
-    [HtmlTargetElement("newpassword")]
+    [HtmlTargetElement("newpassword", TagStructure = TagStructure.WithoutEndTag)]
     public class NewPasswordTagHelper : InputTagHelper
     {
         internal IdentityOptions Options { get; }
@@ -64,7 +64,10 @@ namespace ScottBrady.IdentityModel.AspNetCore.TagHelpers
             if (options is ExtendedPasswordOptions extendedOptions)
             {
                 if (extendedOptions.MaxLength.HasValue && 0 < extendedOptions.MaxLength)
+                {
                     passwordRules.AppendFormat(" maxlength: {0};", extendedOptions.MaxLength);
+                    output.Attributes.SetAttribute("maxlength", extendedOptions.MaxLength);
+                }
                 if (extendedOptions.MaxConsecutiveChars.HasValue && 0 <= extendedOptions.MaxConsecutiveChars)
                     passwordRules.AppendFormat(" max-consecutive: {0};", extendedOptions.MaxConsecutiveChars);
             }

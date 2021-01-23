@@ -264,6 +264,7 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.TagHelpers
             sut.ProcessIdentityPasswordRules(options, testOutput);
 
             testOutput.Attributes["passwordrules"].Value.As<string>().Should().Contain($"maxlength: {expectedMaxLength};");
+            testOutput.Attributes["maxlength"].Value.Should().Be(expectedMaxLength);
         }
 
         [Theory]
@@ -278,6 +279,7 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.TagHelpers
             sut.ProcessIdentityPasswordRules(options, testOutput);
 
             testOutput.Attributes["passwordrules"].Value.As<string>().Should().NotContain("maxlength");
+            testOutput.Attributes["maxlength"].Should().BeNull();
         }
 
         [Theory]
