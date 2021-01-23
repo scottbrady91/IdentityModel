@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ScottBrady.IdentityModel\ScottBrady.IdentityModel.csproj" />
+    <ProjectReference Include="..\..\src\ScottBrady.IdentityModel.AspNetCore\ScottBrady.IdentityModel.AspNetCore.csproj" />
   </ItemGroup>
 
 </Project>

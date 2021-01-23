@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ScottBrady.IdentityModel.AspNetCore\ScottBrady.IdentityModel.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\ScottBrady.IdentityModel\ScottBrady.IdentityModel.csproj" />
   </ItemGroup>
 
