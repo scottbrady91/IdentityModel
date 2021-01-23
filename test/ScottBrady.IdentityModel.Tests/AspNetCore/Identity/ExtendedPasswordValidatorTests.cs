@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Moq;
 using ScottBrady.IdentityModel.AspNetCore.Identity;
 using Xunit;
@@ -32,9 +33,88 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             var sut = CreateMockedSut();
             await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Object.ValidateAsync(CreateMockUserManager().Object, new IdentityUser(), null));
         }
-        
-        
 
+        [Fact]
+        public async Task ValidateAsync_WhenPasswordOptionsAreNotExtendedPasswordOptions_ExpectSuccess()
+        {
+            var options = new PasswordOptions();
+            
+            var sut = CreateMockedSut();
+            var result = await sut.Object.ValidateAsync(CreateMockUserManager(options).Object, new IdentityUser(), "123");
+
+            result.Succeeded.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task ValidateAsync_WhenPasswordOptionsAreExtendedPasswordOptionsButNotSet_ExpectSuccess()
+        {
+            var options = new ExtendedPasswordOptions();
+            
+            var sut = CreateMockedSut();
+            var result = await sut.Object.ValidateAsync(CreateMockUserManager(options).Object, new IdentityUser(), "123");
+
+            result.Succeeded.Should().BeTrue();
+        }
+
+        [Theory]
+        [InlineData(1, "123")]
+        [InlineData(3, "1234")]
+        public async Task ValidateAsync_WhenExtendedPasswordOptionsAndPasswordIsTooLong_ExpectError(int maxLength, string password)
+        {
+            var options = new ExtendedPasswordOptions{MaxLength = maxLength};
+            
+            var sut = CreateMockedSut();
+            var result = await sut.Object.ValidateAsync(CreateMockUserManager(options).Object, new IdentityUser(), password);
+
+            result.Succeeded.Should().BeFalse();
+            result.Errors.Should().Contain(x => x.Code == "PasswordTooLong" && x.Description.Contains(options.MaxLength.ToString()));
+        }
+
+        [Theory]
+        [InlineData(-1, "123")]
+        [InlineData(0, "123")]
+        [InlineData(4, "123")]
+        [InlineData(3, "123")]
+        public async Task ValidateAsync_WhenExtendedPasswordOptionsAndPasswordIsNotTooLong_ExpectSuccess(int maxLength, string password)
+        {
+            var options = new ExtendedPasswordOptions{MaxLength = maxLength};
+            
+            var sut = CreateMockedSut();
+            var result = await sut.Object.ValidateAsync(CreateMockUserManager(options).Object, new IdentityUser(), password);
+
+            result.Succeeded.Should().BeTrue();
+        }
+
+        [Theory]
+        [InlineData(-1, "123")]
+        [InlineData(0, "123")]
+        [InlineData(3, "123")]
+        public async Task ValidateAsync_WhenExtendedPasswordOptionsAndMaxConsecutiveCharactersValid_ExpectSuccess(int maxConsecutive, string password)
+        {
+            var options = new ExtendedPasswordOptions {MaxConsecutiveChars = maxConsecutive};
+            
+            var sut = CreateMockedSut();
+            sut.Setup(x => x.HasConsecutiveCharacters(password, maxConsecutive)).Returns(false);
+
+            var result = await sut.Object.ValidateAsync(CreateMockUserManager(options).Object, new IdentityUser(), password);
+
+            result.Succeeded.Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task ValidateAsync_WhenExtendedPasswordOptionsAndTooManyMaxConsecutiveCharacters_ExpectError()
+        {
+            const string password = "Password123!";
+            var options = new ExtendedPasswordOptions {MaxConsecutiveChars = 2};
+            
+            var sut = CreateMockedSut();
+            sut.Setup(x => x.HasConsecutiveCharacters(password, options.MaxConsecutiveChars.Value)).Returns(true);
+
+            var result = await sut.Object.ValidateAsync(CreateMockUserManager(options).Object, new IdentityUser(), password);
+
+            result.Succeeded.Should().BeFalse();
+            result.Errors.Should().Contain(x => x.Code == "TooManyConsecutiveCharacters" && x.Description.Contains(options.MaxConsecutiveChars.ToString()));
+        }
 
         [Theory]
         [InlineData(null)]
@@ -94,7 +174,8 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             hasConsecutiveCharacters.Should().BeTrue();
         }
 
-        private static Mock<UserManager<IdentityUser>> CreateMockUserManager()
-            => new Mock<UserManager<IdentityUser>>(new Mock<IUserStore<IdentityUser>>().Object, null, null, null, null, null, null, null, null);
+        private static Mock<UserManager<IdentityUser>> CreateMockUserManager(PasswordOptions options = null)
+            => new Mock<UserManager<IdentityUser>>(new Mock<IUserStore<IdentityUser>>().Object,
+                new OptionsWrapper<IdentityOptions>(new IdentityOptions {Password = options ?? new PasswordOptions()}), null, null, null, null, null, null, null);
     }
 }

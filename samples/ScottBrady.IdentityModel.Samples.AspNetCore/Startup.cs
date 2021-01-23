@@ -62,13 +62,13 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
                 {
                     options.Password = new ExtendedPasswordOptions
                     {
-                        RequiredLength = 3,
-                        MaxLength = 6,
+                        RequiredLength = 15,
+                        MaxLength = 64,
                         RequireDigit = true,
                         RequireLowercase = true,
                         RequireUppercase = true,
                         RequireNonAlphanumeric = true,
-                        MaxConsecutiveChars = 1
+                        MaxConsecutiveChars = 3
                     };
                 })
                 .AddPasswordValidator<ExtendedPasswordValidator<IdentityUser>>() // Required for max length and consecutive character checks

@@ -2,11 +2,26 @@
 
     <PropertyGroup>
         <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+        <Authors>Scott Brady</Authors>
+        <Description>ASP.NET Core Tag helpers for password rules and validation.</Description>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageProjectUrl>https://github.com/scottbrady91/IdentityModel</PackageProjectUrl>
+        <PackageReleaseNotes>https://github.com/scottbrady91/IdentityModel/releases</PackageReleaseNotes>
+        <Copyright>Copyright 2021 (c) Scott Brady</Copyright>
+        <PackageTags>passwordrules aspnetcore identity</PackageTags>
+        <IncludeSymbols>true</IncludeSymbols>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Version>1.0.0</Version>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     </PropertyGroup>
     
     <ItemGroup>
         <PackageReference Include="SecurityCodeScan" Version="3.5.3" PrivateAssets="all" />
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\..\icon.png" Pack="true" PackagePath="icon.png" />
     </ItemGroup>
 
 </Project>
