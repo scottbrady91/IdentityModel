@@ -60,6 +60,14 @@ namespace ScottBrady.IdentityModel.AspNetCore.TagHelpers
             if (options.RequireUppercase) passwordRules.Append(" required: upper;");
             if (options.RequireDigit) passwordRules.Append(" required: digit;");
             if (options.RequireNonAlphanumeric) passwordRules.Append(" required: [-().&@?'#,/&quot;+];");
+
+            if (options is ExtendedPasswordOptions extendedOptions)
+            {
+                if (extendedOptions.MaxLength.HasValue && 0 < extendedOptions.MaxLength)
+                    passwordRules.AppendFormat(" maxlength: {0};", extendedOptions.MaxLength);
+                if (extendedOptions.MaxConsecutiveChars.HasValue && 0 < extendedOptions.MaxConsecutiveChars)
+                    passwordRules.AppendFormat(" max-consecutive: {0};", extendedOptions.MaxConsecutiveChars);
+            }
             
             output.Attributes.SetAttribute("passwordrules", passwordRules.ToString());
             output.Attributes.SetAttribute("minlength", options.RequiredLength);

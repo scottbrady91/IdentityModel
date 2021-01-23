@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Options;
 using Moq;
+using ScottBrady.IdentityModel.AspNetCore.Configuration;
 using ScottBrady.IdentityModel.AspNetCore.TagHelpers;
 using Xunit;
 
@@ -250,6 +251,60 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.TagHelpers
             sut.ProcessIdentityPasswordRules(options, testOutput);
 
             testOutput.Attributes["passwordrules"].Value.As<string>().Should().NotContain("required: [");
+        }
+
+        [Fact]
+        public void ProcessIdentityPasswordRules_WhenExtendedOptionsWithMaxLength_ExpectMaxLengthAttribute()
+        {
+            const int expectedMaxLength = 42;
+            
+            var sut = CreateSut();
+            var options = new ExtendedPasswordOptions {MaxLength = expectedMaxLength};
+            
+            sut.ProcessIdentityPasswordRules(options, testOutput);
+
+            testOutput.Attributes["passwordrules"].Value.As<string>().Should().Contain($"maxlength: {expectedMaxLength};");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void ProcessIdentityPasswordRules_WhenExtendedOptionsWithInvalidMaxLength_ExpectNoMaxLengthAttribute(int? expectedMaxLength)
+        {
+            var sut = CreateSut();
+            var options = new ExtendedPasswordOptions {MaxLength = expectedMaxLength};
+            
+            sut.ProcessIdentityPasswordRules(options, testOutput);
+
+            testOutput.Attributes["passwordrules"].Value.As<string>().Should().NotContain("maxlength");
+        }
+
+        [Fact]
+        public void ProcessIdentityPasswordRules_WhenExtendedOptionsWithMaxConsecutiveChars_ExpectMaxConsecutiveCharsAttribute()
+        {
+            const int expectedMaxConsecutiveChars = 2;
+            
+            var sut = CreateSut();
+            var options = new ExtendedPasswordOptions {MaxConsecutiveChars = expectedMaxConsecutiveChars};
+            
+            sut.ProcessIdentityPasswordRules(options, testOutput);
+
+            testOutput.Attributes["passwordrules"].Value.As<string>().Should().Contain($"max-consecutive: {expectedMaxConsecutiveChars};");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void ProcessIdentityPasswordRules_WhenExtendedOptionsWithInvalidMaxConsecutiveChars_ExpectNoMaxConsecutiveCharsAttribute(int? expectedMaxConsecutiveChars)
+        {
+            var sut = CreateSut();
+            var options = new ExtendedPasswordOptions {MaxConsecutiveChars = expectedMaxConsecutiveChars};
+            
+            sut.ProcessIdentityPasswordRules(options, testOutput);
+
+            testOutput.Attributes["passwordrules"].Value.As<string>().Should().NotContain("max-consecutive");
         }
     }
 }
