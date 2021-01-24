@@ -59,7 +59,7 @@ namespace ScottBrady.IdentityModel.AspNetCore.TagHelpers
             if (options.RequireLowercase) passwordRules.Append(" required: lower;");
             if (options.RequireUppercase) passwordRules.Append(" required: upper;");
             if (options.RequireDigit) passwordRules.Append(" required: digit;");
-            if (options.RequireNonAlphanumeric) passwordRules.Append(" required: [-().&@?'#,/&quot;+];");
+            if (options.RequireNonAlphanumeric) passwordRules.Append(" required: special;");
 
             if (options is ExtendedPasswordOptions extendedOptions)
             {

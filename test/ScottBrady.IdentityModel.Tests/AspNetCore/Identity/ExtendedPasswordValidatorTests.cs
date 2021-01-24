@@ -126,14 +126,16 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             Assert.Throws<ArgumentNullException>(() => sut.HasConsecutiveCharacters(password, 42));
         }
         
-        [Fact]
-        public void HasConsecutiveCharacters_WhenNoConsecutiveCharacters_ExpectFalse()
+        [Theory]
+        [InlineData(0, "qwerty")]
+        [InlineData(1, "qwerty")]
+        [InlineData(2, "qwerty")]
+        [InlineData(2, "qqwerty")]
+        [InlineData(1, "qwertyuiopasdfghjklzxcvbnm")]
+        public void HasConsecutiveCharacters_WhenNoConsecutiveCharacters_ExpectFalse(int max, string password)
         {
-            const int maxConsecutiveCharacters = 1;
-            const string password = "qwertyuiopasdfghjklzxcvbnm";
-
             var sut = CreateSut();
-            var hasConsecutiveCharacters = sut.HasConsecutiveCharacters(password, maxConsecutiveCharacters);
+            var hasConsecutiveCharacters = sut.HasConsecutiveCharacters(password, max);
 
             hasConsecutiveCharacters.Should().BeFalse();
         }
@@ -162,14 +164,15 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             hasConsecutiveCharacters.Should().BeFalse();
         }
         
-        [Fact]
-        public void HasConsecutiveCharacters_WhenConsecutiveCharactersAndOverLimit_ExpectTrue()
+        [Theory]
+        [InlineData(1, "qqqwertyy")]
+        [InlineData(2, "qqqwertyy")]
+        [InlineData(2, "qwertyyy")]
+        [InlineData(3, "qwertyyyy")]
+        public void HasConsecutiveCharacters_WhenConsecutiveCharactersAndOverLimit_ExpectTrue(int max, string password)
         {
-            const int maxConsecutiveCharacters = 1;
-            const string password = "qqwertyy";
-
             var sut = CreateSut();
-            var hasConsecutiveCharacters = sut.HasConsecutiveCharacters(password, maxConsecutiveCharacters);
+            var hasConsecutiveCharacters = sut.HasConsecutiveCharacters(password, max);
 
             hasConsecutiveCharacters.Should().BeTrue();
         }

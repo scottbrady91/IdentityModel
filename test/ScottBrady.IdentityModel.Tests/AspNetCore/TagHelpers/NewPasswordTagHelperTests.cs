@@ -239,7 +239,7 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.TagHelpers
             
             sut.ProcessIdentityPasswordRules(options, testOutput);
 
-            testOutput.Attributes["passwordrules"].Value.As<string>().Should().Contain("required: [-().&@?'#,/&quot;+];");
+            testOutput.Attributes["passwordrules"].Value.As<string>().Should().Contain("required: special;");
         }
         
         [Fact]

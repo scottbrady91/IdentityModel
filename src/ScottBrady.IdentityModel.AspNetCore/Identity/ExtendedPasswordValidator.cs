@@ -56,10 +56,10 @@ namespace ScottBrady.IdentityModel.AspNetCore.Identity
         {
             if (string.IsNullOrWhiteSpace(password)) throw new ArgumentNullException(nameof(password));
             
-            var max = maxConsecutive;
-            if (max <= 0) max = 1;
+            var invalidAmount = 1;
+            if (1 < maxConsecutive) invalidAmount = maxConsecutive;
             
-            return Regex.IsMatch(password,"(.)\\1{"+ max + "}");
+            return Regex.IsMatch(password,"(.)\\1{"+ invalidAmount + "}");
         }
     }
 }
