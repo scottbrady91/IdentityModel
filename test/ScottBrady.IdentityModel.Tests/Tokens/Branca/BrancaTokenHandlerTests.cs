@@ -11,8 +11,9 @@ using Moq;
 using Moq.Protected;
 using Newtonsoft.Json.Linq;
 using ScottBrady.IdentityModel.Crypto;
-using ScottBrady.IdentityModel.Branca;
+using ScottBrady.IdentityModel.Tokens;
 using Xunit;
+using BrancaTokenHandler = ScottBrady.IdentityModel.Branca.BrancaTokenHandler; 
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
 {
