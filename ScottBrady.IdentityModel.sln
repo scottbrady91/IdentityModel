@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScottBrady.IdentityModel.Sa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScottBrady.IdentityModel.AspNetCore", "src\ScottBrady.IdentityModel.AspNetCore\ScottBrady.IdentityModel.AspNetCore.csproj", "{E2F2D4E3-A732-43FE-B082-9FD5ACBEA89B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScottBrady.IdentityModel.Branca", "src\ScottBrady.IdentityModel.Branca\ScottBrady.IdentityModel.Branca.csproj", "{E27F8536-728B-4855-A8D5-921297CBD58C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{E2F2D4E3-A732-43FE-B082-9FD5ACBEA89B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2F2D4E3-A732-43FE-B082-9FD5ACBEA89B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2F2D4E3-A732-43FE-B082-9FD5ACBEA89B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E27F8536-728B-4855-A8D5-921297CBD58C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E27F8536-728B-4855-A8D5-921297CBD58C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E27F8536-728B-4855-A8D5-921297CBD58C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E27F8536-728B-4855-A8D5-921297CBD58C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,6 +54,7 @@ Global
 		{B57DDA53-D240-46ED-8275-F19600491681} = {FA25402D-0A81-48F1-9E83-7CA4801E59F9}
 		{B7F49824-C721-4BD1-9BAF-6E442AEAB14D} = {0787B459-DE3E-4296-965C-5C891AE23840}
 		{E2F2D4E3-A732-43FE-B082-9FD5ACBEA89B} = {2CE8E91B-6B6A-4C1F-B6FE-80A1F1199A7A}
+		{E27F8536-728B-4855-A8D5-921297CBD58C} = {2CE8E91B-6B6A-4C1F-B6FE-80A1F1199A7A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7ACFEAF2-1A47-419B-989B-75A0A686D710}

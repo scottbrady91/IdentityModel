@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
+    [Obsolete("BrancaSecurityToken is moving to the ScottBrady.IdentityModel.Branca package")]
     public class BrancaSecurityToken : JwtPayloadSecurityToken
     {
         public BrancaSecurityToken(BrancaToken token) : base(token.Payload)

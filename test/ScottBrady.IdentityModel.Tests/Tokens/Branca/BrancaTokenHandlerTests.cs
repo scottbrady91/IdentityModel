@@ -11,7 +11,7 @@ using Moq;
 using Moq.Protected;
 using Newtonsoft.Json.Linq;
 using ScottBrady.IdentityModel.Crypto;
-using ScottBrady.IdentityModel.Tokens;
+using ScottBrady.IdentityModel.Branca;
 using Xunit;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Branca

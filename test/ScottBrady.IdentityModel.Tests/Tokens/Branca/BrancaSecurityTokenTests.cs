@@ -1,7 +1,7 @@
 using System;
 using FluentAssertions;
 using Newtonsoft.Json;
-using ScottBrady.IdentityModel.Tokens;
+using ScottBrady.IdentityModel.Branca;
 using Xunit;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
