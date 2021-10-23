@@ -39,7 +39,7 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
     - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      run: dotnet test --no-restore --verbosity minimal
     - name: Pack
       if: matrix.os == 'ubuntu-latest'
       run: dotnet pack -c Release
