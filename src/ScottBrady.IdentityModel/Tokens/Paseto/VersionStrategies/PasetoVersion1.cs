@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
+    [Obsolete("PasetoVersion1 is moving to the ScottBrady.IdentityModel.Tokens.Branca package")]
     public class PasetoVersion1 : PasetoVersionStrategy
     {
         private const string PublicHeader = "v1.public.";

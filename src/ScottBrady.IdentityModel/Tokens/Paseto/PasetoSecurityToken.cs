@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
+    [Obsolete("PasetoSecurityToken is moving to the ScottBrady.IdentityModel.Tokens.Branca package")]
     public class PasetoSecurityToken : JwtPayloadSecurityToken
     {
         protected PasetoSecurityToken() { }

@@ -6,8 +6,9 @@ using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Parameters;
 using ScottBrady.IdentityModel.Crypto;
-using ScottBrady.IdentityModel.Tokens;
+using ScottBrady.IdentityModel.Tokens.Paseto;
 using Xunit;
+using EdDsaSecurityKey = ScottBrady.IdentityModel.Tokens.EdDsaSecurityKey;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {

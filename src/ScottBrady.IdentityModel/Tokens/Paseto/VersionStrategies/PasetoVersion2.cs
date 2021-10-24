@@ -8,6 +8,7 @@ using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
+    [Obsolete("PasetoVersion2 is moving to the ScottBrady.IdentityModel.Tokens.Branca package")]
     public class PasetoVersion2 : PasetoVersionStrategy
     {
         private const string PublicHeader = "v2.public.";

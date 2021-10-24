@@ -8,8 +8,12 @@ using Moq;
 using Moq.Protected;
 using Org.BouncyCastle.Crypto.Parameters;
 using ScottBrady.IdentityModel.Crypto;
-using ScottBrady.IdentityModel.Tokens;
+using ScottBrady.IdentityModel.Tokens.Paseto;
 using Xunit;
+using EdDsaSecurityKey = ScottBrady.IdentityModel.Tokens.EdDsaSecurityKey;
+using JwtPayloadSecurityToken = ScottBrady.IdentityModel.Tokens.JwtPayloadSecurityToken;
+using PasetoToken = ScottBrady.IdentityModel.Tokens.PasetoToken;
+using PasetoVersionStrategy = ScottBrady.IdentityModel.Tokens.PasetoVersionStrategy;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {

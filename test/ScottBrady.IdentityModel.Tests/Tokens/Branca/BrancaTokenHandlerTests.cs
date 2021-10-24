@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
-using BrancaTokenHandler = ScottBrady.IdentityModel.Branca.BrancaTokenHandler; 
+using BrancaTokenHandler = ScottBrady.IdentityModel.Tokens.Branca.BrancaTokenHandler; 
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
 {
@@ -503,7 +503,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
         }
     }
 
-    public class TestBrancaTokenHandler : BrancaTokenHandler
+    public class TestBrancaTokenHandler : IdentityModel.Tokens.Branca.BrancaTokenHandler
     {
         public new IEnumerable<SymmetricSecurityKey> GetBrancaDecryptionKeys(string token, TokenValidationParameters validationParameters) 
             => base.GetBrancaDecryptionKeys(token, validationParameters);

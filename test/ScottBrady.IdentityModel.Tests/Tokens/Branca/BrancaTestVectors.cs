@@ -2,7 +2,7 @@ using System;
 using System.Security.Cryptography;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
-using ScottBrady.IdentityModel.Branca;
+using ScottBrady.IdentityModel.Tokens.Branca;
 using Xunit;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Branca

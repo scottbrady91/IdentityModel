@@ -1,6 +1,6 @@
 using System;
 using FluentAssertions;
-using ScottBrady.IdentityModel.Branca;
+using ScottBrady.IdentityModel.Tokens.Branca;
 using Xunit;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Branca

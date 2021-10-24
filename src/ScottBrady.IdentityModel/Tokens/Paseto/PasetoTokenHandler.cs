@@ -5,13 +5,14 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
+    [Obsolete("PasetoTokenHandler is moving to the ScottBrady.IdentityModel.Tokens.Branca package")]
     public class PasetoTokenHandler : JwtPayloadTokenHandler
     {
-        private readonly Dictionary<string, PasetoVersionStrategy> SupportedVersions;
+        private readonly Dictionary<string, PasetoVersionStrategy> supportedVersions;
 
         public PasetoTokenHandler(Dictionary<string, PasetoVersionStrategy> supportedVersions = null)
         {
-            SupportedVersions = supportedVersions ?? new Dictionary<string, PasetoVersionStrategy>
+            this.supportedVersions = supportedVersions ?? new Dictionary<string, PasetoVersionStrategy>
             {
                 {PasetoConstants.Versions.V1, new PasetoVersion1()},
                 {PasetoConstants.Versions.V2, new PasetoVersion2()}
@@ -36,7 +37,7 @@ namespace ScottBrady.IdentityModel.Tokens
                 throw new ArgumentException($"Token descriptor must be of type '{typeof(PasetoSecurityTokenDescriptor)}'", nameof(tokenDescriptor));
 
             // get strategy for version + purpose
-            if (!SupportedVersions.TryGetValue(pasetoSecurityTokenDescriptor.Version, out var strategy))
+            if (!supportedVersions.TryGetValue(pasetoSecurityTokenDescriptor.Version, out var strategy))
             {
                 throw new SecurityTokenException("Unsupported PASETO version");
             }
@@ -71,7 +72,7 @@ namespace ScottBrady.IdentityModel.Tokens
             var pasetoToken = new PasetoToken(token);
 
             // get strategy for version + purpose
-            if (!SupportedVersions.TryGetValue(pasetoToken.Version, out var strategy))
+            if (!supportedVersions.TryGetValue(pasetoToken.Version, out var strategy))
             {
                 return new TokenValidationResult {Exception = new SecurityTokenException("Unsupported PASETO version")};
             }

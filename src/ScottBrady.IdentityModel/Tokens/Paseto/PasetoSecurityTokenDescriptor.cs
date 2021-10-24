@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
+    [Obsolete("PasetoSecurityTokenDescriptor is moving to the ScottBrady.IdentityModel.Tokens.Branca package")]
     public class PasetoSecurityTokenDescriptor : SecurityTokenDescriptor
     {
         public PasetoSecurityTokenDescriptor(string version, string purpose)

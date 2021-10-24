@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
+    [Obsolete("PasetoVersionStrategy is moving to the ScottBrady.IdentityModel.Tokens.Branca package")]
     public abstract class PasetoVersionStrategy
     {
         /// <summary>

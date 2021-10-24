@@ -2,7 +2,7 @@ using System;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
-    [Obsolete("BrancaToken is moving to the ScottBrady.IdentityModel.Branca package")]
+    [Obsolete("BrancaToken is moving to the ScottBrady.IdentityModel.Tokens.Branca package")]
     public class BrancaToken
     {
         private static readonly DateTime MinDateTime = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc);

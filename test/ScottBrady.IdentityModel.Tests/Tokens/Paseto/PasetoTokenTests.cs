@@ -1,7 +1,7 @@
 using System;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
-using ScottBrady.IdentityModel.Tokens;
+using ScottBrady.IdentityModel.Tokens.Paseto;
 using Xunit;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto

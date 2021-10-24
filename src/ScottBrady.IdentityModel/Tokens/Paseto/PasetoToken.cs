@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
+    [Obsolete("PasetoToken is moving to the ScottBrady.IdentityModel.Tokens.Branca package")]
     public class PasetoToken
     {
         protected PasetoToken() { }

@@ -13,7 +13,7 @@ using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
-    [Obsolete("BrancaTokenHandler is moving to the ScottBrady.IdentityModel.Branca package")]
+    [Obsolete("BrancaTokenHandler is moving to the ScottBrady.IdentityModel.Tokens.Branca package")]
     public class BrancaTokenHandler : JwtPayloadTokenHandler
     {
         private const int TagLength = 16;

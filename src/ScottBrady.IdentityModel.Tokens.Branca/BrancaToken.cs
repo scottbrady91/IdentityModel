@@ -1,4 +1,4 @@
-namespace ScottBrady.IdentityModel.Branca
+namespace ScottBrady.IdentityModel.Tokens.Branca
 {
 #pragma warning disable 618
     public class BrancaToken : ScottBrady.IdentityModel.Tokens.BrancaToken
