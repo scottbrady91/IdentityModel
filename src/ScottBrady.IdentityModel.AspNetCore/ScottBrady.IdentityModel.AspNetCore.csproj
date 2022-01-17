@@ -16,7 +16,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="SecurityCodeScan" Version="3.5.3" PrivateAssets="all" />
+        <PackageReference Include="SecurityCodeScan" Version="3.5.4" PrivateAssets="all" />
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 

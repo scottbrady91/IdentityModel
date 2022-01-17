@@ -8,8 +8,6 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {
     public class PasetoSecurityTokenTests
     {
-        private const string ValidToken = "v2.public.eyJzdWIiOiIxMjMiLCJleHAiOiIyMDIwLTA1LTAyVDE2OjIzOjQwLjI1Njg1MTVaIn08nP0mX2YJvYOcMLBpiFbFs1C2gyNAJg_kpuniow671AfrEZWRDZWmLAQbuKRQNiJ2gIrXVeC-tO20zrVQ58wK";
-        
         [Fact]
         public void IssuedAt_WhenIatClaimHasIsoFormat_ExpectDateTime()
         {
@@ -26,7 +24,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             innerToken.SetPayload(JsonConvert.SerializeObject(jwt));
             var token = new PasetoSecurityToken(innerToken);
 
-            token.IssuedAt.Should().BeCloseTo(expectedDateTime);
+            token.IssuedAt.Should().BeCloseTo(expectedDateTime, TimeSpan.FromMilliseconds(10));
         }
         
         [Fact]
@@ -45,7 +43,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             innerToken.SetPayload(JsonConvert.SerializeObject(jwt));
             var token = new PasetoSecurityToken(innerToken);
 
-            token.ValidFrom.Should().BeCloseTo(expectedDateTime);
+            token.ValidFrom.Should().BeCloseTo(expectedDateTime, TimeSpan.FromMilliseconds(10));
         }
         
         [Fact]
@@ -64,7 +62,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             innerToken.SetPayload(JsonConvert.SerializeObject(jwt));
             var token = new PasetoSecurityToken(innerToken);
 
-            token.ValidTo.Should().BeCloseTo(expectedDateTime);
+            token.ValidTo.Should().BeCloseTo(expectedDateTime, TimeSpan.FromMilliseconds(10));
         }
     }
 

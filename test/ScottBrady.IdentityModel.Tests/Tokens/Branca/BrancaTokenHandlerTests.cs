@@ -4,7 +4,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using FluentAssertions;
-using FluentAssertions.Extensions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
@@ -129,7 +128,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var jObject = JObject.Parse(parsedToken.Payload);
             jObject["iat"].Should().BeNull();
             
-            parsedToken.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 1000);
+            parsedToken.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(1000));
         }
         
         [Theory]
@@ -189,7 +188,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var decryptedPayload = handler.DecryptToken(token, validKey);
 
             decryptedPayload.Payload.Should().Be(payload);
-            decryptedPayload.Timestamp.Should().BeCloseTo(DateTime.UtcNow, 1000);
+            decryptedPayload.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(1000));
         }
 
         [Fact]
@@ -368,9 +367,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             brancaToken.Issuer.Should().Be(issuer);
             brancaToken.Audiences.Should().Contain(audience);
             brancaToken.Subject.Should().Be(subject);
-            brancaToken.IssuedAt.Should().BeWithin(1.Minutes()).After(notBefore);
-            brancaToken.ValidFrom.Should().BeWithin(0.Seconds()).After(notBefore);
-            brancaToken.ValidTo.Should().BeWithin(0.Seconds()).After(expires);
+            brancaToken.IssuedAt.Should().BeCloseTo(notBefore, TimeSpan.FromSeconds(1));
+            brancaToken.ValidFrom.Should().BeCloseTo(notBefore, TimeSpan.FromSeconds(1));
+            brancaToken.ValidTo.Should().BeCloseTo(expires, TimeSpan.FromSeconds(1));
         }
 
         [Fact]
