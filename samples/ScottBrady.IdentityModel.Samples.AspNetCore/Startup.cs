@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Logging;
 using ScottBrady.IdentityModel.AspNetCore.Identity;
-using ScottBrady.IdentityModel.Tokens;
+using ScottBrady.IdentityModel.Tokens.Paseto;
 using BrancaTokenHandler = ScottBrady.IdentityModel.Tokens.Branca.BrancaTokenHandler;
 
 namespace ScottBrady.IdentityModel.Samples.AspNetCore

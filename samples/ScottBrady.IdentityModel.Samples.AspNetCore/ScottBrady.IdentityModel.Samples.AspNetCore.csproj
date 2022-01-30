@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\ScottBrady.IdentityModel.AspNetCore\ScottBrady.IdentityModel.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\ScottBrady.IdentityModel.Tokens.Branca\ScottBrady.IdentityModel.Tokens.Branca.csproj" />
+    <ProjectReference Include="..\..\src\ScottBrady.IdentityModel.Tokens.Paseto\ScottBrady.IdentityModel.Tokens.Paseto.csproj" />
     <ProjectReference Include="..\..\src\ScottBrady.IdentityModel\ScottBrady.IdentityModel.csproj" />
   </ItemGroup>
 

@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ScottBrady.IdentityModel.Tokens
+namespace ScottBrady.IdentityModel.Tokens.Paseto
 {
-    [Obsolete("PasetoVersionStrategy is moving to the ScottBrady.IdentityModel.Tokens.Branca package")]
     public abstract class PasetoVersionStrategy
     {
         /// <summary>
