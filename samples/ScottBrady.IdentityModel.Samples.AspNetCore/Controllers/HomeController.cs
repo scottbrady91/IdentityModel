@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Samples.AspNetCore.Models;
 using ScottBrady.IdentityModel.Tokens;
+using ScottBrady.IdentityModel.Tokens.Branca;
 using ScottBrady.IdentityModel.Tokens.Paseto;
 
 namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
