@@ -83,7 +83,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             const string expectedKey = "test";
             const string expectedValue = "test_val";
             
-            var payload = $"{{ '{expectedKey}': '{expectedValue}' }}";
+            var payload = $"{{ \"{expectedKey}\": \"{expectedValue}\" }}";
             var token = new PasetoToken(ValidToken);
 
             token.SetPayload(payload);

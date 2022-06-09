@@ -1,6 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
 
 namespace ScottBrady.IdentityModel.Tokens.Paseto
 {
@@ -44,7 +45,7 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
             
             try
             {
-                JObject.Parse(payload);
+                JsonSerializer.Deserialize<Dictionary<string, object>>(payload);
                 Payload = payload;
             }
             catch (Exception e)
