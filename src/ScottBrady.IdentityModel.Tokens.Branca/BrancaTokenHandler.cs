@@ -4,11 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using NaCl.Core;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens.Branca
@@ -108,12 +107,12 @@ namespace ScottBrady.IdentityModel.Tokens.Branca
             var jwtStylePayload = tokenDescriptor.ToJwtPayload();
 
             // Remove iat claim in favour of timestamp
-            var jObject = JObject.Parse(jwtStylePayload);
+            var jObject = JsonSerializer.Deserialize<Dictionary<string, object>>(jwtStylePayload);
             jObject.Remove(JwtRegisteredClaimNames.Iat);
 
             var symmetricKey = (SymmetricSecurityKey) tokenDescriptor.EncryptingCredentials.Key;
 
-            return CreateToken(jObject.ToString(Formatting.None), symmetricKey.Key);
+            return CreateToken(JsonSerializer.Serialize(jObject), symmetricKey.Key);
         }
 
         /// <summary>

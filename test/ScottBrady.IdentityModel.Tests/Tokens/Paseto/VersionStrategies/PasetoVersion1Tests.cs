@@ -154,7 +154,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         [Fact]
         public void Verify_WhenSignatureInvalid_ExpectSecurityTokenInvalidSignatureException()
         {
-            var payloadValue = "{ 'test': 'test' }";
+            var payloadValue = "{ \"test\": \"test\" }";
             var payloadValueBytes = System.Text.Encoding.UTF8.GetBytes(payloadValue);
             
             var signature = new byte[256];
@@ -185,7 +185,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         {
             const string expectedClaimType = "test";
             const string expectedClaimValue = "test_val";
-            var expectedPayload = $"{{ '{expectedClaimType}': '{expectedClaimValue}' }}";
+            var expectedPayload = $"{{ \"{expectedClaimType}\": \"{expectedClaimValue}\" }}";
 
             var token = sut.Sign(expectedPayload, null, validSigningCredentials);
             var parsedToken = sut.Verify(new PasetoToken(token), validVerificationKeys);
@@ -199,8 +199,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         {
             const string expectedClaimType = "test";
             const string expectedClaimValue = "test_val";
-            const string expectedFooter = "{'kid': '123'}";
-            var expectedPayload = $"{{ '{expectedClaimType}': '{expectedClaimValue}' }}";
+            const string expectedFooter = "{\"kid\": \"123\"}";
+            var expectedPayload = $"{{ \"{expectedClaimType}\": \"{expectedClaimValue}\" }}";
 
             var token = sut.Sign(expectedPayload, expectedFooter, validSigningCredentials);
             var parsedToken = sut.Verify(new PasetoToken(token), validVerificationKeys);
