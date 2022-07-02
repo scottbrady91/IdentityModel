@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+        <TargetFramework>net6.0</TargetFramework>
         <Authors>Scott Brady</Authors>
         <Description>ASP.NET Core Tag helpers for password rules and validation.</Description>
         <PackageIcon>icon.png</PackageIcon>
@@ -16,7 +16,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="SecurityCodeScan" Version="3.5.4" PrivateAssets="all" />
+        <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.3" PrivateAssets="all" />
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
