@@ -14,7 +14,7 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
         
         public override string Encrypt(string payload, string footer, EncryptingCredentials encryptingCredentials)
         {
-            throw new NotSupportedException("v2.public not supported");
+            throw new NotSupportedException("v2.local not supported");
         }
 
         public override string Sign(string payload, string footer, SigningCredentials signingCredentials)
@@ -53,7 +53,7 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
 
         public override PasetoSecurityToken Decrypt(PasetoToken token, IEnumerable<SecurityKey> decryptionKeys)
         {
-            throw new NotSupportedException("v2.public not supported");
+            throw new NotSupportedException("v2.local not supported");
         }
 
         public override PasetoSecurityToken Verify(PasetoToken token, IEnumerable<SecurityKey> signingKeys)
