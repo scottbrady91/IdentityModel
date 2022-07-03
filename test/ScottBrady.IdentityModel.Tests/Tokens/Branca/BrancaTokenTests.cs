@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 using FluentAssertions;
 using ScottBrady.IdentityModel.Tokens.Branca;
 using Xunit;
@@ -10,12 +11,13 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
         [Fact]
         public void ctor_ExpectPropertiesSet()
         {
-            const string payload = "89f7baaee2ab476483d45b945f79d6af";
+            var payload = new byte[32];
+            RandomNumberGenerator.Fill(payload);
             const uint timestamp = uint.MinValue;
 
             var token = new BrancaToken(payload, timestamp);
 
-            token.Payload.Should().Be(payload);
+            token.Payload.Should().BeEquivalentTo(payload);
             token.BrancaFormatTimestamp.Should().Be(timestamp);
             token.Timestamp.Should().Be(new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc));
         }

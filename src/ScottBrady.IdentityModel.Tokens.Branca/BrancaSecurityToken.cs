@@ -1,11 +1,12 @@
 using System;
+using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens.Branca
 {
     public class BrancaSecurityToken : JwtPayloadSecurityToken
     {
-        public BrancaSecurityToken(BrancaToken token) : base(token.Payload)
+        public BrancaSecurityToken(BrancaToken token) : base(Encoding.UTF8.GetString(token.Payload))
         {
             IssuedAt = token.Timestamp;
         }

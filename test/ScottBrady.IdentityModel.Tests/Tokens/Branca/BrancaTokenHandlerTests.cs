@@ -18,7 +18,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
     {
         private const string ValidToken = "5K6fDIqRhrSuqGE3FbuxAPd19P2toAsbBxOn4bgSame9ti6QZUQJkrggCypBJIEXF6tvhgjeMZTV76UkiqXNSvqHebeplccFrhepHkxU1SlSSFoAMKs5TUomcg6ZgDhiaYDs3IlypSxafP4uvKmu0VD";
         private readonly byte[] validKey = System.Text.Encoding.UTF8.GetBytes("supersecretkeyyoushouldnotcommit");
-        private const string ExpectedPayload = "{\"user\":\"scott@scottbrady91.com\",\"scope\":[\"read\",\"write\",\"delete\"]}";
+        private static readonly byte[] ExpectedPayload = System.Text.Encoding.UTF8.GetBytes("{\"user\":\"scott@scottbrady91.com\",\"scope\":[\"read\",\"write\",\"delete\"]}");
 
         [Theory]
         [InlineData(null)]
@@ -94,14 +94,13 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
         [Fact]
         public void CreateToken_WhenTokenGenerated_ExpectBas62EncodedTokenWithCorrectLength()
         {
-            var payload = Guid.NewGuid().ToString();
+            var payload = CreateTestPayload();
             var handler = new BrancaTokenHandler();
 
-            var token = handler.CreateToken(payload, validKey);
+            var token = handler.CreateToken(payload, 0, validKey);
 
             token.Any(x => !Base62.CharacterSet.Contains(x)).Should().BeFalse();
-            Base62.Decode(token).Length.Should().Be(
-                System.Text.Encoding.UTF8.GetBytes(payload).Length + 29 + 16);
+            Base62.Decode(token).Length.Should().Be(payload.Length + 29 + 16);
         }
 
         [Fact]
@@ -120,10 +119,10 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             });
 
             var parsedToken = handler.DecryptToken(token, validKey);
-            var jObject = JObject.Parse(parsedToken.Payload);
+            var jObject = JObject.Parse(System.Text.Encoding.UTF8.GetString(parsedToken.Payload));
             jObject["iat"].Should().BeNull();
             
-            parsedToken.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(1000));
+            parsedToken.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(1500));
         }
         
         [Theory]
@@ -170,11 +169,11 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
         public void DecryptToken_WhenValidToken_ExpectCorrectPayload()
         {
             var parsedToken = new BrancaTokenHandler().DecryptToken(ValidToken, validKey);
-            parsedToken.Payload.Should().Be(ExpectedPayload);
+            parsedToken.Payload.Should().BeEquivalentTo(ExpectedPayload);
         }
 
         [Fact]
-        public void EnryptAndDecryptToken_ExpectCorrectPayloadAndTimestamp()
+        public void EncryptAndDecryptToken_ExpectCorrectPayloadAndTimestamp()
         {
             var payload = Guid.NewGuid().ToString();
             var handler = new BrancaTokenHandler();
@@ -182,12 +181,12 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var token = handler.CreateToken(payload, validKey);
             var decryptedPayload = handler.DecryptToken(token, validKey);
 
-            decryptedPayload.Payload.Should().Be(payload);
+            decryptedPayload.Payload.Should().BeEquivalentTo(System.Text.Encoding.UTF8.GetBytes(payload));
             decryptedPayload.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(1000));
         }
 
         [Fact]
-        public void EnryptAndDecryptToken_WithExplicitTimestamp_ExpectCorrectPayloadAndTimestamp()
+        public void EncryptAndDecryptToken_WithExplicitTimestamp_ExpectCorrectPayloadAndTimestamp()
         {
             var payload = Guid.NewGuid().ToString();
             var timestamp = new DateTime(2020, 08, 22).ToUniversalTime();
@@ -196,21 +195,21 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var token = handler.CreateToken(payload, timestamp, validKey);
             var decryptedPayload = handler.DecryptToken(token, validKey);
 
-            decryptedPayload.Payload.Should().Be(payload);
+            decryptedPayload.Payload.Should().BeEquivalentTo(System.Text.Encoding.UTF8.GetBytes(payload));
             decryptedPayload.Timestamp.Should().Be(timestamp);
         }
 
         [Fact]
-        public void EnryptAndDecryptToken_WithExplicitBrancaTimestamp_ExpectCorrectPayloadAndTimestamp()
+        public void EncryptAndDecryptToken_WithExplicitBrancaTimestamp_ExpectCorrectPayloadAndTimestamp()
         {
-            var payload = Guid.NewGuid().ToString();
+            var payload = CreateTestPayload();
             var timestamp = uint.MinValue;
             var handler = new BrancaTokenHandler();
 
             var token = handler.CreateToken(payload, timestamp, validKey);
             var decryptedPayload = handler.DecryptToken(token, validKey);
 
-            decryptedPayload.Payload.Should().Be(payload);
+            decryptedPayload.Payload.Should().BeEquivalentTo(payload);
             decryptedPayload.Timestamp.Should().Be(new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc));
             decryptedPayload.BrancaFormatTimestamp.Should().Be(timestamp);
         }
@@ -495,9 +494,16 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
 
             isValidKey.Should().BeTrue();
         }
+
+        private static byte[] CreateTestPayload()
+        {
+            var payload = new byte[32];
+            RandomNumberGenerator.Fill(payload);
+            return payload;
+        }
     }
 
-    public class TestBrancaTokenHandler : IdentityModel.Tokens.Branca.BrancaTokenHandler
+    public class TestBrancaTokenHandler : BrancaTokenHandler
     {
         public new IEnumerable<SymmetricSecurityKey> GetBrancaDecryptionKeys(string token, TokenValidationParameters validationParameters) 
             => base.GetBrancaDecryptionKeys(token, validationParameters);

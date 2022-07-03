@@ -7,14 +7,14 @@ namespace ScottBrady.IdentityModel.Tokens.Branca
         private static readonly DateTime MinDateTime = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc);
         private static readonly DateTime MaxDateTime = new DateTime(2106, 02, 07, 06, 28, 15, DateTimeKind.Utc);
         
-        public BrancaToken(string payload, uint timestamp)
+        public BrancaToken(byte[] payload, uint timestamp)
         {
             Payload = payload ?? throw new ArgumentNullException(nameof(payload));
             Timestamp = GetDateTime(timestamp);
             BrancaFormatTimestamp = timestamp;
         }
         
-        public string Payload { get; }
+        public byte[] Payload { get; }
         public DateTime Timestamp { get; }
         public uint BrancaFormatTimestamp { get; }
 

@@ -26,7 +26,7 @@ namespace ScottBrady.IdentityModel.Tokens
             }
             catch (Exception e)
             {
-                throw new ArgumentException("Token does contain valid JSON", e);
+                throw new ArgumentException("Token does not contain valid JSON", e);
             }
         }
         

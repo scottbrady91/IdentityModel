@@ -164,7 +164,7 @@ namespace ScottBrady.IdentityModel.Tokens.Branca
                 new XChaCha20Poly1305(key).Decrypt(nonce, ciphertext, tag, plaintext, header);
 
                 return new BrancaToken(
-                    Encoding.UTF8.GetString(plaintext),
+                    plaintext,
                     timestamp);
             }
         }
