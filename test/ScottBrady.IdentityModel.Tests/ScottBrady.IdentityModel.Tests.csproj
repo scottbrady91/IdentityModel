@@ -20,4 +20,10 @@
     <ProjectReference Include="..\..\src\ScottBrady.IdentityModel.AspNetCore\ScottBrady.IdentityModel.AspNetCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Tokens\Paseto\TestVectors\testvectors.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
