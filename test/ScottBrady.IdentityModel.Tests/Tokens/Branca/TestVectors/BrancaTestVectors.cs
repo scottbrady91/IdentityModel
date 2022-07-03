@@ -65,6 +65,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             {
                 result.Should().NotBeNull();
                 exception.Should().BeNull();
+
+                result.Payload.Should().BeEquivalentTo(testVector.Message);
+                result.Timestamp.Should().Be(BrancaToken.GetDateTime(testVector.TimeStamp));
             }
             else
             {
