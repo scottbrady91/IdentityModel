@@ -24,6 +24,9 @@
     <None Update="Tokens\Paseto\TestVectors\testvectors.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Tokens\Branca\TestVectors\testvectors.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

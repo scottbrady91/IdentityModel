@@ -12,6 +12,9 @@ using Xunit;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 {
+    /// <summary>
+    /// Test vectors from https://github.com/paseto-standard/test-vectors
+    /// </summary>
     public class PasetoTestVectors
     {
         public static readonly TheoryData<PasetoTestVector> TestVectors = new TheoryData<PasetoTestVector>();
@@ -80,7 +83,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         public PasetoTestVector(string version, JsonNode data)
         {
             Name = data["name"]?.GetValue<string>();
-            ShouldFail = data["expect-fail"]!.GetValue<bool>();
+            ShouldFail = data["expect-fail"]?.GetValue<bool>() ?? throw new Exception("Unable to parse expect-fail");
             Token = data["token"]?.GetValue<string>();
             
             var payload = data["payload"]?.GetValue<string>();

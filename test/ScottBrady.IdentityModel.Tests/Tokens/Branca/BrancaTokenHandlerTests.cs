@@ -4,7 +4,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using FluentAssertions;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Moq.Protected;
@@ -76,14 +75,11 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
         public void CanValidateToken_ExpectTrue()
             => new BrancaTokenHandler().CanValidateToken.Should().BeTrue();
         
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData(" ")]
-        public void CreateToken_WhenPayloadIsNullOrWhitespace_ExpectArgumentNullException(string payload)
+        [Fact]
+        public void CreateToken_WhenPayloadIsNull_ExpectArgumentNullException()
         {
             var handler = new BrancaTokenHandler();
-            Assert.Throws<ArgumentNullException>(() => handler.CreateToken(payload, validKey));
+            Assert.Throws<ArgumentNullException>(() => handler.CreateToken(null, validKey));
         }
         
         [Fact]

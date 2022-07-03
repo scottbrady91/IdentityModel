@@ -5,7 +5,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using NaCl.Core;
@@ -30,7 +29,7 @@ namespace ScottBrady.IdentityModel.Tokens.Branca
         /// Branca specification-level token generation.
         /// Timestamp set to UtcNow
         /// </summary>
-        /// <param name="payload">The payload to be encrypted into the Branca token</param>
+        /// <param name="payload">The utf-8 payload to be encrypted into the Branca token</param>
         /// <param name="key">32-byte private key used to encrypt and decrypt the Branca token</param>
         /// <returns>Base62 encoded Branca Token</returns>
         public virtual string CreateToken(string payload, byte[] key) 
@@ -39,30 +38,36 @@ namespace ScottBrady.IdentityModel.Tokens.Branca
         /// <summary>
         /// Branca specification-level token generation
         /// </summary>
-        /// <param name="payload">The payload to be encrypted into the Branca token</param>
+        /// <param name="payload">The utf-8 payload to be encrypted into the Branca token</param>
         /// <param name="timestamp">The timestamp included in the Branca token (iat: issued at)</param>
         /// <param name="key">32-byte private key used to encrypt and decrypt the Branca token</param>
         /// <returns>Base62 encoded Branca Token</returns>
         public virtual string CreateToken(string payload, DateTimeOffset timestamp, byte[] key)
             => CreateToken(payload, BrancaToken.GetBrancaTimestamp(timestamp), key);
-        
+
         /// <summary>
         /// Branca specification-level token generation
         /// </summary>
-        /// <param name="payload">The payload to be encrypted into the Branca token</param>
+        /// <param name="payload">The utf-8 payload to be encrypted into the Branca token</param>
         /// <param name="timestamp">The timestamp included in the Branca token (iat: issued at)</param>
         /// <param name="key">32-byte private key used to encrypt and decrypt the Branca token</param>
         /// <returns>Base62 encoded Branca Token</returns>
         public virtual string CreateToken(string payload, uint timestamp, byte[] key)
+            => CreateToken(Encoding.UTF8.GetBytes(payload), timestamp, key);
+        
+        /// <summary>
+        /// Branca specification-level token generation
+        /// </summary>
+        /// <param name="payload">The payload bytes to be encrypted into the Branca token</param>
+        /// <param name="timestamp">The timestamp included in the Branca token (iat: issued at)</param>
+        /// <param name="key">32-byte private key used to encrypt and decrypt the Branca token</param>
+        /// <returns>Base62 encoded Branca Token</returns>
+        public virtual string CreateToken(byte[] payload, uint timestamp, byte[] key)
         {
-            if (string.IsNullOrWhiteSpace(payload)) throw new ArgumentNullException(nameof(payload));
+            if (payload == null) throw new ArgumentNullException(nameof(payload));
             if (!IsValidKey(key)) throw new InvalidOperationException("Invalid encryption key");
 
-            var nonce = new byte[24];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(nonce);
-            }
+            var nonce = GenerateNonce();
 
             // header
             var header = new byte[29];
@@ -78,11 +83,10 @@ namespace ScottBrady.IdentityModel.Tokens.Branca
                 stream.Write(nonce, 0, nonce.Length);
             }
 
-            var plaintext = Encoding.UTF8.GetBytes(payload);
-            var ciphertext = new byte[plaintext.Length];
+            var ciphertext = new byte[payload.Length];
             var tag = new byte[TagLength];
             
-            new XChaCha20Poly1305(key).Encrypt(nonce, plaintext, ciphertext, tag, header);
+            new XChaCha20Poly1305(key).Encrypt(nonce, payload, ciphertext, tag, header);
 
             var tokenBytes = new byte[header.Length + ciphertext.Length + TagLength];
             Buffer.BlockCopy(header, 0, tokenBytes, 0, header.Length);
@@ -243,6 +247,13 @@ namespace ScottBrady.IdentityModel.Tokens.Branca
             }
 
             return IsValidKey(credentials.Key);
+        }
+
+        protected virtual byte[] GenerateNonce()
+        {
+            var nonce = new byte[24];
+            RandomNumberGenerator.Fill(nonce);
+            return nonce;
         }
 
         private static byte[] GuaranteedRead(Stream stream, int length)
