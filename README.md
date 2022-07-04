@@ -6,7 +6,7 @@ Helper libraries for tokens and cryptography in .NET.
 
 - EdDSA support for JWTs
 - Branca tokens with JWT style validation
-- PASETO (v2.public) with JWT style validation
+- PASETO (v1.public & v2.public) with JWT style validation
 - Base62 encoding
 - [Samples](https://github.com/scottbrady91/IdentityModel/tree/master/samples/ScottBrady.IdentityModel.Samples.AspNetCore) in ASP.NET Core
 
@@ -89,6 +89,10 @@ services.AddAuthentication()
         options.TokenValidationParameters.ValidAudience = "me";
     })
 ```
+
+## Base16 (hex) Encoding
+
+// TODO
 
 ## Base62 Encoding
 

@@ -40,8 +40,9 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
                 Encoding.UTF8.GetBytes(footer ?? string.Empty)
             });
             
+            // TODO: Review
             var signer = new Ed25519Signer();
-            signer.Init(true, privateKey.KeyParameters);
+            signer.Init(true, privateKey.EdDsa.KeyParameters);
             signer.BlockUpdate(messageToSign, 0, messageToSign.Length);
             var signature = signer.GenerateSignature();
 
@@ -92,7 +93,7 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
             foreach (var publicKey in keys)
             {
                 var signer = new Ed25519Signer();
-                signer.Init(false, publicKey.KeyParameters);
+                signer.Init(false, publicKey.EdDsa.KeyParameters);
                 signer.BlockUpdate(signedMessage, 0, signedMessage.Length);
             
                 var isValidSignature = signer.VerifySignature(signature);

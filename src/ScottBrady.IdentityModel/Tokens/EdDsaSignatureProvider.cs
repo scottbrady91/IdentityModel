@@ -1,5 +1,4 @@
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Signers;
 
 namespace ScottBrady.IdentityModel.Tokens
 {
@@ -15,22 +14,7 @@ namespace ScottBrady.IdentityModel.Tokens
 
         protected override void Dispose(bool disposing) { }
         
-        public override byte[] Sign(byte[] input)
-        {
-            var signer = new Ed25519Signer();
-            signer.Init(true, edDsaKey.KeyParameters);
-            signer.BlockUpdate(input, 0, input.Length);
-
-            return signer.GenerateSignature();
-        }
-
-        public override bool Verify(byte[] input, byte[] signature)
-        {
-            var validator = new Ed25519Signer();
-            validator.Init(false, edDsaKey.KeyParameters);
-            validator.BlockUpdate(input, 0, input.Length);
-
-            return validator.VerifySignature(signature);
-        }
+        public override byte[] Sign(byte[] input) => edDsaKey.EdDsa.Sign(input);
+        public override bool Verify(byte[] input, byte[] signature) => edDsaKey.EdDsa.Verify(input, signature);
     }
 }

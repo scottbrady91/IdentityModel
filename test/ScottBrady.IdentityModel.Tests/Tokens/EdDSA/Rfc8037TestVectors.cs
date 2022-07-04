@@ -6,7 +6,7 @@ using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens
+namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
 {
     public class Rfc8037TestVectors
     {
