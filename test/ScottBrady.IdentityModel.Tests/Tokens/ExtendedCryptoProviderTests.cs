@@ -3,9 +3,6 @@ using System.IO;
 using System.Security.Cryptography;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
 using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
@@ -46,11 +43,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
         [Fact]
         public void Create_WhenAlgorithmIsNotEdDsaButHasEdDsaSecurityKey_ExpectNotSupportedException()
         {
-            var keyPairGenerator = new Ed25519KeyPairGenerator();
-            keyPairGenerator.Init(new Ed25519KeyGenerationParameters(new SecureRandom()));
-            var keyPair = keyPairGenerator.GenerateKeyPair();
-
-            var securityKey = new EdDsaSecurityKey((Ed25519PublicKeyParameters) keyPair.Public);
+            var securityKey = new EdDsaSecurityKey(EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519));
 
             Assert.Throws<NotSupportedException>(() => sut.Create(SecurityAlgorithms.RsaSha256, securityKey));
         }
@@ -66,11 +59,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
         [Fact]
         public void Create_WhenAlgorithmIsEdDsaWithEdDsaSecurityKey_ExpectEdDsaSignatureProvider()
         {
-            var keyPairGenerator = new Ed25519KeyPairGenerator();
-            keyPairGenerator.Init(new Ed25519KeyGenerationParameters(new SecureRandom()));
-            var keyPair = keyPairGenerator.GenerateKeyPair();
-
-            var securityKey = new EdDsaSecurityKey((Ed25519PublicKeyParameters) keyPair.Public);
+            var securityKey = new EdDsaSecurityKey(EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519));
 
             var signatureProvider = sut.Create(ExtendedSecurityAlgorithms.EdDsa, securityKey);
 

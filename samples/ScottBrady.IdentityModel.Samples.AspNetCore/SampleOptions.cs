@@ -1,7 +1,6 @@
 using System;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Parameters;
 using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 
@@ -32,12 +31,10 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
         public RsaSecurityKey PasetoV1PrivateKey = new RsaSecurityKey(RSA.Create());
         public RsaSecurityKey PasetoV1PublicKey => new RsaSecurityKey(RSA.Create(PasetoV1PrivateKey.Rsa.ExportParameters(false)));
 
-        public EdDsaSecurityKey PasetoV2PublicKey = new EdDsaSecurityKey(
-            new Ed25519PublicKeyParameters(
-                Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M="), 0));
+        public readonly EdDsaSecurityKey PasetoV2PublicKey = new EdDsaSecurityKey(
+            EdDsa.CreateFromPublicKey(Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M="), ExtendedSecurityAlgorithms.Curves.Ed25519));
         
-        public EdDsaSecurityKey PasetoV2PrivateKey= new EdDsaSecurityKey(
-            new Ed25519PrivateKeyParameters(
-                Convert.FromBase64String("TYXei5+8Qd2ZqKIlEuJJ3S50WYuocFTrqK+3/gHVH9B2hpLtAgscF2c9QuWCzV9fQxal3XBqTXivXJPpp79vgw=="), 0));
+        public readonly EdDsaSecurityKey PasetoV2PrivateKey= new EdDsaSecurityKey(
+                EdDsa.CreateFromPrivateKey(Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M="), ExtendedSecurityAlgorithms.Curves.Ed25519));
     }
 }
