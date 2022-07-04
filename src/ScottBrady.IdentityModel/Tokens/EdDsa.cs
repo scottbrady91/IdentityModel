@@ -10,8 +10,8 @@ namespace ScottBrady.IdentityModel.Tokens;
 
 public class EdDsa
 {
-    public AsymmetricKeyParameter KeyParameters { get; private set; }
-    public string Curve { get; private set; }
+    public AsymmetricKeyParameter KeyParameters { get; private init; }
+    public string Curve { get; private init; }
 
     private EdDsa() { }
         
@@ -115,6 +115,20 @@ public class EdDsa
         validator.BlockUpdate(input, 0, input.Length);
 
         return validator.VerifySignature(signature);
+    }
+
+    /// <summary>
+    /// Generates a public key corresponding to the current private key.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">No private key found.</exception>
+    public EdDsa GeneratePublicKey()
+    {
+        return KeyParameters switch
+        {
+            Ed25519PrivateKeyParameters ed25519Key => CreateFromPublicKey(ed25519Key.GeneratePublicKey().GetEncoded(), ExtendedSecurityAlgorithms.Curves.Ed25519),
+            Ed448PrivateKeyParameters ed448Key => CreateFromPublicKey(ed448Key.GeneratePublicKey().GetEncoded(), ExtendedSecurityAlgorithms.Curves.Ed448),
+            _ => throw new InvalidOperationException("No private key found.")
+        };
     }
 
     private ISigner CreateSigner()

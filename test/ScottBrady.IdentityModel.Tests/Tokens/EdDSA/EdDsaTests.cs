@@ -143,6 +143,43 @@ public class EdDsaTests
         var alg = EdDsa.CreateFromPublicKey(key, ExtendedSecurityAlgorithms.Curves.Ed448);
         alg.KeyParameters.Should().BeOfType<Ed448PublicKeyParameters>();
     }
+
+    [Fact]
+    public void GeneratePublicKey_WhenNoPrivateKeyPresent_ExpectInvalidOperationException()
+    {
+        var keyPair = GenerateEd25519KeyPair();
+        var publicKey = (Ed25519PublicKeyParameters) keyPair.Public;
+        
+        var key = EdDsa.CreateFromPublicKey(publicKey.GetEncoded(), ExtendedSecurityAlgorithms.Curves.Ed25519);
+
+        Assert.Throws<InvalidOperationException>(() => key.GeneratePublicKey());
+    }
+
+    [Fact]
+    public void GeneratePublicKey_WhenEd25519PrivateKey_ExpectValidPublicKey()
+    {
+        var privateKey = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519);
+        var publicKey = privateKey.GeneratePublicKey();
+
+        var data = new byte[32];
+        RandomNumberGenerator.Fill(data);
+
+        var signature = privateKey.Sign(data);
+        publicKey.Verify(data, signature).Should().BeTrue();
+    }
+
+    [Fact]
+    public void GeneratePublicKey_WhenEd448PrivateKey_ExpectValidPublicKey()
+    {
+        var privateKey = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed448);
+        var publicKey = privateKey.GeneratePublicKey();
+
+        var data = new byte[32];
+        RandomNumberGenerator.Fill(data);
+
+        var signature = privateKey.Sign(data);
+        publicKey.Verify(data, signature).Should().BeTrue();
+    }
     
     private static AsymmetricCipherKeyPair GenerateEd25519KeyPair()
     {
