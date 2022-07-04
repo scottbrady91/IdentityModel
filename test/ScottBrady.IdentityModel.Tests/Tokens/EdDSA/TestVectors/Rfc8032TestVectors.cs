@@ -13,7 +13,7 @@ public class Rfc8032TestVectors
 
     static Rfc8032TestVectors()
     {
-        var file = File.OpenRead("Tokens/EdDsa/TestVectors/testvectors.json");
+        var file = File.OpenRead("Tokens/EdDSA/TestVectors/testvectors.json");
         var data = JsonNode.Parse(file);
         if (data == null) throw new Exception("Failed to load test vectors");
 
