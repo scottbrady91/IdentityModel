@@ -101,7 +101,7 @@ public class EdDsa
         
     public byte[] Sign(byte[] input)
     {
-        var signer = new Ed25519Signer();
+        var signer = CreateSigner();
         signer.Init(true, KeyParameters);
         signer.BlockUpdate(input, 0, input.Length);
 
@@ -110,10 +110,20 @@ public class EdDsa
 
     public bool Verify(byte[] input, byte[] signature)
     {
-        var validator = new Ed25519Signer();
+        var validator = CreateSigner();
         validator.Init(false, KeyParameters);
         validator.BlockUpdate(input, 0, input.Length);
 
         return validator.VerifySignature(signature);
+    }
+
+    private ISigner CreateSigner()
+    {
+        return Curve switch
+        {
+            ExtendedSecurityAlgorithms.Curves.Ed25519 => new Ed25519Signer(),
+            ExtendedSecurityAlgorithms.Curves.Ed448 => new Ed448Signer(Array.Empty<byte>()),
+            _ => throw new NotSupportedException()
+        };
     }
 }
