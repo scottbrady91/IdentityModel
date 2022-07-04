@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -138,7 +139,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         public void Verify_WhenPayloadDoesNotContainJson_ExpectSecurityTokenException()
         {
             var payloadValue = "<xml>test</xml>";
-            var payloadValueBytes = System.Text.Encoding.UTF8.GetBytes(payloadValue);
+            var payloadValueBytes = Encoding.UTF8.GetBytes(payloadValue);
             
             var signature = new byte[64];
             new Random().NextBytes(signature);
@@ -156,7 +157,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         public void Verify_WhenSignatureInvalid_ExpectSecurityTokenInvalidSignatureException()
         {
             var payloadValue = "{ \"test\": \"test\" }";
-            var payloadValueBytes = System.Text.Encoding.UTF8.GetBytes(payloadValue);
+            var payloadValueBytes = Encoding.UTF8.GetBytes(payloadValue);
             
             var signature = new byte[64];
             new Random().NextBytes(signature);

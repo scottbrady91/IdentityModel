@@ -1,3 +1,4 @@
+using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -15,7 +16,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
         [Fact]
         public void Sign_A_5()
         {
-            byte[] plaintext = System.Text.Encoding.UTF8.GetBytes("eyJhbGciOiJFZERTQSJ9.RXhhbXBsZSBvZiBFZDI1NTE5IHNpZ25pbmc");
+            byte[] plaintext = Encoding.UTF8.GetBytes("eyJhbGciOiJFZERTQSJ9.RXhhbXBsZSBvZiBFZDI1NTE5IHNpZ25pbmc");
             byte[] expectedSignature = Base64UrlEncoder.DecodeBytes("hgyY0il_MGCjP0JzlnLWG1PPOt7-09PGcvMg3AIbQR6dWbhijcNR4ki4iylGjg5BhVsPt9g7sVvpAr_MuM0KAg");
 
             var signatureProvider = new EdDsaSignatureProvider(
@@ -28,7 +29,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
         [Fact]
         public void Verify_A_6()
         {
-            byte[] plaintext = System.Text.Encoding.UTF8.GetBytes("eyJhbGciOiJFZERTQSJ9.RXhhbXBsZSBvZiBFZDI1NTE5IHNpZ25pbmc");
+            byte[] plaintext = Encoding.UTF8.GetBytes("eyJhbGciOiJFZERTQSJ9.RXhhbXBsZSBvZiBFZDI1NTE5IHNpZ25pbmc");
             byte[] signature = Base64UrlEncoder.DecodeBytes("hgyY0il_MGCjP0JzlnLWG1PPOt7-09PGcvMg3AIbQR6dWbhijcNR4ki4iylGjg5BhVsPt9g7sVvpAr_MuM0KAg");
 
             var signatureProvider = new EdDsaSignatureProvider(

@@ -1,8 +1,9 @@
 using System.Security.Cryptography;
+using System.Text;
 using FluentAssertions;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Encoding
+namespace ScottBrady.IdentityModel.Tests
 {
     public class Base62Tests
     {
@@ -17,7 +18,7 @@ namespace ScottBrady.IdentityModel.Tests.Encoding
         [InlineData("test_val", "9zZdHhz4YSC")]
         public void WithKnownValues_ExpectCorrectValuesEncoded(string testValue, string expectedResult)
         {
-            var testBytes = System.Text.Encoding.UTF8.GetBytes(testValue);
+            var testBytes = Encoding.UTF8.GetBytes(testValue);
             
             var result = Base62.Encode(testBytes);
             result.Should().Be(expectedResult);
@@ -31,7 +32,7 @@ namespace ScottBrady.IdentityModel.Tests.Encoding
         [InlineData("¥·£·€·$·¢·₡·₢·₣·₤·₥·₦·₧·₨·₩·₪·₫·₭·₮·₯·₹", "cyHYeZmwVtcfi8uomwZ9VTrEews1tZEkwNsVEOzPtGnuTpxFrKkQykOshm9OCqSa0YkPX13Js2w8QAcKpHsMHzdKzNG9htLkL6Pu6xFSwoSZycE8aUfGRIZTKcX8L")]
         public void WithUtf8Characters_ExpectCorrectValuesEncoded(string testValue, string expectedResult)
         {
-            var testBytes = System.Text.Encoding.UTF8.GetBytes(testValue);
+            var testBytes = Encoding.UTF8.GetBytes(testValue);
             
             var result = Base62.Encode(testBytes);
             result.Should().Be(expectedResult);

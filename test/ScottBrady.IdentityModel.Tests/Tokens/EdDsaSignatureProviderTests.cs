@@ -1,3 +1,4 @@
+using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Crypto.Generators;
@@ -42,7 +43,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
 
             var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
 
-            var signature = signatureProvider.Sign(System.Text.Encoding.UTF8.GetBytes(plaintext));
+            var signature = signatureProvider.Sign(Encoding.UTF8.GetBytes(plaintext));
 
             signature.Should().BeEquivalentTo(Base64UrlEncoder.DecodeBytes(expectedSignature));
         }
@@ -61,7 +62,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
 
             var isValidSignature = signatureProvider.Verify(
-                System.Text.Encoding.UTF8.GetBytes(plaintext),
+                Encoding.UTF8.GetBytes(plaintext),
                 Base64UrlEncoder.DecodeBytes(signature));
 
             isValidSignature.Should().BeTrue();

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using FluentAssertions;
 using Newtonsoft.Json;
 using ScottBrady.IdentityModel.Tokens.Branca;
@@ -21,7 +22,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
                     iat = expectedIssuedAt - 1000
                 });
 
-            var token = new BrancaSecurityToken(new BrancaToken(System.Text.Encoding.UTF8.GetBytes(jwt), expectedIssuedAt));
+            var token = new BrancaSecurityToken(new BrancaToken(Encoding.UTF8.GetBytes(jwt), expectedIssuedAt));
 
             token.IssuedAt.Should().Be(DateTimeOffset.FromUnixTimeSeconds(expectedIssuedAt).UtcDateTime);
         }
@@ -29,7 +30,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
         [Fact]
         public void ctor_WhenPayloadIsNotUtf8_ExpectException()
         {
-            var payload = System.Text.Encoding.Unicode.GetBytes("������");
+            var payload = Encoding.Unicode.GetBytes("������");
             var exception = Assert.Throws<ArgumentException>(() => new BrancaSecurityToken(new BrancaToken(payload, 0)));
             exception.Message.Should().Contain("Token does not contain valid JSON");
         }

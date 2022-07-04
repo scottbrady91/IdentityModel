@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Tokens.Paseto;
@@ -27,14 +28,14 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         [Fact]
         public void PreAuthEncodeSpy_WhenEmptyString_ExpectKnownResponse()
         {
-            var encodedValue = TestPasetoVersionStrategy.PreAuthEncodeSpy(new[] {System.Text.Encoding.UTF8.GetBytes(string.Empty)});
+            var encodedValue = TestPasetoVersionStrategy.PreAuthEncodeSpy(new[] {Encoding.UTF8.GetBytes(string.Empty)});
             encodedValue.Should().BeEquivalentTo(new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
         }
         
         [Fact]
         public void PreAuthEncodeSpy_WhenTestString_ExpectKnownResponse()
         {
-            var testBytes = System.Text.Encoding.UTF8.GetBytes("test");
+            var testBytes = Encoding.UTF8.GetBytes("test");
             
             var encodedValue = TestPasetoVersionStrategy.PreAuthEncodeSpy(new[] {testBytes});
             encodedValue.Should().BeEquivalentTo(new byte[] {1, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0}.Concat(testBytes));

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
@@ -17,8 +18,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
     public class BrancaTokenHandlerTests
     {
         private const string ValidToken = "5K6fDIqRhrSuqGE3FbuxAPd19P2toAsbBxOn4bgSame9ti6QZUQJkrggCypBJIEXF6tvhgjeMZTV76UkiqXNSvqHebeplccFrhepHkxU1SlSSFoAMKs5TUomcg6ZgDhiaYDs3IlypSxafP4uvKmu0VD";
-        private readonly byte[] validKey = System.Text.Encoding.UTF8.GetBytes("supersecretkeyyoushouldnotcommit");
-        private static readonly byte[] ExpectedPayload = System.Text.Encoding.UTF8.GetBytes("{\"user\":\"scott@scottbrady91.com\",\"scope\":[\"read\",\"write\",\"delete\"]}");
+        private readonly byte[] validKey = Encoding.UTF8.GetBytes("supersecretkeyyoushouldnotcommit");
+        private static readonly byte[] ExpectedPayload = Encoding.UTF8.GetBytes("{\"user\":\"scott@scottbrady91.com\",\"scope\":[\"read\",\"write\",\"delete\"]}");
 
         [Theory]
         [InlineData(null)]
@@ -89,7 +90,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
         [Fact]
         public void CreateToken_WhenKeyIsNot32Bytes_ExpectInvalidOperationException()
             => Assert.Throws<InvalidOperationException>(() =>
-                new BrancaTokenHandler().CreateToken("test", System.Text.Encoding.UTF8.GetBytes("iamonly14bytes")));
+                new BrancaTokenHandler().CreateToken("test", Encoding.UTF8.GetBytes("iamonly14bytes")));
 
         [Fact]
         public void CreateToken_WhenTokenGenerated_ExpectBas62EncodedTokenWithCorrectLength()
@@ -119,7 +120,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             });
 
             var parsedToken = handler.DecryptToken(token, validKey);
-            var jObject = JObject.Parse(System.Text.Encoding.UTF8.GetString(parsedToken.Payload));
+            var jObject = JObject.Parse(Encoding.UTF8.GetString(parsedToken.Payload));
             jObject["iat"].Should().BeNull();
             
             parsedToken.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(1500));
@@ -142,7 +143,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
         [Fact]
         public void DecryptToken_WhenKeyIsNot32Bytes_ExpectInvalidOperationException()
             => Assert.Throws<InvalidOperationException>(() =>
-                new BrancaTokenHandler().DecryptToken(ValidToken, System.Text.Encoding.UTF8.GetBytes("iamonly14bytes")));
+                new BrancaTokenHandler().DecryptToken(ValidToken, Encoding.UTF8.GetBytes("iamonly14bytes")));
         
         [Fact]
         public void DecryptToken_WhenTokenHasInvalidLength_ExpectSecurityTokenException()
@@ -181,7 +182,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var token = handler.CreateToken(payload, validKey);
             var decryptedPayload = handler.DecryptToken(token, validKey);
 
-            decryptedPayload.Payload.Should().BeEquivalentTo(System.Text.Encoding.UTF8.GetBytes(payload));
+            decryptedPayload.Payload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(payload));
             decryptedPayload.Timestamp.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMilliseconds(1000));
         }
 
@@ -195,7 +196,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var token = handler.CreateToken(payload, timestamp, validKey);
             var decryptedPayload = handler.DecryptToken(token, validKey);
 
-            decryptedPayload.Payload.Should().BeEquivalentTo(System.Text.Encoding.UTF8.GetBytes(payload));
+            decryptedPayload.Payload.Should().BeEquivalentTo(Encoding.UTF8.GetBytes(payload));
             decryptedPayload.Timestamp.Should().Be(timestamp);
         }
 
@@ -461,7 +462,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var key = new SymmetricSecurityKey(keyBytes);
             var credentials = new EncryptingCredentials(
                 key, 
-                Microsoft.IdentityModel.Tokens.SecurityAlgorithms.Aes256KeyWrap,
+                SecurityAlgorithms.Aes256KeyWrap,
                 ExtendedSecurityAlgorithms.XChaCha20Poly1305);
 
             var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
@@ -475,7 +476,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             var keyBytes = new byte[32];
             new Random().NextBytes(keyBytes);
             var key = new SymmetricSecurityKey(keyBytes);
-            var credentials = new EncryptingCredentials(key, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.Aes128Encryption);
+            var credentials = new EncryptingCredentials(key, SecurityAlgorithms.Aes128Encryption);
 
             var isValidKey = new TestBrancaTokenHandler().IsValidKey(credentials);
 

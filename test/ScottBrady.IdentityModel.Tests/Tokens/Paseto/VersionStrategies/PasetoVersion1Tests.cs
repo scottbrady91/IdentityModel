@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Tokens.Paseto;
@@ -29,10 +30,10 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         public PasetoVersion1Tests()
         {
             var privateKey = RSA.Create();
-            privateKey.FromXmlString(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(ValidSigningPrivateKey)));
+            privateKey.FromXmlString(Encoding.UTF8.GetString(Convert.FromBase64String(ValidSigningPrivateKey)));
 
             var publicKey = RSA.Create();
-            publicKey.FromXmlString(System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(ValidSigningPublicKey)));
+            publicKey.FromXmlString(Encoding.UTF8.GetString(Convert.FromBase64String(ValidSigningPublicKey)));
 
             validSigningCredentials = new SigningCredentials(new RsaSecurityKey(privateKey), SecurityAlgorithms.RsaSsaPssSha384);
             validVerificationKeys = new List<SecurityKey> {new RsaSecurityKey(publicKey)};
@@ -137,7 +138,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         public void Verify_WhenPayloadDoesNotContainJson_ExpectSecurityTokenException()
         {
             var payloadValue = "<xml>test</xml>";
-            var payloadValueBytes = System.Text.Encoding.UTF8.GetBytes(payloadValue);
+            var payloadValueBytes = Encoding.UTF8.GetBytes(payloadValue);
             
             var signature = new byte[256];
             new Random().NextBytes(signature);
@@ -155,7 +156,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         public void Verify_WhenSignatureInvalid_ExpectSecurityTokenInvalidSignatureException()
         {
             var payloadValue = "{ \"test\": \"test\" }";
-            var payloadValueBytes = System.Text.Encoding.UTF8.GetBytes(payloadValue);
+            var payloadValueBytes = Encoding.UTF8.GetBytes(payloadValue);
             
             var signature = new byte[256];
             new Random().NextBytes(signature);

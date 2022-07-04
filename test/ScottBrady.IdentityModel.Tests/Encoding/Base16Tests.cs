@@ -1,8 +1,9 @@
 using System.Security.Cryptography;
+using System.Text;
 using FluentAssertions;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Encoding
+namespace ScottBrady.IdentityModel.Tests
 {
     public class Base16Tests
     {
@@ -17,7 +18,7 @@ namespace ScottBrady.IdentityModel.Tests.Encoding
         [InlineData("test_val", "746573745f76616c")]
         public void WithKnownValues_ExpectCorrectValuesEncoded(string testValue, string expectedResult)
         {
-            var testBytes = System.Text.Encoding.UTF8.GetBytes(testValue);
+            var testBytes = Encoding.UTF8.GetBytes(testValue);
             
             var result = Base16.Encode(testBytes);
             result.Should().Be(expectedResult);
@@ -32,7 +33,7 @@ namespace ScottBrady.IdentityModel.Tests.Encoding
         [InlineData("¥·£·€·$·¢·₡·₢·₣·₤·₥·₦·₧·₨·₩·₪·₫·₭·₮·₯·₹", "c2a5c2b7c2a3c2b7e282acc2b724c2b7c2a2c2b7e282a1c2b7e282a2c2b7e282a3c2b7e282a4c2b7e282a5c2b7e282a6c2b7e282a7c2b7e282a8c2b7e282a9c2b7e282aac2b7e282abc2b7e282adc2b7e282aec2b7e282afc2b7e282b9")]
         public void WithUtf8Characters_ExpectCorrectValuesEncoded(string testValue, string expectedResult)
         {
-            var testBytes = System.Text.Encoding.UTF8.GetBytes(testValue);
+            var testBytes = Encoding.UTF8.GetBytes(testValue);
             
             var result = Base16.Encode(testBytes);
             result.Should().Be(expectedResult);
