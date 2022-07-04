@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Signers;
 using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens.Paseto
@@ -40,11 +39,7 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
                 Encoding.UTF8.GetBytes(footer ?? string.Empty)
             });
             
-            // TODO: Review
-            var signer = new Ed25519Signer();
-            signer.Init(true, privateKey.EdDsa.KeyParameters);
-            signer.BlockUpdate(messageToSign, 0, messageToSign.Length);
-            var signature = signer.GenerateSignature();
+            var signature = privateKey.EdDsa.Sign(messageToSign);
 
             var token = $"{PublicHeader}{Base64UrlEncoder.Encode(payloadBytes.Combine(signature))}";
             if (!string.IsNullOrWhiteSpace(footer)) token += $".{Base64UrlEncoder.Encode(footer)}";
@@ -92,11 +87,7 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
             // verify signature using valid keys
             foreach (var publicKey in keys)
             {
-                var signer = new Ed25519Signer();
-                signer.Init(false, publicKey.EdDsa.KeyParameters);
-                signer.BlockUpdate(signedMessage, 0, signedMessage.Length);
-            
-                var isValidSignature = signer.VerifySignature(signature);
+                var isValidSignature = publicKey.EdDsa.Verify(signedMessage, signature);
                 if (isValidSignature) return new PasetoSecurityToken(token);
             }
 
