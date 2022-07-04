@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using FluentAssertions;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Moq.Protected;

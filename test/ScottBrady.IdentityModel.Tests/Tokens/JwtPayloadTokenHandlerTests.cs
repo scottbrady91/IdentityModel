@@ -4,7 +4,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using FluentAssertions;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Moq.Protected;
