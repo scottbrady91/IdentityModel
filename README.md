@@ -7,21 +7,42 @@ Helper libraries for tokens and cryptography in .NET.
 - EdDSA support for JWTs
 - Branca tokens with JWT style validation
 - PASETO (v1.public & v2.public) with JWT style validation
-- Base62 encoding
+- Base16 (hex) and Base62 encoders
+- `passwordrule` attribute support for ASP.NET Identity
 - [Samples](https://github.com/scottbrady91/IdentityModel/tree/master/samples/ScottBrady.IdentityModel.Samples.AspNetCore) in ASP.NET Core
 
-**Feature requests welcome.**
+**Feature requests welcome. Please see SECURITY.md for responsible disclosure policy.**
+
+## EdDSA support
+
+EdDSA is a modern signing algorithm, not yet supported out of the box in .NET. This library provides some useful abstractions around the Bouncy Castle (software) implementation of EdDSA.
+
+```csharp
+// create EdDSA new key pair
+EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519)
+
+// create EdDSA key from parameters
+EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) 
+  {D = Base64UrlEncoder.DecodeBytes(privateKey)})
+
+// create EdDSA security key for use with Microsoft.IdentityModel JWT APIs (alg: EdDSA)
+new EdDsaSecurityKey(EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519))
+```
 
 ## Branca Tokens
 
-[Branca](https://branca.io/) is token construct suitable for internal systems. The payload is encrypted using XChaCha20-Poly1305. Must use a 32-byte symmetric key.
+[Branca](https://branca.io/) is token construct suitable for internal systems. The payload is encrypted using XChaCha20-Poly1305, using a 32-byte symmetric key.
 
-*The initial version of this .NET Branca implementation was a port of the Java Branca libraries. I have since found out that these do not conform to the Branca specification and have updated my .NET Branca library accordingly (version 1.3).*
+This library supports the creation of Branca tokens with an arbitrary payload or using a JWT-style payload.
+
+- NuGet: [ScottBrady.IdentityModel.Tokens.Branca](https://www.nuget.org/packages/ScottBrady.IdentityModel.Tokens.Branca)
+- [Test vectors](https://github.com/scottbrady91/IdentityModel/tree/master/test/ScottBrady.IdentityModel.Tests/Tokens/Branca/TestVectors)
 
 ```csharp
 var handler = new BrancaTokenHandler();
 var key = Encoding.UTF8.GetBytes("supersecretkeyyoushouldnotcommit");
 
+// JWT-style payload
 string token = handler.CreateToken(new SecurityTokenDescriptor
 {
     Issuer = "me",
@@ -47,6 +68,13 @@ ClaimsPrincipal principal = handler.ValidateToken(
 
 [PASETO](https://paseto.io/) is a competing standard to JOSE & JWT that offers a versioned ciphersuite. This library currently implements `v1` and `v2` for the `public` purpose, suitable for zero-trust systems such as an OAuth authorization server.
 
+Explicit versioning allows PASETO to side-step [attacks on signature validation](https://www.rfc-editor.org/rfc/rfc8725.html#name-weak-signatures-and-insuffi) found in some JWT libraries. However, it does not mitigate any other attacks. 
+
+If you are considering using PASETO, I recommend reading [RFC 8725 - JWT Best Current Practices](https://www.rfc-editor.org/rfc/rfc8725.html) and deciding if the interoperable JWT format is still wrong for you.
+
+- NuGet: [ScottBrady.IdentityModel.Tokens.Branca](https://www.nuget.org/packages/ScottBrady.IdentityModel.Tokens.Paseto)
+- [Test vectors](https://github.com/scottbrady91/IdentityModel/tree/master/test/ScottBrady.IdentityModel.Tests/Tokens/Paseto/TestVectors)
+
 ```csharp
 var handler = new PasetoTokenHandler();
 var privateKey = Convert.FromBase64String("TYXei5+8Qd2ZqKIlEuJJ3S50WYuocFTrqK+3/gHVH9B2hpLtAgscF2c9QuWCzV9fQxal3XBqTXivXJPpp79vgw==");
@@ -61,7 +89,11 @@ string token = handler.CreateToken(new PasetoSecurityTokenDescriptor(
     NotBefore = DateTime.UtcNow,
     Claims = new Dictionary<string, object> {{"sub", "123"}},
     SigningCredentials = new SigningCredentials(
-        new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(privateKey, 0)), ExtendedSecurityAlgorithms.EdDsa)
+        new EdDsaSecurityKey(EdDsa.Create(
+            new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519)
+            {
+                D = privateKey
+            })), ExtendedSecurityAlgorithms.EdDsa)
 });
 
 ClaimsPrincipal principal = handler.ValidateToken(
@@ -70,7 +102,8 @@ ClaimsPrincipal principal = handler.ValidateToken(
     {
         ValidIssuer = "me",
         ValidAudience = "you",
-        IssuerSigningKey = new EdDsaSecurityKey(new Ed25519PublicKeyParameters(publicKey, 0))
+        IssuerSigningKey = new EdDsaSecurityKey(EdDsa.Create(
+            new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = publicKey}))
     }, out SecurityToken parsedToken);
 ```
 
@@ -84,7 +117,7 @@ services.AddAuthentication()
     {
         options.SecurityTokenValidators.Clear();
         options.SecurityTokenValidators.Add(new PasetoTokenHandler());
-        options.TokenValidationParameters.IssuerSigningKey = new EdDsaSecurityKey(new Ed25519PublicKeyParameters(<your_public_key>, 0));
+        options.TokenValidationParameters.IssuerSigningKey = new EdDsaSecurityKey(EdDSA.Create(<your_public_key>));
         options.TokenValidationParameters.ValidIssuer = "you";
         options.TokenValidationParameters.ValidAudience = "me";
     })
@@ -92,7 +125,12 @@ services.AddAuthentication()
 
 ## Base16 (hex) Encoding
 
-// TODO
+Base16 allows you to encode and decode hexidecimal strings..
+
+```csharp
+var plaintext = "hello world"; // encoded = 68656c6c6f20776f726c64
+string encoded = Base16.Encode(Encoding.UTF8.GetBytes(plaintext));
+```
 
 ## Base62 Encoding
 
@@ -100,5 +138,5 @@ Base62 encoding uses the `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr
 
 ```csharp
 var plaintext = "hello world"; // encoded = AAwf93rvy4aWQVw
-var encoded = Base62.Encode(Encoding.UTF8.GetBytes(plaintext));
+string encoded = Base62.Encode(Encoding.UTF8.GetBytes(plaintext));
 ```
