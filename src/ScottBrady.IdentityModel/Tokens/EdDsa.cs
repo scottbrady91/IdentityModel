@@ -62,7 +62,7 @@ public class EdDsa
         
     public byte[] Sign(byte[] input)
     {
-        // TODO: validate input & key
+        if (input == null) throw new ArgumentNullException(nameof(input));
         
         var signer = CreateSigner();
         signer.Init(true, CreatePrivateKeyParameter());
@@ -73,6 +73,9 @@ public class EdDsa
 
     public bool Verify(byte[] input, byte[] signature)
     {
+        if (input == null) throw new ArgumentNullException(nameof(input));
+        if (signature == null) throw new ArgumentNullException(nameof(signature));
+        
         var validator = CreateSigner();
         validator.Init(false, CreatePublicKeyParameter());
         validator.BlockUpdate(input, 0, input.Length);

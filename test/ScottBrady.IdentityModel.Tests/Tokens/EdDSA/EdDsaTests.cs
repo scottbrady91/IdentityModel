@@ -50,8 +50,18 @@ public class EdDsaTests
         alg.Parameters.D.Length.Should().Be(57);
         alg.Parameters.X.Length.Should().Be(57);
     }
+
+    [Fact]
+    public void Sign_WhenInputNull_ExpectArgumentNullException()
+        => Assert.Throws<ArgumentNullException>(() => EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519).Sign(null));
+
+    [Fact]
+    public void Verify_WhenInputNull_ExpectArgumentNullException()
+        => Assert.Throws<ArgumentNullException>(() => EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519).Verify(null, new byte[32]));
     
-    // TODO: sign & verify tests
+    [Fact]
+    public void Verify_WhenSignatureNull_ExpectArgumentNullException()
+        => Assert.Throws<ArgumentNullException>(() => EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519).Verify(new byte[32], null));
     
     private static AsymmetricCipherKeyPair GenerateEd25519KeyPair()
     {
