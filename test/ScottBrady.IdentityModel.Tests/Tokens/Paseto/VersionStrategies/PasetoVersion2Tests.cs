@@ -5,7 +5,6 @@ using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Parameters;
 using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Tokens.Paseto;
@@ -24,10 +23,14 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         private const string ValidSigningPublicKey = "doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M=";
 
         private readonly SigningCredentials validSigningCredentials = new SigningCredentials(
-            new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(Convert.FromBase64String(ValidSigningPrivateKey), 0)), ExtendedSecurityAlgorithms.EdDsa);
+            new EdDsaSecurityKey(EdDsa.Create(
+                new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {D = Convert.FromBase64String(ValidSigningPrivateKey)})),
+            ExtendedSecurityAlgorithms.EdDsa);
+
         private readonly List<SecurityKey> validVerificationKeys = new List<SecurityKey>
         {
-            new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Convert.FromBase64String(ValidSigningPublicKey), 0))
+            new EdDsaSecurityKey(EdDsa.Create(
+                new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = Convert.FromBase64String(ValidSigningPublicKey)}))
         };
         
         private readonly PasetoVersion2 sut = new PasetoVersion2();
@@ -191,7 +194,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
                 "v2.public.eyJkYXRhIjoidGhpcyBpcyBhIHNpZ25lZCBtZXNzYWdlIiwiZXhwIjoiMjAxOS0wMS0wMVQwMDowMDowMCswMDowMCJ9flsZsx_gYCR0N_Ec2QxJFFpvQAs7h9HtKwbVK2n1MJ3Rz-hwe8KUqjnd8FAnIJZ601tp7lGkguU63oGbomhoBw.eyJraWQiOiJ6VmhNaVBCUDlmUmYyc25FY1Q3Z0ZUaW9lQTlDT2NOeTlEZmdMMVc2MGhhTiJ9");
             var publicKey = Convert.FromBase64String("Hrnbu7wEfAP9cGBOAHHwmH4Wsot1ciXBHwBBXQ4gsaI=");
 
-            var securityToken = sut.Verify(tokenWithFooter, new[] {new EdDsaSecurityKey(new Ed25519PublicKeyParameters(publicKey, 0))});
+            var securityToken = sut.Verify(tokenWithFooter,
+                new[] {new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = publicKey}))});
 
             securityToken.Should().NotBeNull();
             securityToken.RawToken.Should().Be(tokenWithFooter.RawToken);

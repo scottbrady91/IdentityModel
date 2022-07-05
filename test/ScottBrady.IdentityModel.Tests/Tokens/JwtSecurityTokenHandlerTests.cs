@@ -3,9 +3,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
 using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
@@ -21,10 +18,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             const string audience = "you";
             const string subject = "123";
             
-            var keyPairGenerator = new Ed25519KeyPairGenerator();
-            keyPairGenerator.Init(new Ed25519KeyGenerationParameters(new SecureRandom()));
-            var keyPair = keyPairGenerator.GenerateKeyPair();
-            
+            var key = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519);
+
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear(); // ffs
             var handler = new JwtSecurityTokenHandler();
 
@@ -34,9 +29,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
                 Audience = audience,
                 Expires = DateTime.UtcNow.AddMinutes(30),
                 Subject = new ClaimsIdentity(new[] {new Claim("sub", subject)}),
-                SigningCredentials = new SigningCredentials(
-                    new EdDsaSecurityKey((Ed25519PrivateKeyParameters) keyPair.Private),
-                    ExtendedSecurityAlgorithms.EdDsa)
+                SigningCredentials = new SigningCredentials(new EdDsaSecurityKey(key), ExtendedSecurityAlgorithms.EdDsa)
             });
 
             var validationResult = handler.ValidateToken(jwt, new TokenValidationParameters
@@ -45,7 +38,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
                 ValidAudience = audience,
                 ValidateLifetime = true,
                 RequireExpirationTime = true,
-                IssuerSigningKey = new EdDsaSecurityKey((Ed25519PublicKeyParameters) keyPair.Public)
+                IssuerSigningKey = new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(key.Parameters.Curve) {X = key.Parameters.X}))
             }, out _);
             
             validationResult.Claims.Should().Contain(x => x.Type == "sub" && x.Value == subject);

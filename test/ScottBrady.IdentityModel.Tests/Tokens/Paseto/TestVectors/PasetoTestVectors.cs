@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Parameters;
+using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Tokens.Paseto;
 using Xunit;
@@ -101,7 +101,13 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             }
             else if (version == "v2")
             {
-                Key = new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Base16.Decode(publicKey), 0));
+                if (Base16.Decode(publicKey).Length != 32)
+                {
+                    
+                }
+                
+                Key = new EdDsaSecurityKey(EdDsa.Create(
+                    new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = Base16.Decode(publicKey)}));
             }
         }
             

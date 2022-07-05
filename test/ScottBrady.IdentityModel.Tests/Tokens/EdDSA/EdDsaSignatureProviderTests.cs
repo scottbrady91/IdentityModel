@@ -1,10 +1,6 @@
-using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
 using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
@@ -36,7 +32,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
                 "OyBxBr344Ny-0vRCeEMLSnuEO1IecybvJBivrjum4d-dgN5WLnEAGAO43MlZeRGn1F3fRXO_xlYot68PtDuiAA";
             
             const string privateKey = "FU1F1QTjYwfB-xkO6aknnBifE_Ywa94U04xpd-XJfBs";
-            var edDsaSecurityKey = new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(Base64UrlEncoder.DecodeBytes(privateKey), 0));
+            var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(
+                new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {D = Base64UrlEncoder.DecodeBytes(privateKey)}));
             
             var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
 
@@ -54,7 +51,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
                 "OyBxBr344Ny-0vRCeEMLSnuEO1IecybvJBivrjum4d-dgN5WLnEAGAO43MlZeRGn1F3fRXO_xlYot68PtDuiAA";
             
             const string publicKey = "60mR98SQlHUSeLeIu7TeJBTLRG10qlcDLU4AJjQdqMQ";
-            var edDsaSecurityKey = new EdDsaSecurityKey(new Ed25519PublicKeyParameters(Base64UrlEncoder.DecodeBytes(publicKey), 0));
+            var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(
+                new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = Base64UrlEncoder.DecodeBytes(publicKey)}));
 
             var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
 
