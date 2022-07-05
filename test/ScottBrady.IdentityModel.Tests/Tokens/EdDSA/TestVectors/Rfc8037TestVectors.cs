@@ -19,7 +19,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
             byte[] expectedSignature = Base64UrlEncoder.DecodeBytes("hgyY0il_MGCjP0JzlnLWG1PPOt7-09PGcvMg3AIbQR6dWbhijcNR4ki4iylGjg5BhVsPt9g7sVvpAr_MuM0KAg");
 
             var signatureProvider = new EdDsaSignatureProvider(
-                new EdDsaSecurityKey(EdDsa.CreateFromPrivateKey(privateKey, ExtendedSecurityAlgorithms.Curves.Ed25519)),
+                new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {D = privateKey})),
                 ExtendedSecurityAlgorithms.EdDsa);
 
             signatureProvider.Sign(plaintext).Should().BeEquivalentTo(expectedSignature);
@@ -32,7 +32,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
             byte[] signature = Base64UrlEncoder.DecodeBytes("hgyY0il_MGCjP0JzlnLWG1PPOt7-09PGcvMg3AIbQR6dWbhijcNR4ki4iylGjg5BhVsPt9g7sVvpAr_MuM0KAg");
 
             var signatureProvider = new EdDsaSignatureProvider(
-                new EdDsaSecurityKey(EdDsa.CreateFromPublicKey(publicKey, ExtendedSecurityAlgorithms.Curves.Ed25519)),
+                new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = publicKey})),
                 ExtendedSecurityAlgorithms.EdDsa);
 
             signatureProvider.Verify(plaintext, signature).Should().BeTrue();

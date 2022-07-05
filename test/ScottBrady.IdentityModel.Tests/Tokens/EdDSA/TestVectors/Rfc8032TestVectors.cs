@@ -26,8 +26,8 @@ public class Rfc8032TestVectors
     [Theory, MemberData(nameof(TestVectors))]
     public void SignAndVerify_ExpectValid(EdDsaTestVector testVector)
     {
-        var privateKey = EdDsa.CreateFromPrivateKey(testVector.PrivateKey, testVector.Curve);
-        var publicKey = EdDsa.CreateFromPublicKey(testVector.PublicKey, testVector.Curve);
+        var privateKey = EdDsa.Create(new EdDsaParameters(testVector.Curve) {D = testVector.PrivateKey});
+        var publicKey = EdDsa.Create(new EdDsaParameters(testVector.Curve) {X = testVector.PublicKey});
 
         privateKey.Sign(testVector.Message).Should().BeEquivalentTo(testVector.Signature);
         publicKey.Verify(testVector.Message, testVector.Signature).Should().BeTrue();

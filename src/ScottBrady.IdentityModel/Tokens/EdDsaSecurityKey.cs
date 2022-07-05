@@ -26,22 +26,22 @@ namespace ScottBrady.IdentityModel.Tokens
         public EdDsaSecurityKey(Ed25519PrivateKeyParameters keyParameters) : this()
         {
             if (keyParameters == null) throw new ArgumentNullException(nameof(keyParameters));
-            EdDsa = EdDsa.CreateFromPrivateKey(keyParameters.GetEncoded(), ExtendedSecurityAlgorithms.Curves.Ed25519);
+            EdDsa = EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {D = keyParameters.GetEncoded()});
         }
 
         [Obsolete("Deprecated in favor of EdDsa constructor")]
         public EdDsaSecurityKey(Ed25519PublicKeyParameters keyParameters) : this()
         {
             if (keyParameters == null) throw new ArgumentNullException(nameof(keyParameters));
-            EdDsa = EdDsa.CreateFromPublicKey(keyParameters.GetEncoded(), ExtendedSecurityAlgorithms.Curves.Ed25519);
+            EdDsa = EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = keyParameters.GetEncoded()});
         }
         
         public override int KeySize => throw new NotImplementedException();
         
         [Obsolete("HasPrivateKey method is deprecated, please use PrivateKeyStatus.")]
-        public override bool HasPrivateKey => EdDsa.KeyParameters.IsPrivate;
+        public override bool HasPrivateKey => EdDsa.Parameters.D != null;
 
         public override PrivateKeyStatus PrivateKeyStatus
-            => EdDsa.KeyParameters.IsPrivate ? PrivateKeyStatus.Exists : PrivateKeyStatus.DoesNotExist;
+            => EdDsa.Parameters.D != null ? PrivateKeyStatus.Exists : PrivateKeyStatus.DoesNotExist;
     }
 }

@@ -31,8 +31,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
 #pragma warning restore CS0618
 
             securityKey.CryptoProviderFactory.CustomCryptoProvider.Should().BeOfType<ExtendedCryptoProvider>();
-            securityKey.EdDsa.KeyParameters.Should().Be(keyPair.Private);
-            securityKey.EdDsa.Curve.Should().Be(ExtendedSecurityAlgorithms.Curves.Ed25519);
+            securityKey.EdDsa.Parameters.D.Should().BeEquivalentTo(((Ed25519PrivateKeyParameters) keyPair.Private).GetEncoded());
+            securityKey.EdDsa.Parameters.Curve.Should().Be(ExtendedSecurityAlgorithms.Curves.Ed25519);
             securityKey.PrivateKeyStatus.Should().Be(PrivateKeyStatus.Exists);
 
 #pragma warning disable 618
@@ -50,8 +50,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
 #pragma warning restore CS0618
 
             securityKey.CryptoProviderFactory.CustomCryptoProvider.Should().BeOfType<ExtendedCryptoProvider>();
-            securityKey.EdDsa.KeyParameters.Should().Be(keyPair.Public);
-            securityKey.EdDsa.Curve.Should().Be(ExtendedSecurityAlgorithms.Curves.Ed25519);
+            securityKey.EdDsa.Parameters.X.Should().BeEquivalentTo(((Ed25519PublicKeyParameters) keyPair.Public).GetEncoded());
+            securityKey.EdDsa.Parameters.Curve.Should().Be(ExtendedSecurityAlgorithms.Curves.Ed25519);
             securityKey.PrivateKeyStatus.Should().Be(PrivateKeyStatus.DoesNotExist);
 
 #pragma warning disable 618

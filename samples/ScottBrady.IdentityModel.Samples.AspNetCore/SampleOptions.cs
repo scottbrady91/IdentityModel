@@ -32,9 +32,9 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
         public RsaSecurityKey PasetoV1PublicKey => new RsaSecurityKey(RSA.Create(PasetoV1PrivateKey.Rsa.ExportParameters(false)));
 
         public readonly EdDsaSecurityKey PasetoV2PublicKey = new EdDsaSecurityKey(
-            EdDsa.CreateFromPublicKey(Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M="), ExtendedSecurityAlgorithms.Curves.Ed25519));
+            EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X =Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M=")}));
         
         public readonly EdDsaSecurityKey PasetoV2PrivateKey= new EdDsaSecurityKey(
-                EdDsa.CreateFromPrivateKey(Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M="), ExtendedSecurityAlgorithms.Curves.Ed25519));
+            EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {D =Convert.FromBase64String("doaS7QILHBdnPULlgs1fX0MWpd1wak14r1yT6ae/b4M=")}));
     }
 }

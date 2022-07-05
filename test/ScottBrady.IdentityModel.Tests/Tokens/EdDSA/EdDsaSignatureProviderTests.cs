@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
@@ -17,11 +18,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
         [Fact]
         public void ctor_ExpectPropertiesSet()
         {
-            var keyPairGenerator = new Ed25519KeyPairGenerator();
-            keyPairGenerator.Init(new Ed25519KeyGenerationParameters(new SecureRandom()));
-            var keyPair = keyPairGenerator.GenerateKeyPair();
-
-            var expectedSecurityKey = new EdDsaSecurityKey((Ed25519PublicKeyParameters) keyPair.Public);
+            var expectedSecurityKey = new EdDsaSecurityKey(EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519));
             var expectedAlgorithm = ExtendedSecurityAlgorithms.EdDsa;
 
             var provider = new EdDsaSignatureProvider(expectedSecurityKey, expectedAlgorithm);
@@ -40,7 +37,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
             
             const string privateKey = "FU1F1QTjYwfB-xkO6aknnBifE_Ywa94U04xpd-XJfBs";
             var edDsaSecurityKey = new EdDsaSecurityKey(new Ed25519PrivateKeyParameters(Base64UrlEncoder.DecodeBytes(privateKey), 0));
-
+            
             var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
 
             var signature = signatureProvider.Sign(Encoding.UTF8.GetBytes(plaintext));
