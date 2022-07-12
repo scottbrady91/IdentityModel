@@ -4,7 +4,7 @@
 
 Helper libraries for tokens and cryptography in .NET.
 
-- EdDSA support for JWTs
+- EdDSA support for JWTs (Ed25519 and Ed448)
 - Branca tokens with JWT style validation
 - PASETO (v1.public & v2.public) with JWT style validation
 - Base16 (hex) and Base62 encoders
