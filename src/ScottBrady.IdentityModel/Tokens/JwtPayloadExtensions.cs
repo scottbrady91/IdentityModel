@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -49,7 +50,7 @@ namespace ScottBrady.IdentityModel.Tokens
             payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Iat, dateTimeFormatFunc(tokenDescriptor.IssuedAt, now));
             payload.AddClaimIfNotPresent(JwtRegisteredClaimNames.Nbf, dateTimeFormatFunc(tokenDescriptor.NotBefore, now));
 
-            return JsonSerializer.Serialize(payload);
+            return JsonSerializer.Serialize(payload, new JsonSerializerOptions{Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping});
         }
 
         /// <summary>

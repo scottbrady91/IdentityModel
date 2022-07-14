@@ -278,6 +278,16 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
         }
 
         [Fact]
+        public void ToJwtPayload_WhenIsoDateFormat_ExpectNoOverencoding()
+        {
+            var descriptor = new SecurityTokenDescriptor();
+
+            var jwtPayload = descriptor.ToJwtPayload(JwtDateTimeFormat.Iso);
+
+            var expiry = jwtPayload.Should().NotContain(@"\u002B");
+        }
+
+        [Fact]
         public void ToJwtClaimDictionary_WhenClaimTypeHasSingleValue_ExpectSingleClaim()
         {
             var claim = new Claim("email", "bob@test");
