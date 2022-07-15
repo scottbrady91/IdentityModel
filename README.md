@@ -72,7 +72,7 @@ Explicit versioning allows PASETO to side-step [attacks on signature validation]
 
 If you are considering using PASETO, I recommend reading [RFC 8725 - JWT Best Current Practices](https://www.rfc-editor.org/rfc/rfc8725.html) and deciding if the interoperable JWT format is still wrong for you.
 
-- NuGet: [ScottBrady.IdentityModel.Tokens.Branca](https://www.nuget.org/packages/ScottBrady.IdentityModel.Tokens.Paseto)
+- NuGet: [ScottBrady.IdentityModel.Tokens.Paseto](https://www.nuget.org/packages/ScottBrady.IdentityModel.Tokens.Paseto)
 - [Test vectors](https://github.com/scottbrady91/IdentityModel/tree/master/test/ScottBrady.IdentityModel.Tests/Tokens/Paseto/TestVectors)
 
 ```csharp
