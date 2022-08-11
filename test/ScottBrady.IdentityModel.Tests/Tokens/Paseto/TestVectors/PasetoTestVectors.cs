@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
@@ -33,19 +34,31 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             {
                 TestVectors.Add(new PasetoTestVector("v2", testVector));
             }
+            foreach (var testVector in data["v4"]?.AsArray() ?? throw new Exception("Failed to load v2 test vectors"))
+            {
+                TestVectors.Add(new PasetoTestVector("v4", testVector));
+            }
         }
         
         [Theory, MemberData(nameof(TestVectors))]
         public void ValidateToken_ExpectCorrectResult(PasetoTestVector testVector)
         {
             var handler = new PasetoTokenHandler();
-            var result = handler.ValidateToken(testVector.Token, new TokenValidationParameters
+            var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = false,
                 ValidateAudience = false,
                 ValidateLifetime = false,
                 IssuerSigningKey = testVector.Key
-            });
+            };
+
+            if (!string.IsNullOrWhiteSpace(testVector.ImplicitAssertion))
+            {
+                tokenValidationParameters.PropertyBag ??= new Dictionary<string, object>();
+                tokenValidationParameters.PropertyBag.Add(PasetoConstants.ImplicitAssertionKey, testVector.ImplicitAssertion);
+            }
+            
+            var result = handler.ValidateToken(testVector.Token, tokenValidationParameters);
 
             if (testVector.ShouldFail)
             {
@@ -85,7 +98,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             Name = data["name"]?.GetValue<string>();
             ShouldFail = data["expect-fail"]?.GetValue<bool>() ?? throw new Exception("Unable to parse expect-fail");
             Token = data["token"]?.GetValue<string>();
-            
+            ImplicitAssertion = data["implicit-assertion"]?.GetValue<string>();
+
             var payload = data["payload"]?.GetValue<string>();
             if (payload != null)
             {
@@ -99,13 +113,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
                 rsaKey.ImportFromPem(publicKey);
                 Key = new RsaSecurityKey(rsaKey);
             }
-            else if (version == "v2")
+            else if (version == "v2" || version == "v4")
             {
-                if (Base16.Decode(publicKey).Length != 32)
-                {
-                    
-                }
-                
                 Key = new EdDsaSecurityKey(EdDsa.Create(
                     new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = Base16.Decode(publicKey)}));
             }
@@ -116,5 +125,6 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
         public SecurityKey Key { get; }
         public string Token { get; }
         public JsonNode ExpectedPayload { get; }
+        public string ImplicitAssertion { get; }
     }
 }

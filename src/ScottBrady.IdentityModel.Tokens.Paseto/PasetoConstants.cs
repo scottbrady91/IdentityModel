@@ -8,6 +8,7 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
         {
             public const string V1 = "v1";
             public const string V2 = "v2";
+            public const string V4 = "v4";
         }
         
         public class Purposes
@@ -15,5 +16,7 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
             public const string Local = "local";
             public const string Public = "public";
         }
+
+        public const string ImplicitAssertionKey = "implicit-assertion";
     }
 }

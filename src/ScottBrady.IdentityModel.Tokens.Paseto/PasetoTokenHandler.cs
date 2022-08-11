@@ -13,7 +13,8 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
             this.supportedVersions = supportedVersions ?? new Dictionary<string, PasetoVersionStrategy>
             {
                 {PasetoConstants.Versions.V1, new PasetoVersion1()},
-                {PasetoConstants.Versions.V2, new PasetoVersion2()}
+                {PasetoConstants.Versions.V2, new PasetoVersion2()},
+                {PasetoConstants.Versions.V4, new PasetoVersion4()}
             };
         }
 
@@ -68,7 +69,9 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
             if (!CanReadToken(token)) return new TokenValidationResult {Exception = new SecurityTokenException("Unable to read token")};
 
             var pasetoToken = new PasetoToken(token);
-
+            if (validationParameters.PropertyBag?.ContainsKey(PasetoConstants.ImplicitAssertionKey) == true)
+                pasetoToken.ImplicitAssertion = validationParameters.PropertyBag[PasetoConstants.ImplicitAssertionKey].ToString();
+            
             // get strategy for version + purpose
             if (!supportedVersions.TryGetValue(pasetoToken.Version, out var strategy))
             {

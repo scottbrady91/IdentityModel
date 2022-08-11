@@ -38,6 +38,8 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
         
         public string EncodedFooter { get; }
         public string Footer { get; }
+        
+        public string ImplicitAssertion { get; set; }
 
         public void SetPayload(string payload)
         {
