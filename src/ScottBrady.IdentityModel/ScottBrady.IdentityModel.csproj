@@ -17,10 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Portable.BouncyCastle" Version="1.8.10" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.10.0" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.10.0" />
-    <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.3" PrivateAssets="all" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.23.1" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.23.1" />
+    <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

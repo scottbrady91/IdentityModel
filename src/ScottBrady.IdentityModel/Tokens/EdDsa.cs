@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -71,6 +72,17 @@ public class EdDsa
         return signer.GenerateSignature();
     }
 
+    public bool Verify(byte[] input, int inputOffset, int inputLength, byte[] signature, int signatureOffset, int signatureLength)
+    {
+        
+        if (input == null) throw new ArgumentNullException(nameof(input));
+        if (signature == null) throw new ArgumentNullException(nameof(signature));
+        if (inputLength <= 0) throw new ArgumentException($"{nameof(inputLength)} must be greater than 0");
+        if (signatureLength <= 0) throw new ArgumentException($"{nameof(signatureLength)} must be greater than 0");
+        
+        return Verify(input.Skip(inputOffset).Take(inputLength).ToArray(), signature.Skip(signatureOffset).Take(signatureLength).ToArray());
+    }
+    
     public bool Verify(byte[] input, byte[] signature)
     {
         if (input == null) throw new ArgumentNullException(nameof(input));

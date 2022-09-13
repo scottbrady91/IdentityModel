@@ -63,6 +63,26 @@ public class EdDsaTests
     public void Verify_WhenSignatureNull_ExpectArgumentNullException()
         => Assert.Throws<ArgumentNullException>(() => EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519).Verify(new byte[32], null));
     
+    [Fact]
+    public void VerifyWithOffsets_WhenSignatureNull_ExpectArgumentNullException()
+        => Assert.Throws<ArgumentNullException>(() => 
+            EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519).Verify(new byte[32],0,0, null,0,32));    
+ 
+    [Fact]
+    public void VerifyWithOffsets_WhenInputNull_ExpectArgumentNullException()
+        => Assert.Throws<ArgumentNullException>(() => 
+            EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519).Verify(null,0,0, new byte[32],0,32));  
+    
+    [Fact]
+    public void VerifyWithOffsets_WhenInputLengthZero_ExpectArgumentException()
+        => Assert.Throws<ArgumentException>(() => 
+            EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519).Verify(new byte[32],0,0, new byte[32],0,32));
+    
+    [Fact]
+    public void VerifyWithOffsets_WhenSignatureLengthZero_ExpectArgumentException()
+        => Assert.Throws<ArgumentException>(() => 
+            EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519).Verify(new byte[32],0,32, new byte[32],0,0));
+    
     private static AsymmetricCipherKeyPair GenerateEd25519KeyPair()
     {
         var keyPairGenerator = new Ed25519KeyPairGenerator();
