@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens
@@ -13,8 +15,9 @@ namespace ScottBrady.IdentityModel.Tokens
         }
 
         protected override void Dispose(bool disposing) { }
-        
         public override byte[] Sign(byte[] input) => edDsaKey.EdDsa.Sign(input);
         public override bool Verify(byte[] input, byte[] signature) => edDsaKey.EdDsa.Verify(input, signature);
+        public override bool Verify(byte[] input, int inputOffset, int inputLength, byte[] signature, int signatureOffset, int signatureLength) 
+            => edDsaKey.EdDsa.Verify(input, inputOffset, inputLength, signature, signatureOffset, signatureLength);
     }
 }

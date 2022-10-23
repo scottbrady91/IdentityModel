@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
@@ -62,5 +63,31 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
 
             isValidSignature.Should().BeTrue();
         }
+        
+        [Fact]
+        public void VerifyWithOffsets_WhenJwtSignedWithEd25519Curve_ExpectTrue()
+        {
+            const string plaintext =
+                "eyJraWQiOiIxMjMiLCJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJhdWQiOiJ5b3UiLCJzdWIiOiJib2IiLCJpc3MiOiJtZSIsImV4cCI6MTU5MDg0MTg4N30";
+            const string signature =
+                "OyBxBr344Ny-0vRCeEMLSnuEO1IecybvJBivrjum4d-dgN5WLnEAGAO43MlZeRGn1F3fRXO_xlYot68PtDuiAA";
+            
+            const string publicKey = "60mR98SQlHUSeLeIu7TeJBTLRG10qlcDLU4AJjQdqMQ";
+            var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(
+                new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = Base64UrlEncoder.DecodeBytes(publicKey)}));
+
+            var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
+
+            var inputBytes = Encoding.UTF8.GetBytes(plaintext);
+            var signatureBytes = Base64UrlEncoder.DecodeBytes(signature);
+            
+            var isValidSignature = signatureProvider.Verify(
+                inputBytes,
+                0, inputBytes.Length,
+                signatureBytes, 0,signatureBytes.Length);
+    
+            isValidSignature.Should().BeTrue();
+        }
+        
     }
 }
