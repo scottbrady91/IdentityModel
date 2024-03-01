@@ -36,7 +36,7 @@ namespace ScottBrady.IdentityModel.Tokens
             EdDsa = EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = keyParameters.GetEncoded()});
         }
         
-        public override int KeySize => throw new NotImplementedException();
+        public override int KeySize => EdDsa.KeySize;
         
         [Obsolete("HasPrivateKey method is deprecated, please use PrivateKeyStatus.")]
         public override bool HasPrivateKey => EdDsa.Parameters.D != null;
