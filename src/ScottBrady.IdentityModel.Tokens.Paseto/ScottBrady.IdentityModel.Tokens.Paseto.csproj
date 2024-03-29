@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <Authors>Scott Brady</Authors>
         <Description>.NET support for PASETO (v1 &amp; v2) using APIs from Microsoft.IdentityModel.Tokens.</Description>
         <PackageIcon>icon.png</PackageIcon>
