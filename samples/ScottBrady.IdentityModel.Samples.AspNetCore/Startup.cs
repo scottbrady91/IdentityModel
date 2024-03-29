@@ -48,13 +48,13 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore
                     options.SecurityTokenValidators.Add(new PasetoTokenHandler(
                         new Dictionary<string, PasetoVersionStrategy> {{PasetoConstants.Versions.V2, new PasetoVersion2()}}));
                     
-                    options.TokenValidationParameters.IssuerSigningKey = sampleOptions.PasetoV2PublicKey;
+                    options.TokenValidationParameters.IssuerSigningKey = sampleOptions.EdDsaPublicKey;
                     options.TokenValidationParameters.ValidIssuer = "me";
                     options.TokenValidationParameters.ValidAudience = "you";
                 })
                 .AddJwtBearer("eddsa", options =>
                 {
-                    options.TokenValidationParameters.IssuerSigningKey = sampleOptions.PasetoV2PublicKey;
+                    options.TokenValidationParameters.IssuerSigningKey = sampleOptions.EdDsaPublicKey;
                     options.TokenValidationParameters.ValidIssuer = "me";
                     options.TokenValidationParameters.ValidAudience = "you";
                 });

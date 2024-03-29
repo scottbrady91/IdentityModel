@@ -12,6 +12,7 @@ using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens.Branca
 {
+    [Obsolete("Branca support is now deprecated. Please reach out via GitHub if you would like to see this feature maintained.")]
     public class BrancaTokenHandler : JwtPayloadTokenHandler
     {
         private const int TagLength = 16;

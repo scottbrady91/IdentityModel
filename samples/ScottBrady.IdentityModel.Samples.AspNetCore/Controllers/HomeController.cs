@@ -63,7 +63,7 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
             if (version == PasetoConstants.Versions.V1)
                 signingCredentials = new SigningCredentials(options.PasetoV1PrivateKey, SecurityAlgorithms.RsaSsaPssSha384);
             else if (version == PasetoConstants.Versions.V2)
-                signingCredentials = new SigningCredentials(options.PasetoV2PrivateKey, ExtendedSecurityAlgorithms.EdDsa);
+                signingCredentials = new SigningCredentials(options.EdDsaPrivateKey, ExtendedSecurityAlgorithms.EdDsa);
             else 
                 throw new NotSupportedException("Unsupported version");
             
@@ -94,7 +94,7 @@ namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
             {
                 Issuer = "me",
                 Audience = "you",
-                SigningCredentials = new SigningCredentials(options.PasetoV2PrivateKey, ExtendedSecurityAlgorithms.EdDsa)
+                SigningCredentials = new SigningCredentials(options.EdDsaPrivateKey, ExtendedSecurityAlgorithms.EdDsa)
             };
 
             var token = handler.CreateToken(descriptor);

@@ -2,6 +2,7 @@ using System;
 
 namespace ScottBrady.IdentityModel.Tokens.Branca
 {
+    [Obsolete("Branca support is now deprecated. Please reach out via GitHub if you would like to see this feature maintained.")]
     public class BrancaToken
     {
         private static readonly DateTime MinDateTime = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc);

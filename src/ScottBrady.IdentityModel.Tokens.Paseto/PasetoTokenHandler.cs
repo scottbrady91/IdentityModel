@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens.Paseto
 {
+    [Obsolete("PASETO support is now deprecated. Please reach out via GitHub if you would like to see this feature maintained.")]
     public class PasetoTokenHandler : JwtPayloadTokenHandler
     {
         private readonly Dictionary<string, PasetoVersionStrategy> supportedVersions;
