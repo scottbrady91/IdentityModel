@@ -26,5 +26,9 @@
   <ItemGroup>
     <None Include="..\..\icon.png" Pack="true" PackagePath="icon.png" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="ScottBrady.IdentityModel.Tests" />
+  </ItemGroup>
 
 </Project>

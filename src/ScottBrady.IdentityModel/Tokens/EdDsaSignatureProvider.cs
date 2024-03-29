@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ScottBrady.IdentityModel.Tokens;
