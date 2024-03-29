@@ -10,17 +10,17 @@ using ScottBrady.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Tokens.Paseto;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
+namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto;
+
+/// <summary>
+/// Test vectors from https://github.com/paseto-standard/test-vectors
+/// </summary>
+public class PasetoTestVectors
 {
-    /// <summary>
-    /// Test vectors from https://github.com/paseto-standard/test-vectors
-    /// </summary>
-    public class PasetoTestVectors
-    {
-        public static readonly TheoryData<PasetoTestVector> TestVectors = new TheoryData<PasetoTestVector>();
+    public static readonly TheoryData<PasetoTestVector> TestVectors = new TheoryData<PasetoTestVector>();
         
-        static PasetoTestVectors()
-        {
+    static PasetoTestVectors()
+    {
             var file = File.OpenRead("Tokens/Paseto/TestVectors/testvectors.json");
             var data = JsonNode.Parse(file);
             if (data == null) throw new Exception("Failed to load test vectors");
@@ -35,9 +35,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             }
         }
         
-        [Theory, MemberData(nameof(TestVectors))]
-        public void ValidateToken_ExpectCorrectResult(PasetoTestVector testVector)
-        {
+    [Theory, MemberData(nameof(TestVectors))]
+    public void ValidateToken_ExpectCorrectResult(PasetoTestVector testVector)
+    {
             var handler = new PasetoTokenHandler();
             var result = handler.ValidateToken(testVector.Token, new TokenValidationParameters
             {
@@ -76,12 +76,12 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
                 }
             }
         }
-    }
+}
     
-    public class PasetoTestVector
+public class PasetoTestVector
+{
+    public PasetoTestVector(string version, JsonNode data)
     {
-        public PasetoTestVector(string version, JsonNode data)
-        {
             Name = data["name"]?.GetValue<string>();
             ShouldFail = data["expect-fail"]?.GetValue<bool>() ?? throw new Exception("Unable to parse expect-fail");
             Token = data["token"]?.GetValue<string>();
@@ -111,10 +111,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             }
         }
             
-        public string Name { get; }
-        public bool ShouldFail { get; }
-        public SecurityKey Key { get; }
-        public string Token { get; }
-        public JsonNode ExpectedPayload { get; }
-    }
+    public string Name { get; }
+    public bool ShouldFail { get; }
+    public SecurityKey Key { get; }
+    public string Token { get; }
+    public JsonNode ExpectedPayload { get; }
 }

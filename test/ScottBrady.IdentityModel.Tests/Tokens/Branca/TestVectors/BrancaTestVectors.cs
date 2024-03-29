@@ -6,18 +6,18 @@ using FluentAssertions;
 using ScottBrady.IdentityModel.Tokens.Branca;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
-{
-    /// <summary>
-    /// Test vectors from https://github.com/tuupola/branca-spec
-    /// </summary>
-    public class BrancaTestVectors
-    {
-        public static readonly TheoryData<BrancaTestVector> EncodingTestVectors = new TheoryData<BrancaTestVector>();
-        public static readonly TheoryData<BrancaTestVector> DecodingTestVectors = new TheoryData<BrancaTestVector>();
+namespace ScottBrady.IdentityModel.Tests.Tokens.Branca;
 
-        static BrancaTestVectors()
-        {
+/// <summary>
+/// Test vectors from https://github.com/tuupola/branca-spec
+/// </summary>
+public class BrancaTestVectors
+{
+    public static readonly TheoryData<BrancaTestVector> EncodingTestVectors = new TheoryData<BrancaTestVector>();
+    public static readonly TheoryData<BrancaTestVector> DecodingTestVectors = new TheoryData<BrancaTestVector>();
+
+    static BrancaTestVectors()
+    {
             var file = File.OpenRead("Tokens/Branca/TestVectors/testvectors.json");
             var data = JsonNode.Parse(file);
             if (data == null) throw new Exception("Failed to load test vectors");
@@ -36,18 +36,18 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             }
         }
 
-        [Theory, MemberData(nameof(EncodingTestVectors))]
-        public void CreateToken_ExpectCorrectResult(BrancaTestVector testVector)
-        {
+    [Theory, MemberData(nameof(EncodingTestVectors))]
+    public void CreateToken_ExpectCorrectResult(BrancaTestVector testVector)
+    {
             var handler = new TestBrancaTokenHandler {Nonce = testVector.Nonce};
             var token = handler.CreateToken(testVector.Message, testVector.TimeStamp, testVector.Key);
 
             token.Should().Be(testVector.Token);
         }
         
-        [Theory, MemberData(nameof(DecodingTestVectors))]
-        public void ValidateToken_ExpectCorrectResult(BrancaTestVector testVector)
-        {
+    [Theory, MemberData(nameof(DecodingTestVectors))]
+    public void ValidateToken_ExpectCorrectResult(BrancaTestVector testVector)
+    {
             var handler = new BrancaTokenHandler();
 
             BrancaToken result = null;
@@ -76,16 +76,16 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
             }
         }
 
-        public class TestBrancaTokenHandler : BrancaTokenHandler
-        {
-            public byte[] Nonce { get; set; }
-            protected override byte[] GenerateNonce() => Nonce ?? base.GenerateNonce();
-        }
+    public class TestBrancaTokenHandler : BrancaTokenHandler
+    {
+        public byte[] Nonce { get; set; }
+        protected override byte[] GenerateNonce() => Nonce ?? base.GenerateNonce();
+    }
         
-        public class BrancaTestVector
+    public class BrancaTestVector
+    {
+        public BrancaTestVector(JsonNode data)
         {
-            public BrancaTestVector(JsonNode data)
-            {
                 Id = data["id"]!.GetValue<int>();
                 Comment = data["comment"]?.GetValue<string>();
                 Token = data["token"]?.GetValue<string>();
@@ -103,14 +103,13 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Branca
                 Key = Base16.Decode(keyHex);
             }
 
-            public int Id { get; }
-            public string Comment { get; }
-            public byte[] Key { get; }
-            public byte[] Nonce { get; }
-            public uint TimeStamp { get; }
-            public string Token { get; }
-            public byte[] Message { get; }
-            public bool IsValid { get; }
-        }
+        public int Id { get; }
+        public string Comment { get; }
+        public byte[] Key { get; }
+        public byte[] Nonce { get; }
+        public uint TimeStamp { get; }
+        public string Token { get; }
+        public byte[] Message { get; }
+        public bool IsValid { get; }
     }
 }

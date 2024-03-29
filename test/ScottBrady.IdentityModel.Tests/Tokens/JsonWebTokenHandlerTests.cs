@@ -7,33 +7,33 @@ using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens
+namespace ScottBrady.IdentityModel.Tests.Tokens;
+
+public class JsonWebTokenHandlerTests
 {
-    public class JsonWebTokenHandlerTests
+    private const string Issuer = "me";
+    private const string Audience = "you";
+    private const string Subject = "123";
+
+    private readonly SecurityTokenDescriptor securityTokenDescriptor = new SecurityTokenDescriptor
     {
-        private const string Issuer = "me";
-        private const string Audience = "you";
-        private const string Subject = "123";
+        Issuer = Issuer,
+        Audience = Audience,
+        Expires = DateTime.UtcNow.AddMinutes(30),
+        Claims = new Dictionary<string, object> {{"sub", Subject}}
+    };
 
-        private readonly SecurityTokenDescriptor securityTokenDescriptor = new SecurityTokenDescriptor
-        {
-            Issuer = Issuer,
-            Audience = Audience,
-            Expires = DateTime.UtcNow.AddMinutes(30),
-            Claims = new Dictionary<string, object> {{"sub", Subject}}
-        };
-
-        private readonly TokenValidationParameters tokenValidationParameters = new TokenValidationParameters
-        {
-            ValidIssuer = Issuer,
-            ValidAudience = Audience,
-            ValidateLifetime = true,
-            RequireExpirationTime = true
-        };
+    private readonly TokenValidationParameters tokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = Issuer,
+        ValidAudience = Audience,
+        ValidateLifetime = true,
+        RequireExpirationTime = true
+    };
         
-        [Fact]
-        public void WhenEd25519TokenGenerated_ExpectEdDsaTokenVerifiable()
-        {
+    [Fact]
+    public void WhenEd25519TokenGenerated_ExpectEdDsaTokenVerifiable()
+    {
             var key = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519);
 
             var handler = new JsonWebTokenHandler();
@@ -48,9 +48,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             validationResult.ClaimsIdentity.Claims.Should().Contain(x => x.Type == "sub" && x.Value == Subject);
         }
         
-        [Fact]
-        public void WhenEd448TokenGenerated_ExpectEdDsaTokenVerifiable()
-        {
+    [Fact]
+    public void WhenEd448TokenGenerated_ExpectEdDsaTokenVerifiable()
+    {
             var key = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed448);
 
             var handler = new JsonWebTokenHandler();
@@ -65,9 +65,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             validationResult.ClaimsIdentity.Claims.Should().Contain(x => x.Type == "sub" && x.Value == Subject);
         }
 
-        [Fact]
-        public void WhenEd25519SignatureValidatedUsingEs448_ExpectInvalidToken()
-        {
+    [Fact]
+    public void WhenEd25519SignatureValidatedUsingEs448_ExpectInvalidToken()
+    {
             var signingKey = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519);
             var validationKey = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed448);
 
@@ -81,5 +81,4 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
 
             validationResult.IsValid.Should().BeFalse();
         }
-    }
 }

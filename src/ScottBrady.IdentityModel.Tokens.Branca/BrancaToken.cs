@@ -1,35 +1,34 @@
 using System;
 
-namespace ScottBrady.IdentityModel.Tokens.Branca
+namespace ScottBrady.IdentityModel.Tokens.Branca;
+
+[Obsolete("Branca support is now deprecated. Please reach out via GitHub if you would like to see this feature maintained.")]
+public class BrancaToken
 {
-    [Obsolete("Branca support is now deprecated. Please reach out via GitHub if you would like to see this feature maintained.")]
-    public class BrancaToken
+    private static readonly DateTime MinDateTime = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime MaxDateTime = new DateTime(2106, 02, 07, 06, 28, 15, DateTimeKind.Utc);
+        
+    public BrancaToken(byte[] payload, uint timestamp)
     {
-        private static readonly DateTime MinDateTime = new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc);
-        private static readonly DateTime MaxDateTime = new DateTime(2106, 02, 07, 06, 28, 15, DateTimeKind.Utc);
+        Payload = payload ?? throw new ArgumentNullException(nameof(payload));
+        Timestamp = GetDateTime(timestamp);
+        BrancaFormatTimestamp = timestamp;
+    }
         
-        public BrancaToken(byte[] payload, uint timestamp)
-        {
-            Payload = payload ?? throw new ArgumentNullException(nameof(payload));
-            Timestamp = GetDateTime(timestamp);
-            BrancaFormatTimestamp = timestamp;
-        }
-        
-        public byte[] Payload { get; }
-        public DateTime Timestamp { get; }
-        public uint BrancaFormatTimestamp { get; }
+    public byte[] Payload { get; }
+    public DateTime Timestamp { get; }
+    public uint BrancaFormatTimestamp { get; }
 
-        public static DateTime GetDateTime(uint timestamp)
-        {
-            return DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
-        }
+    public static DateTime GetDateTime(uint timestamp)
+    {
+        return DateTimeOffset.FromUnixTimeSeconds(timestamp).UtcDateTime;
+    }
 
-        public static uint GetBrancaTimestamp(DateTimeOffset dateTime)
-        {            
-            if (dateTime < MinDateTime || MaxDateTime < dateTime)
-                throw new InvalidOperationException("Timestamp cannot be before 1970 or after 2106 (uint max)");
+    public static uint GetBrancaTimestamp(DateTimeOffset dateTime)
+    {            
+        if (dateTime < MinDateTime || MaxDateTime < dateTime)
+            throw new InvalidOperationException("Timestamp cannot be before 1970 or after 2106 (uint max)");
 
-            return Convert.ToUInt32(dateTime.ToUniversalTime().ToUnixTimeSeconds());
-        }
+        return Convert.ToUInt32(dateTime.ToUniversalTime().ToUnixTimeSeconds());
     }
 }

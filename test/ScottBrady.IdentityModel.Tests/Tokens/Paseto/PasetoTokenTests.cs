@@ -4,26 +4,26 @@ using Microsoft.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Tokens.Paseto;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
+namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto;
+
+public class PasetoTokenTests
 {
-    public class PasetoTokenTests
-    {
-        private const string ValidToken = "v2.local.xyz";
+    private const string ValidToken = "v2.local.xyz";
         
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData(" ")]
-        public void ctor_WhenTokenIsNullOrWhitespace_ExpectArgumentNullException(string token)
-            => Assert.Throws<ArgumentNullException>(() => new PasetoToken(token));
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void ctor_WhenTokenIsNullOrWhitespace_ExpectArgumentNullException(string token)
+        => Assert.Throws<ArgumentNullException>(() => new PasetoToken(token));
 
-        [Fact]
-        public void ctor_WhenTokenHasTooManyParts_ExpectArgumentException()
-            => Assert.Throws<ArgumentException>(() => new PasetoToken("ey.ey.ey.ey.ey"));
+    [Fact]
+    public void ctor_WhenTokenHasTooManyParts_ExpectArgumentException()
+        => Assert.Throws<ArgumentException>(() => new PasetoToken("ey.ey.ey.ey.ey"));
 
-        [Fact]
-        public void ctor_WhenValidPasetoToken_ExpectCorrectProperties()
-        {
+    [Fact]
+    public void ctor_WhenValidPasetoToken_ExpectCorrectProperties()
+    {
             const string expectedVersion = "v2";
             const string expectedPurpose = "public";
             const string expectedPayload = "fa919c9d3d1248f29213521a40fc2b57";
@@ -40,9 +40,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             pasetoToken.EncodedFooter.Should().BeNull();
         }
         
-        [Fact]
-        public void ctor_WhenValidPasetoTokenWithFooter_ExpectCorrectProperties()
-        {
+    [Fact]
+    public void ctor_WhenValidPasetoTokenWithFooter_ExpectCorrectProperties()
+    {
             const string expectedVersion = "v2";
             const string expectedPurpose = "public";
             const string expectedPayload = "fa919c9d3d1248f29213521a40fc2b57";
@@ -61,25 +61,25 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
             pasetoToken.Payload.Should().BeNull();
         }
         
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData(" ")]
-        public void SetPayload_WhenPayloadIsNullOrWhitespace_ExpectArgumentNullException(string payload)
-            => Assert.Throws<ArgumentNullException>(() => new PasetoToken(ValidToken).SetPayload(payload));
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void SetPayload_WhenPayloadIsNullOrWhitespace_ExpectArgumentNullException(string payload)
+        => Assert.Throws<ArgumentNullException>(() => new PasetoToken(ValidToken).SetPayload(payload));
 
-        [Fact]
-        public void SetPayload_WhenPayloadIsNotJson_ExpectArgumentException()
-        {
+    [Fact]
+    public void SetPayload_WhenPayloadIsNotJson_ExpectArgumentException()
+    {
             const string invalidPayload = "<xml>oops</xml>";
             var token = new PasetoToken(ValidToken);
 
             Assert.Throws<ArgumentException>(() => token.SetPayload(invalidPayload));
         }
         
-        [Fact]
-        public void SetPayload_WhenValidPayload_ExpectParsedPayload()
-        {
+    [Fact]
+    public void SetPayload_WhenValidPayload_ExpectParsedPayload()
+    {
             const string expectedKey = "test";
             const string expectedValue = "test_val";
             
@@ -90,5 +90,4 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.Paseto
 
             token.Payload.Should().Be(payload);
         }
-    }
 }

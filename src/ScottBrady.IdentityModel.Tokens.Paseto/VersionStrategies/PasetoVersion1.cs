@@ -5,19 +5,19 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ScottBrady.IdentityModel.Tokens.Paseto
+namespace ScottBrady.IdentityModel.Tokens.Paseto;
+
+public class PasetoVersion1 : PasetoVersionStrategy
 {
-    public class PasetoVersion1 : PasetoVersionStrategy
-    {
-        private const string PublicHeader = "v1.public.";
+    private const string PublicHeader = "v1.public.";
         
-        public override string Encrypt(string payload, string footer, EncryptingCredentials encryptingCredentials)
-        {
+    public override string Encrypt(string payload, string footer, EncryptingCredentials encryptingCredentials)
+    {
             throw new NotSupportedException("v1.local not supported");
         }
 
-        public override string Sign(string payload, string footer, SigningCredentials signingCredentials)
-        {
+    public override string Sign(string payload, string footer, SigningCredentials signingCredentials)
+    {
             if (payload == null) throw new ArgumentNullException(nameof(payload));
             if (signingCredentials == null) throw new ArgumentNullException(nameof(signingCredentials));
 
@@ -47,13 +47,13 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
             return token;
         }
 
-        public override PasetoSecurityToken Decrypt(PasetoToken token, IEnumerable<SecurityKey> decryptionKeys)
-        {
+    public override PasetoSecurityToken Decrypt(PasetoToken token, IEnumerable<SecurityKey> decryptionKeys)
+    {
             throw new NotSupportedException("v1.local not supported");
         }
 
-        public override PasetoSecurityToken Verify(PasetoToken token, IEnumerable<SecurityKey> signingKeys)
-        {
+    public override PasetoSecurityToken Verify(PasetoToken token, IEnumerable<SecurityKey> signingKeys)
+    {
             if (token == null) throw new ArgumentNullException(nameof(token));
             if (signingKeys == null || !signingKeys.Any()) throw new ArgumentNullException(nameof(signingKeys));
 
@@ -100,5 +100,4 @@ namespace ScottBrady.IdentityModel.Tokens.Paseto
             
             throw new SecurityTokenInvalidSignatureException("Invalid PASETO signature");
         }
-    }
 }

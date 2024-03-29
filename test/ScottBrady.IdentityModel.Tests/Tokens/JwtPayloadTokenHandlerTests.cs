@@ -10,27 +10,27 @@ using Moq.Protected;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens
+namespace ScottBrady.IdentityModel.Tests.Tokens;
+
+public class JwtPayloadTokenHandlerTests
 {
-    public class JwtPayloadTokenHandlerTests
+    [Fact]
+    public void CreateClaimsIdentity_WhenTokenIsNull_ExpectArgumentNullException()
     {
-        [Fact]
-        public void CreateClaimsIdentity_WhenTokenIsNull_ExpectArgumentNullException()
-        {
             var handler = new TestJwtPayloadTokenHandler();
             Assert.Throws<ArgumentNullException>(() => handler.TestCreateClaimsIdentity(null, new TokenValidationParameters()));
         }
         
-        [Fact]
-        public void CreateClaimsIdentity_WhenTokenValidationParametersAreNull_ExpectArgumentNullException()
-        {
+    [Fact]
+    public void CreateClaimsIdentity_WhenTokenValidationParametersAreNull_ExpectArgumentNullException()
+    {
             var handler = new TestJwtPayloadTokenHandler();
             Assert.Throws<ArgumentNullException>(() => handler.TestCreateClaimsIdentity(new MockableJwtPayloadSecurityToken(), null));
         }
 
-        [Fact]
-        public void CreateClaimsIdentity_WhenTokenHasIssuer_ExpectClaimsToUseTokenIdentity()
-        {
+    [Fact]
+    public void CreateClaimsIdentity_WhenTokenHasIssuer_ExpectClaimsToUseTokenIdentity()
+    {
             const string expectedIssuer = "ids";
             var mockToken = new Mock<MockableJwtPayloadSecurityToken>();
             mockToken.Setup(x => x.Issuer).Returns(expectedIssuer);
@@ -44,9 +44,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             identity.Claims.All(x => x.OriginalIssuer == expectedIssuer).Should().BeTrue();
         }
 
-        [Fact]
-        public void CreateClaimsIdentity_WhenTokenHasNoIssuer_ExpectClaimsToUseDefaultIssuer()
-        {
+    [Fact]
+    public void CreateClaimsIdentity_WhenTokenHasNoIssuer_ExpectClaimsToUseDefaultIssuer()
+    {
             var mockToken = new Mock<MockableJwtPayloadSecurityToken>();
             mockToken.Setup(x => x.Issuer).Returns((string) null);
             mockToken.Setup(x => x.Claims).Returns(new List<Claim> {new Claim("sub", "123")});
@@ -59,9 +59,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             identity.Claims.All(x => x.OriginalIssuer == ClaimsIdentity.DefaultIssuer).Should().BeTrue();
         }
 
-        [Fact]
-        public void CreateClaimsIdentity_WhenTokenHasClaimsWithProperties_ExpectPropertiesPersisted()
-        {
+    [Fact]
+    public void CreateClaimsIdentity_WhenTokenHasClaimsWithProperties_ExpectPropertiesPersisted()
+    {
             var expectedProperty = new KeyValuePair<string, string>("test", "test_val");
             var claimWithProperty = new Claim("sub", "123") {Properties = {expectedProperty}};
             
@@ -77,18 +77,18 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             mappedClaim.Properties.Should().Contain(expectedProperty);
         }
 
-        [Fact]
-        public void ValidateTokenPayload_WhenTokenIsNull_ExpectResultWithArgumentNullException()
-        {
+    [Fact]
+    public void ValidateTokenPayload_WhenTokenIsNull_ExpectResultWithArgumentNullException()
+    {
             var result = new TestJwtPayloadTokenHandler().TestValidateTokenPayload(null, new TokenValidationParameters());
 
             result.IsValid.Should().BeFalse();
             result.Exception.Should().BeOfType<ArgumentNullException>();
         }
 
-        [Fact]
-        public void ValidateTokenPayload_WhenTokenValidationParametersAreNull_ExpectResultWithArgumentNullException()
-        {
+    [Fact]
+    public void ValidateTokenPayload_WhenTokenValidationParametersAreNull_ExpectResultWithArgumentNullException()
+    {
             var token = CreateMockToken().Object;
             
             var result = new TestJwtPayloadTokenHandler().TestValidateTokenPayload(token, null);
@@ -97,9 +97,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             result.Exception.Should().BeOfType<ArgumentNullException>();
         }
 
-        [Fact]
-        public void ValidateTokenPayload_WhenInvalidLifetime_ExpectFailureResultWithCorrectException()
-        {
+    [Fact]
+    public void ValidateTokenPayload_WhenInvalidLifetime_ExpectFailureResultWithCorrectException()
+    {
             var expectedException = new InvalidOperationException("correct error");
             
             var token = CreateMockToken().Object;
@@ -118,9 +118,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             result.Exception.Should().Be(expectedException);
         }
 
-        [Fact]
-        public void ValidateTokenPayload_WhenInvalidAudience_ExpectFailureResultWithCorrectException()
-        {
+    [Fact]
+    public void ValidateTokenPayload_WhenInvalidAudience_ExpectFailureResultWithCorrectException()
+    {
             var expectedException = new InvalidOperationException("correct error");
             
             var token = CreateMockToken().Object;
@@ -138,9 +138,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             result.Exception.Should().Be(expectedException);
         }
 
-        [Fact]
-        public void ValidateTokenPayload_WhenInvalidIssuer_ExpectFailureResultWithCorrectException()
-        {
+    [Fact]
+    public void ValidateTokenPayload_WhenInvalidIssuer_ExpectFailureResultWithCorrectException()
+    {
             var expectedException = new InvalidOperationException("correct error");
             
             var token = CreateMockToken().Object;
@@ -158,9 +158,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             result.Exception.Should().Be(expectedException);
         }
 
-        [Fact]
-        public void ValidateTokenPayload_WhenTokenReplay_ExpectFailureResultWithCorrectException()
-        {
+    [Fact]
+    public void ValidateTokenPayload_WhenTokenReplay_ExpectFailureResultWithCorrectException()
+    {
             var expectedException = new InvalidOperationException("correct error");
             
             var token = CreateMockToken().Object;
@@ -178,9 +178,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             result.Exception.Should().Be(expectedException);
         }
 
-        [Fact]
-        public void ValidateTokenPayload_WhenValidToken_ExpectSuccessResult()
-        {
+    [Fact]
+    public void ValidateTokenPayload_WhenValidToken_ExpectSuccessResult()
+    {
             var expectedIdentity = new ClaimsIdentity("test");
             
             var token = CreateMockToken().Object;
@@ -198,9 +198,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             result.SecurityToken.Should().Be(token);
         }
 
-        [Fact]
-        public void GetDecryptionKeys_WhenKeyResolverReturnsKey_ExpectKeyFromResolver()
-        {
+    [Fact]
+    public void GetDecryptionKeys_WhenKeyResolverReturnsKey_ExpectKeyFromResolver()
+    {
             var expectedKey = new RsaSecurityKey(RSA.Create());
             
             var handler = new TestJwtPayloadTokenHandler();
@@ -214,9 +214,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             keys.Should().Contain(expectedKey);
         }
 
-        [Fact]
-        public void GetDecryptionKeys_WheKeysInParameters_ExpectAllKeys()
-        {
+    [Fact]
+    public void GetDecryptionKeys_WheKeysInParameters_ExpectAllKeys()
+    {
             var expectedKey1 = new RsaSecurityKey(RSA.Create());
             var expectedKey2 = new RsaSecurityKey(RSA.Create());
             
@@ -233,9 +233,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             keys.Should().Contain(expectedKey2);
         }
 
-        [Fact]
-        public void GetSigningKeys_WhenKeyResolverReturnsKey_ExpectKeyFromResolver()
-        {
+    [Fact]
+    public void GetSigningKeys_WhenKeyResolverReturnsKey_ExpectKeyFromResolver()
+    {
             var expectedKey = new RsaSecurityKey(RSA.Create());
             
             var handler = new TestJwtPayloadTokenHandler();
@@ -249,9 +249,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             keys.Should().Contain(expectedKey);
         }
 
-        [Fact]
-        public void GetSigningKeys_WheKeysInParameters_ExpectAllKeys()
-        {
+    [Fact]
+    public void GetSigningKeys_WheKeysInParameters_ExpectAllKeys()
+    {
             var expectedKey1 = new RsaSecurityKey(RSA.Create());
             var expectedKey2 = new RsaSecurityKey(RSA.Create());
             
@@ -268,9 +268,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             keys.Should().Contain(expectedKey2);
         }
 
-        [Fact]
-        public void ValidateToken_ISecurityTokenValidator_WhenSuccess_ExpectInnerTokenAndIdentity()
-        {
+    [Fact]
+    public void ValidateToken_ISecurityTokenValidator_WhenSuccess_ExpectInnerTokenAndIdentity()
+    {
             var token = Guid.NewGuid().ToString();
             var validationParameters = new TokenValidationParameters {ValidIssuer = Guid.NewGuid().ToString()};
 
@@ -292,9 +292,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             parsedToken.Should().Be(expectedSecurityToken);
         }
 
-        [Fact]
-        public void ValidateToken_ISecurityTokenValidator_WhenFailure_ExpectInnerException()
-        {
+    [Fact]
+    public void ValidateToken_ISecurityTokenValidator_WhenFailure_ExpectInnerException()
+    {
             var token = Guid.NewGuid().ToString();
             var validationParameters = new TokenValidationParameters();
 
@@ -317,8 +317,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             exception.Should().Be(expectedException);
         }
 
-        private static Mock<MockableJwtPayloadSecurityToken> CreateMockToken()
-        {
+    private static Mock<MockableJwtPayloadSecurityToken> CreateMockToken()
+    {
             var mockToken = new Mock<MockableJwtPayloadSecurityToken>();
             
             mockToken.Setup(x => x.ValidTo).Returns(null);
@@ -330,8 +330,8 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             return mockToken;
         }
 
-        private static Mock<TestJwtPayloadTokenHandler> CreateMockHandler()
-        {
+    private static Mock<TestJwtPayloadTokenHandler> CreateMockHandler()
+    {
             var mockHandler = new Mock<TestJwtPayloadTokenHandler> {CallBase = false};
             mockHandler.Setup(x => x.TestValidateTokenPayload(It.IsAny<JwtPayloadSecurityToken>(), It.IsAny<TokenValidationParameters>()))
                 .CallBase();
@@ -340,35 +340,34 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             
             return mockHandler;
         }
-    }
+}
 
-    public class TestJwtPayloadTokenHandler : JwtPayloadTokenHandler
+public class TestJwtPayloadTokenHandler : JwtPayloadTokenHandler
+{
+    public virtual TokenValidationResult TestValidateTokenPayload(JwtPayloadSecurityToken token, TokenValidationParameters validationParameters)
+        => base.ValidateTokenPayload(token, validationParameters);
+    public virtual ClaimsIdentity TestCreateClaimsIdentity(JwtPayloadSecurityToken jwtToken, TokenValidationParameters validationParameters)
+        => base.CreateClaimsIdentity(jwtToken, validationParameters);
+
+    public virtual IEnumerable<SecurityKey> TestGetDecryptionKeys(string token, TokenValidationParameters validationParameters)
+        => base.GetDecryptionKeys(token, validationParameters);
+
+    public virtual IEnumerable<SecurityKey> TestGetSigningKeys(string token, TokenValidationParameters validationParameters)
+        => base.GetSigningKeys(token, validationParameters);
+
+    public override bool CanReadToken(string securityToken)
     {
-        public virtual TokenValidationResult TestValidateTokenPayload(JwtPayloadSecurityToken token, TokenValidationParameters validationParameters)
-            => base.ValidateTokenPayload(token, validationParameters);
-        public virtual ClaimsIdentity TestCreateClaimsIdentity(JwtPayloadSecurityToken jwtToken, TokenValidationParameters validationParameters)
-            => base.CreateClaimsIdentity(jwtToken, validationParameters);
-
-        public virtual IEnumerable<SecurityKey> TestGetDecryptionKeys(string token, TokenValidationParameters validationParameters)
-            => base.GetDecryptionKeys(token, validationParameters);
-
-        public virtual IEnumerable<SecurityKey> TestGetSigningKeys(string token, TokenValidationParameters validationParameters)
-            => base.GetSigningKeys(token, validationParameters);
-
-        public override bool CanReadToken(string securityToken)
-        {
             throw new NotImplementedException();
         }
 
-        public override TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters)
-        {
+    public override TokenValidationResult ValidateToken(string token, TokenValidationParameters validationParameters)
+    {
             throw new NotImplementedException();
         }
-    }
+}
     
-    public class MockableJwtPayloadSecurityToken : JwtPayloadSecurityToken
-    {
-        public override SecurityKey SecurityKey => throw new NotImplementedException();
-        public override SecurityKey SigningKey { get; set; }
-    }
+public class MockableJwtPayloadSecurityToken : JwtPayloadSecurityToken
+{
+    public override SecurityKey SecurityKey => throw new NotImplementedException();
+    public override SecurityKey SigningKey { get; set; }
 }
