@@ -6,15 +6,15 @@ using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
+namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA;
+
+public class EdDsaSignatureProviderTests
 {
-    public class EdDsaSignatureProviderTests
-    {
-        // privateKey = "FU1F1QTjYwfB-xkO6aknnBifE_Ywa94U04xpd-XJfBs"
+    // privateKey = "FU1F1QTjYwfB-xkO6aknnBifE_Ywa94U04xpd-XJfBs"
         
-        [Fact]
-        public void ctor_ExpectPropertiesSet()
-        {
+    [Fact]
+    public void ctor_ExpectPropertiesSet()
+    {
             var expectedSecurityKey = new EdDsaSecurityKey(EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519));
             var expectedAlgorithm = ExtendedSecurityAlgorithms.EdDsa;
 
@@ -24,9 +24,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
             provider.Algorithm.Should().Be(expectedAlgorithm);
         }
 
-        [Fact]
-        public void Sign_WhenSigningWithEd25519Curve_ExpectCorrectSignature()
-        {
+    [Fact]
+    public void Sign_WhenSigningWithEd25519Curve_ExpectCorrectSignature()
+    {
             const string plaintext =
                 "eyJraWQiOiIxMjMiLCJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJhdWQiOiJ5b3UiLCJzdWIiOiJib2IiLCJpc3MiOiJtZSIsImV4cCI6MTU5MDg0MTg4N30";
             const string expectedSignature =
@@ -43,9 +43,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
             signature.Should().BeEquivalentTo(Base64UrlEncoder.DecodeBytes(expectedSignature));
         }
 
-        [Fact]
-        public void Verify_WhenJwtSignedWithEd25519Curve_ExpectTrue()
-        {
+    [Fact]
+    public void Verify_WhenJwtSignedWithEd25519Curve_ExpectTrue()
+    {
             const string plaintext =
                 "eyJraWQiOiIxMjMiLCJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJhdWQiOiJ5b3UiLCJzdWIiOiJib2IiLCJpc3MiOiJtZSIsImV4cCI6MTU5MDg0MTg4N30";
             const string signature =
@@ -64,9 +64,9 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
             isValidSignature.Should().BeTrue();
         }
         
-        [Fact]
-        public void VerifyWithOffsets_WhenJwtSignedWithEd25519Curve_ExpectTrue()
-        {
+    [Fact]
+    public void VerifyWithOffsets_WhenJwtSignedWithEd25519Curve_ExpectTrue()
+    {
             const string plaintext =
                 "eyJraWQiOiIxMjMiLCJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJhdWQiOiJ5b3UiLCJzdWIiOiJib2IiLCJpc3MiOiJtZSIsImV4cCI6MTU5MDg0MTg4N30";
             const string signature =
@@ -89,5 +89,4 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA
             isValidSignature.Should().BeTrue();
         }
         
-    }
 }

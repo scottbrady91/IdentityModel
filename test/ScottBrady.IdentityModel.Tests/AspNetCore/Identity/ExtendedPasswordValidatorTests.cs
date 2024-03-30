@@ -7,36 +7,36 @@ using Moq;
 using ScottBrady.IdentityModel.AspNetCore.Identity;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
-{
-    public class ExtendedPasswordValidatorTests
-    {
-        private ExtendedPasswordValidator<IdentityUser> CreateSut() => new ExtendedPasswordValidator<IdentityUser>();
+namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity;
 
-        private Mock<ExtendedPasswordValidator<IdentityUser>> CreateMockedSut()
-        {
+public class ExtendedPasswordValidatorTests
+{
+    private ExtendedPasswordValidator<IdentityUser> CreateSut() => new ExtendedPasswordValidator<IdentityUser>();
+
+    private Mock<ExtendedPasswordValidator<IdentityUser>> CreateMockedSut()
+    {
             var sut = new Mock<ExtendedPasswordValidator<IdentityUser>>() {CallBase = true};
             sut.Setup(x => x.HasConsecutiveCharacters(It.IsAny<string>(), It.IsAny<int>())).Returns(false);
             return sut;
         }
 
-        [Fact]
-        public async Task ValidateAsync_WhenUserManagerIsNull_ExpectArgumentNullException()
-        {
+    [Fact]
+    public async Task ValidateAsync_WhenUserManagerIsNull_ExpectArgumentNullException()
+    {
             var sut = CreateMockedSut();
             await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Object.ValidateAsync(null, new IdentityUser(), "password"));
         }
 
-        [Fact]
-        public async Task ValidateAsync_WhenPasswordIsNull_ExpectArgumentNullException()
-        {
+    [Fact]
+    public async Task ValidateAsync_WhenPasswordIsNull_ExpectArgumentNullException()
+    {
             var sut = CreateMockedSut();
             await Assert.ThrowsAsync<ArgumentNullException>(() => sut.Object.ValidateAsync(CreateMockUserManager().Object, new IdentityUser(), null));
         }
 
-        [Fact]
-        public async Task ValidateAsync_WhenPasswordOptionsAreNotExtendedPasswordOptions_ExpectSuccess()
-        {
+    [Fact]
+    public async Task ValidateAsync_WhenPasswordOptionsAreNotExtendedPasswordOptions_ExpectSuccess()
+    {
             var options = new PasswordOptions();
             
             var sut = CreateMockedSut();
@@ -45,9 +45,9 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             result.Succeeded.Should().BeTrue();
         }
 
-        [Fact]
-        public async Task ValidateAsync_WhenPasswordOptionsAreExtendedPasswordOptionsButNotSet_ExpectSuccess()
-        {
+    [Fact]
+    public async Task ValidateAsync_WhenPasswordOptionsAreExtendedPasswordOptionsButNotSet_ExpectSuccess()
+    {
             var options = new ExtendedPasswordOptions();
             
             var sut = CreateMockedSut();
@@ -56,11 +56,11 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             result.Succeeded.Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(1, "123")]
-        [InlineData(3, "1234")]
-        public async Task ValidateAsync_WhenExtendedPasswordOptionsAndPasswordIsTooLong_ExpectError(int maxLength, string password)
-        {
+    [Theory]
+    [InlineData(1, "123")]
+    [InlineData(3, "1234")]
+    public async Task ValidateAsync_WhenExtendedPasswordOptionsAndPasswordIsTooLong_ExpectError(int maxLength, string password)
+    {
             var options = new ExtendedPasswordOptions{MaxLength = maxLength};
             
             var sut = CreateMockedSut();
@@ -70,13 +70,13 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             result.Errors.Should().Contain(x => x.Code == "PasswordTooLong" && x.Description.Contains(options.MaxLength.ToString()));
         }
 
-        [Theory]
-        [InlineData(-1, "123")]
-        [InlineData(0, "123")]
-        [InlineData(4, "123")]
-        [InlineData(3, "123")]
-        public async Task ValidateAsync_WhenExtendedPasswordOptionsAndPasswordIsNotTooLong_ExpectSuccess(int maxLength, string password)
-        {
+    [Theory]
+    [InlineData(-1, "123")]
+    [InlineData(0, "123")]
+    [InlineData(4, "123")]
+    [InlineData(3, "123")]
+    public async Task ValidateAsync_WhenExtendedPasswordOptionsAndPasswordIsNotTooLong_ExpectSuccess(int maxLength, string password)
+    {
             var options = new ExtendedPasswordOptions{MaxLength = maxLength};
             
             var sut = CreateMockedSut();
@@ -85,12 +85,12 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             result.Succeeded.Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(-1, "123")]
-        [InlineData(0, "123")]
-        [InlineData(3, "123")]
-        public async Task ValidateAsync_WhenExtendedPasswordOptionsAndMaxConsecutiveCharactersValid_ExpectSuccess(int maxConsecutive, string password)
-        {
+    [Theory]
+    [InlineData(-1, "123")]
+    [InlineData(0, "123")]
+    [InlineData(3, "123")]
+    public async Task ValidateAsync_WhenExtendedPasswordOptionsAndMaxConsecutiveCharactersValid_ExpectSuccess(int maxConsecutive, string password)
+    {
             var options = new ExtendedPasswordOptions {MaxConsecutiveChars = maxConsecutive};
             
             var sut = CreateMockedSut();
@@ -101,9 +101,9 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             result.Succeeded.Should().BeTrue();
         }
 
-        [Fact]
-        public async Task ValidateAsync_WhenExtendedPasswordOptionsAndTooManyMaxConsecutiveCharacters_ExpectError()
-        {
+    [Fact]
+    public async Task ValidateAsync_WhenExtendedPasswordOptionsAndTooManyMaxConsecutiveCharacters_ExpectError()
+    {
             const string password = "Password123!";
             var options = new ExtendedPasswordOptions {MaxConsecutiveChars = 2};
             
@@ -116,33 +116,33 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             result.Errors.Should().Contain(x => x.Code == "TooManyConsecutiveCharacters" && x.Description.Contains(options.MaxConsecutiveChars.ToString()));
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData(" ")]
-        public void HasConsecutiveCharacters_WhenPasswordIsNullOrWhitespace_ExpectArgumentNullException(string password)
-        {
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void HasConsecutiveCharacters_WhenPasswordIsNullOrWhitespace_ExpectArgumentNullException(string password)
+    {
             var sut = CreateSut();
             Assert.Throws<ArgumentNullException>(() => sut.HasConsecutiveCharacters(password, 42));
         }
         
-        [Theory]
-        [InlineData(0, "qwerty")]
-        [InlineData(1, "qwerty")]
-        [InlineData(2, "qwerty")]
-        [InlineData(2, "qqwerty")]
-        [InlineData(1, "qwertyuiopasdfghjklzxcvbnm")]
-        public void HasConsecutiveCharacters_WhenNoConsecutiveCharacters_ExpectFalse(int max, string password)
-        {
+    [Theory]
+    [InlineData(0, "qwerty")]
+    [InlineData(1, "qwerty")]
+    [InlineData(2, "qwerty")]
+    [InlineData(2, "qqwerty")]
+    [InlineData(1, "qwertyuiopasdfghjklzxcvbnm")]
+    public void HasConsecutiveCharacters_WhenNoConsecutiveCharacters_ExpectFalse(int max, string password)
+    {
             var sut = CreateSut();
             var hasConsecutiveCharacters = sut.HasConsecutiveCharacters(password, max);
 
             hasConsecutiveCharacters.Should().BeFalse();
         }
         
-        [Fact]
-        public void HasConsecutiveCharacters_WhenConsecutiveCharactersButUnderLimit_ExpectFalse()
-        {
+    [Fact]
+    public void HasConsecutiveCharacters_WhenConsecutiveCharactersButUnderLimit_ExpectFalse()
+    {
             const int maxConsecutiveCharacters = 2;
             const string password = "qqwweerrttyy";
 
@@ -152,9 +152,9 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             hasConsecutiveCharacters.Should().BeFalse();
         }
         
-        [Fact]
-        public void HasConsecutiveCharacters_WhenConsecutiveCharactersButDifferentCasing_ExpectFalse()
-        {
+    [Fact]
+    public void HasConsecutiveCharacters_WhenConsecutiveCharactersButDifferentCasing_ExpectFalse()
+    {
             const int maxConsecutiveCharacters = 2;
             const string password = "QqQwerty";
 
@@ -164,21 +164,20 @@ namespace ScottBrady.IdentityModel.Tests.AspNetCore.Identity
             hasConsecutiveCharacters.Should().BeFalse();
         }
         
-        [Theory]
-        [InlineData(1, "qqqwertyy")]
-        [InlineData(2, "qqqwertyy")]
-        [InlineData(2, "qwertyyy")]
-        [InlineData(3, "qwertyyyy")]
-        public void HasConsecutiveCharacters_WhenConsecutiveCharactersAndOverLimit_ExpectTrue(int max, string password)
-        {
+    [Theory]
+    [InlineData(1, "qqqwertyy")]
+    [InlineData(2, "qqqwertyy")]
+    [InlineData(2, "qwertyyy")]
+    [InlineData(3, "qwertyyyy")]
+    public void HasConsecutiveCharacters_WhenConsecutiveCharactersAndOverLimit_ExpectTrue(int max, string password)
+    {
             var sut = CreateSut();
             var hasConsecutiveCharacters = sut.HasConsecutiveCharacters(password, max);
 
             hasConsecutiveCharacters.Should().BeTrue();
         }
 
-        private static Mock<UserManager<IdentityUser>> CreateMockUserManager(PasswordOptions options = null)
-            => new Mock<UserManager<IdentityUser>>(new Mock<IUserStore<IdentityUser>>().Object,
-                new OptionsWrapper<IdentityOptions>(new IdentityOptions {Password = options ?? new PasswordOptions()}), null, null, null, null, null, null, null);
-    }
+    private static Mock<UserManager<IdentityUser>> CreateMockUserManager(PasswordOptions options = null)
+        => new Mock<UserManager<IdentityUser>>(new Mock<IUserStore<IdentityUser>>().Object,
+            new OptionsWrapper<IdentityOptions>(new IdentityOptions {Password = options ?? new PasswordOptions()}), null, null, null, null, null, null, null);
 }

@@ -1,17 +1,17 @@
 using System;
 using System.Text;
 
-namespace ScottBrady.IdentityModel
+namespace ScottBrady.IdentityModel;
+
+/// <summary>
+/// Base16 (hex) encoder.
+/// Encode adapted from https://docs.microsoft.com/en-us/archive/blogs/blambert/blambertcodesnip-fast-byte-array-to-hex-string-conversion.
+/// Decode adapted from https://stackoverflow.com/questions/311165/how-do-you-convert-a-byte-array-to-a-hexadecimal-string-and-vice-versa.
+/// Faster alternatives are available.
+/// </summary>
+public static class Base16
 {
-    /// <summary>
-    /// Base16 (hex) encoder.
-    /// Encode adapted from https://docs.microsoft.com/en-us/archive/blogs/blambert/blambertcodesnip-fast-byte-array-to-hex-string-conversion.
-    /// Decode adapted from https://stackoverflow.com/questions/311165/how-do-you-convert-a-byte-array-to-a-hexadecimal-string-and-vice-versa.
-    /// Faster alternatives are available.
-    /// </summary>
-    public static class Base16
-    {
-        private static readonly string[] LookupTable =
+    private static readonly string[] LookupTable =
         {
             "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0a", "0b", "0c", "0d", "0e", "0f",
             "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "1a", "1b", "1c", "1d", "1e", "1f",
@@ -31,8 +31,8 @@ namespace ScottBrady.IdentityModel
             "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fa", "fb", "fc", "fd", "fe", "ff"
         };
 
-        public static string Encode(byte[] value)
-        {
+    public static string Encode(byte[] value)
+    {
             if (value == null) throw new ArgumentNullException(nameof(value));
 
             var stringBuilder = new StringBuilder();
@@ -41,8 +41,8 @@ namespace ScottBrady.IdentityModel
             return stringBuilder.ToString();
         }
 
-        public static byte[] Decode(string value)
-        {
+    public static byte[] Decode(string value)
+    {
             if (string.IsNullOrWhiteSpace(value)) throw new ArgumentNullException(nameof(value));
 
             var bytes = new byte[value.Length / 2];
@@ -53,5 +53,4 @@ namespace ScottBrady.IdentityModel
 
             return bytes;
         }
-    }
 }

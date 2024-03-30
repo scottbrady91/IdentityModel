@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -10,138 +10,94 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Samples.AspNetCore.Models;
-using ScottBrady.IdentityModel.Tokens;
-using ScottBrady.IdentityModel.Tokens.Branca;
-using ScottBrady.IdentityModel.Tokens.Paseto;
 
-namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers
+namespace ScottBrady.IdentityModel.Samples.AspNetCore.Controllers;
+
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private readonly SampleOptions options;
+    private readonly UserManager<IdentityUser> userManager;
+
+    public HomeController(SampleOptions options, UserManager<IdentityUser> userManager)
     {
-        private readonly SampleOptions options;
-        private readonly UserManager<IdentityUser> userManager;
-
-        public HomeController(SampleOptions options, UserManager<IdentityUser> userManager)
-        {
-            this.options = options ?? throw new ArgumentNullException(nameof(options));
-            this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-        }
+        this.options = options ?? throw new ArgumentNullException(nameof(options));
+        this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+    }
         
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        [HttpGet]
-        public IActionResult Branca()
-        {
-            var handler = new BrancaTokenHandler();
-
-            var token = handler.CreateToken(new SecurityTokenDescriptor
-            {
-               Issuer = "me",
-               Audience = "you",
-               EncryptingCredentials = options.BrancaEncryptingCredentials
-            });
-
-            var parsedToken = handler.DecryptToken(token, ((SymmetricSecurityKey) options.BrancaEncryptingCredentials.Key).Key);
-
-            return View("Index", new TokenModel
-            {
-                Type = "Branca",
-                Token = token,
-                Payload = Encoding.UTF8.GetString(parsedToken.Payload)
-            });
-        }
-
-        [HttpGet]
-        public IActionResult Paseto(string version)
-        {
-            var handler = new PasetoTokenHandler();
-
-            SigningCredentials signingCredentials;
-            if (version == PasetoConstants.Versions.V1)
-                signingCredentials = new SigningCredentials(options.PasetoV1PrivateKey, SecurityAlgorithms.RsaSsaPssSha384);
-            else if (version == PasetoConstants.Versions.V2)
-                signingCredentials = new SigningCredentials(options.PasetoV2PrivateKey, ExtendedSecurityAlgorithms.EdDsa);
-            else 
-                throw new NotSupportedException("Unsupported version");
-            
-            var descriptor = new PasetoSecurityTokenDescriptor(version, PasetoConstants.Purposes.Public)
-            {
-                Issuer = "me",
-                Audience = "you",
-                SigningCredentials = signingCredentials
-            };
-
-            var token = handler.CreateToken(descriptor);
-            var payload = descriptor.ToJwtPayload(JwtDateTimeFormat.Iso);
-
-            return View("Index", new TokenModel
-            {
-                Type = "PASETO",
-                Token = token,
-                Payload = payload
-            });
-        }
+    public IActionResult Index()
+    {
+        return View();
+    }
         
-        [HttpGet]
-        public IActionResult EdDsaJwt()
+    [HttpGet]
+    public IActionResult EdDsaJwt()
+    {
+        var handler = new JsonWebTokenHandler();
+
+        var descriptor = new SecurityTokenDescriptor
         {
-            var handler = new JsonWebTokenHandler();
+            Issuer = "me",
+            Audience = "you",
+            SigningCredentials = new SigningCredentials(options.EdDsaPrivateKey, ExtendedSecurityAlgorithms.EdDsa)
+        };
 
-            var descriptor = new SecurityTokenDescriptor
+        var token = handler.CreateToken(descriptor);
+        var payloadClaims = handler.ReadJsonWebToken(token).Claims;
+        
+        var claimsJson = new JsonObject();
+        foreach (var claim in payloadClaims)
+        {
+            if (claim.ValueType.Contains("integer"))
             {
-                Issuer = "me",
-                Audience = "you",
-                SigningCredentials = new SigningCredentials(options.PasetoV2PrivateKey, ExtendedSecurityAlgorithms.EdDsa)
-            };
-
-            var token = handler.CreateToken(descriptor);
-            var payload = descriptor.ToJwtPayload(JwtDateTimeFormat.Iso);
-
-            return View("Index", new TokenModel
+                claimsJson.Add(claim.Type, int.Parse(claim.Value));
+            }
+            else
             {
-                Type = "EdDSA JWT",
-                Token = token,
-                Payload = payload
-            });
+                claimsJson.Add(claim.Type, claim.Value);
+            }
         }
 
-        [HttpGet]
-        [Authorize(AuthenticationSchemes = "branca-bearer,paseto-bearer-v1,paseto-bearer-v2,eddsa")]
-        public IActionResult CallApi()
+        return View("Index", new TokenModel
         {
-            return Ok();
-        }
+            Type = "EdDSA JWT",
+            Token = token,
+            Payload = claimsJson.ToString()
+        });
+    }
 
-        [HttpGet]
-        public IActionResult PasswordRules()
+    [HttpGet]
+    [Authorize(AuthenticationSchemes = "eddsa")]
+    public IActionResult CallApi()
+    {
+        return Ok();
+    }
+
+    [HttpGet]
+    public IActionResult PasswordRules()
+    {
+        return View(new PasswordRulesModel());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> PasswordRules(PasswordRulesModel model)
+    {
+        if (!ModelState.IsValid) return View(model);
+
+        var errors = new List<string>();
+        foreach (var validator in userManager.PasswordValidators)
         {
-            return View(new PasswordRulesModel());
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> PasswordRules(PasswordRulesModel model)
-        {
-            if (!ModelState.IsValid) return View(model);
-
-            var errors = new List<string>();
-            foreach (var validator in userManager.PasswordValidators)
+            var result = await validator.ValidateAsync(userManager, new IdentityUser(), model.Password);
+            if (!result.Succeeded)
             {
-                var result = await validator.ValidateAsync(userManager, new IdentityUser(), model.Password);
-                if (!result.Succeeded)
+                if (result.Errors.Any())
                 {
-                    if (result.Errors.Any())
-                    {
-                        errors.AddRange(result.Errors.Select(x => x.Description));
-                    }
+                    errors.AddRange(result.Errors.Select(x => x.Description));
                 }
             }
-
-            model.Errors = errors;
-            model.Message = errors.Any() ? "Password failed server-side validation" : "Password passed server-side validation";
-            return View(model);
         }
+
+        model.Errors = errors;
+        model.Message = errors.Any() ? "Password failed server-side validation" : "Password passed server-side validation";
+        return View(model);
     }
 }

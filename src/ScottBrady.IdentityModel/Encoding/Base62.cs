@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ScottBrady.IdentityModel
+namespace ScottBrady.IdentityModel;
+
+/// <summary>
+/// Adapted from https://github.com/ghost1face/base62
+/// </summary>
+public static class Base62
 {
-    /// <summary>
-    /// Adapted from https://github.com/ghost1face/base62
-    /// </summary>
-    public static class Base62
-    {
-        public const string CharacterSet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    public const string CharacterSet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         
-        public static string Encode(byte[] value)
-        {
+    public static string Encode(byte[] value)
+    {
             var convertedBytes = BaseConvert(value, 256, 62);
             
             var builder = new StringBuilder();
@@ -25,8 +25,8 @@ namespace ScottBrady.IdentityModel
             return builder.ToString();
         }
 
-        public static byte[] Decode(string value)
-        {
+    public static byte[] Decode(string value)
+    {
             var arr = new byte[value.Length];
             for (var i = 0; i < arr.Length; i++)
             {
@@ -36,8 +36,8 @@ namespace ScottBrady.IdentityModel
             return BaseConvert(arr, 62, 256);
         }
         
-        private static byte[] BaseConvert(byte[] source, int sourceBase, int targetBase)
-        {
+    private static byte[] BaseConvert(byte[] source, int sourceBase, int targetBase)
+    {
             if (source == null) throw new ArgumentNullException(nameof(source));
             
             int count;
@@ -62,5 +62,4 @@ namespace ScottBrady.IdentityModel
 
             return result.Select(x => (byte) x).ToArray();
         }
-    }
 }

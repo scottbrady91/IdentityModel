@@ -7,13 +7,13 @@ using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens
+namespace ScottBrady.IdentityModel.Tests.Tokens;
+
+public class JwtSecurityTokenHandlerTests
 {
-    public class JwtSecurityTokenHandlerTests
+    [Fact]
+    public void WhenEdDsaTokenGenerated_ExpectEdDsaTokenVerifiable()
     {
-        [Fact]
-        public void WhenEdDsaTokenGenerated_ExpectEdDsaTokenVerifiable()
-        {
             const string issuer = "me";
             const string audience = "you";
             const string subject = "123";
@@ -43,5 +43,4 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             
             validationResult.Claims.Should().Contain(x => x.Type == "sub" && x.Value == subject);
         }
-    }
 }
