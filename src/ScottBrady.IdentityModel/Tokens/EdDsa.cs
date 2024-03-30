@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
@@ -10,6 +11,7 @@ using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens;
 
+[UnsupportedOSPlatform("browser")]
 public class EdDsa : AsymmetricAlgorithm
 {
     internal EdDsaParameters Parameters { get; private init; }
@@ -63,15 +65,6 @@ public class EdDsa : AsymmetricAlgorithm
             PrivateKeyParameter = keyPair.Private,
             PublicKeyParameter = keyPair.Public
         };
-    }
-
-    /// <summary>
-    /// Create EdDSA from JSON Web Key (jwk).
-    /// </summary>
-    /// <param name="jwk">String containing JSON Web Key.</param>
-    public static EdDsa CreateFromJwk(string jwk)
-    {
-        throw new NotImplementedException();
     }
 
     public override string KeyExchangeAlgorithm => null;

@@ -9,8 +9,8 @@ internal class EdDsaSignatureProvider : SignatureProvider
     public EdDsaSignatureProvider(EdDsaSecurityKey key, string algorithm)
         : base(key, algorithm)
     {
-            edDsaKey = key;
-        }
+        edDsaKey = key;
+    }
 
     protected override void Dispose(bool disposing) { }
     public override byte[] Sign(byte[] input) => edDsaKey.EdDsa.Sign(input);

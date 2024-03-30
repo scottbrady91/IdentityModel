@@ -2,7 +2,7 @@ using System.IO;
 
 namespace ScottBrady.IdentityModel;
 
-public static class StreamExtensions
+public static class StreamExtensions // TODO: document and unit test
 {
     public static bool TryRead(this Stream stream, int length, out byte[] bytes)
     {

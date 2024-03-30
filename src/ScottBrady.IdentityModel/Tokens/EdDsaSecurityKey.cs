@@ -17,9 +17,9 @@ public class EdDsaSecurityKey : AsymmetricSecurityKey
         CryptoProviderFactory.CustomCryptoProvider = new ExtendedCryptoProvider();
     }
 
-    public EdDsaSecurityKey(EdDsa edDsaCreation) : this()
+    public EdDsaSecurityKey(EdDsa edDsa) : this()
     {
-        EdDsa = edDsaCreation ?? throw new ArgumentNullException(nameof(edDsaCreation));
+        EdDsa = edDsa ?? throw new ArgumentNullException(nameof(edDsa));
     }
         
     [Obsolete("Deprecated in favor of EdDsa constructor")]

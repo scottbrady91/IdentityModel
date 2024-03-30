@@ -24,4 +24,9 @@
         <None Include="..\..\icon.png" Pack="true" PackagePath="icon.png" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="ScottBrady.IdentityModel.Tests" />
+        <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    </ItemGroup>
+
 </Project>
