@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Security.Cryptography;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -9,7 +10,7 @@ using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens;
 
-public class EdDsa
+public class EdDsa: AsymmetricAlgorithm
 {
     internal EdDsaParameters Parameters { get; private init; }
 
@@ -36,7 +37,6 @@ public class EdDsa
             var generator = new Ed25519KeyPairGenerator();
             generator.Init(new Ed25519KeyGenerationParameters(new SecureRandom()));
             var keyPair = generator.GenerateKeyPair();
-
             return new EdDsa {Parameters = new EdDsaParameters(keyPair, curve)};
         }
 
@@ -60,7 +60,7 @@ public class EdDsa
     {
         throw new NotImplementedException();
     }
-        
+
     public byte[] Sign(byte[] input)
     {
         if (input == null) throw new ArgumentNullException(nameof(input));
