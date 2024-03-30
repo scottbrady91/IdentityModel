@@ -14,7 +14,7 @@ namespace ScottBrady.IdentityModel.Tests.Tokens
             var jwk = ExtendedJsonWebKeyConverter.ConvertFromEdDsaSecurityKey(originKey);
             Assert.NotNull(jwk);
             Assert.Equal(ExtendedSecurityAlgorithms.Curves.Ed25519, jwk.Crv);
-            Assert.Equal(ExtendedJsonWebAlgorithmsKeyTypes.ECDH, jwk.Kty);
+            Assert.Equal(ExtendedSecurityAlgorithms.KeyTypes.Ecdh, jwk.Kty);
             Assert.Equal(ExtendedSecurityAlgorithms.EdDsa, jwk.Alg);
             Assert.NotNull(jwk.D);
             Assert.NotNull(jwk.X);

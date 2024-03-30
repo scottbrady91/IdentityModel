@@ -10,46 +10,59 @@ using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens;
 
-public class EdDsa: AsymmetricAlgorithm
+public class EdDsa : AsymmetricAlgorithm
 {
     internal EdDsaParameters Parameters { get; private init; }
+    internal AsymmetricKeyParameter PrivateKeyParameter { get; private init; }
+    internal AsymmetricKeyParameter PublicKeyParameter { get; private init; }
 
     private EdDsa() { }
 
     public static EdDsa Create(EdDsaParameters parameters)
     {
         if (parameters == null) throw new ArgumentNullException(nameof(parameters));
-
+        
         parameters.Validate();
-        return new EdDsa {Parameters = parameters};
+        return new EdDsa
+        {
+            Parameters = parameters,
+            PrivateKeyParameter = CreatePrivateKeyParameter(parameters),
+            PublicKeyParameter = CreatePublicKeyParameter(parameters)
+        };
     }
         
     /// <summary>
     /// Create new key for EdDSA.
     /// </summary>
     /// <param name="curve">Create key for curve Ed25519 or Ed448.</param>
-    public static EdDsa Create(string curve)
+    public new static EdDsa Create(string curve)
     {
         if (string.IsNullOrWhiteSpace(curve)) throw new ArgumentNullException(nameof(curve));
 
+        IAsymmetricCipherKeyPairGenerator generator;
         if (curve == ExtendedSecurityAlgorithms.Curves.Ed25519)
         {
-            var generator = new Ed25519KeyPairGenerator();
+            generator = new Ed25519KeyPairGenerator();
             generator.Init(new Ed25519KeyGenerationParameters(new SecureRandom()));
-            var keyPair = generator.GenerateKeyPair();
-            return new EdDsa {Parameters = new EdDsaParameters(keyPair, curve)};
+            
         }
-
-        if (curve == ExtendedSecurityAlgorithms.Curves.Ed448)
+        else if (curve == ExtendedSecurityAlgorithms.Curves.Ed448)
         {
-            var generator = new Ed448KeyPairGenerator();
+            generator = new Ed448KeyPairGenerator();
             generator.Init(new Ed448KeyGenerationParameters(new SecureRandom()));
-            var keyPair = generator.GenerateKeyPair();
-
-            return new EdDsa {Parameters = new EdDsaParameters(keyPair, curve)};
         }
-
-        throw new NotSupportedException("Unsupported EdDSA curve");
+        else
+        {
+            throw new NotSupportedException("Unsupported EdDSA curve");  
+        }
+        
+        var keyPair = generator.GenerateKeyPair();
+        return new EdDsa
+        {
+            Parameters = new EdDsaParameters(keyPair, curve),
+            PrivateKeyParameter = keyPair.Private,
+            PublicKeyParameter = keyPair.Public
+        };
     }
 
     /// <summary>
@@ -61,12 +74,23 @@ public class EdDsa: AsymmetricAlgorithm
         throw new NotImplementedException();
     }
 
+    public override string KeyExchangeAlgorithm => null;
+    public override string SignatureAlgorithm => ExtendedSecurityAlgorithms.EdDsa;
+    public override int KeySize => Parameters.D?.Length ?? Parameters.X?.Length ?? throw new InvalidOperationException("Missing EdDsa key");
+
+    public override KeySizes[] LegalKeySizes => Parameters.Curve switch
+    {
+        ExtendedSecurityAlgorithms.Curves.Ed25519 => new[] { new KeySizes(32, 32, 0) },
+        ExtendedSecurityAlgorithms.Curves.Ed448 => new[] { new KeySizes(57, 57, 0) },
+        _ => throw new NotSupportedException()
+    };
+
     public byte[] Sign(byte[] input)
     {
         if (input == null) throw new ArgumentNullException(nameof(input));
         
         var signer = CreateSigner();
-        signer.Init(true, CreatePrivateKeyParameter());
+        signer.Init(true, PrivateKeyParameter);
         signer.BlockUpdate(input, 0, input.Length);
 
         return signer.GenerateSignature();
@@ -89,28 +113,32 @@ public class EdDsa: AsymmetricAlgorithm
         if (signature == null) throw new ArgumentNullException(nameof(signature));
         
         var validator = CreateSigner();
-        validator.Init(false, CreatePublicKeyParameter());
+        validator.Init(false, PublicKeyParameter);
         validator.BlockUpdate(input, 0, input.Length);
 
         return validator.VerifySignature(signature);
     }
 
-    private AsymmetricKeyParameter CreatePrivateKeyParameter()
+    private static AsymmetricKeyParameter CreatePrivateKeyParameter(EdDsaParameters parameters)
     {
-        return Parameters.Curve switch
+        if (parameters.D == null) return null;
+        
+        return parameters.Curve switch
         {
-            ExtendedSecurityAlgorithms.Curves.Ed25519 => new Ed25519PrivateKeyParameters(Parameters.D, 0),
-            ExtendedSecurityAlgorithms.Curves.Ed448 => new Ed448PrivateKeyParameters(Parameters.D, 0),
+            ExtendedSecurityAlgorithms.Curves.Ed25519 => new Ed25519PrivateKeyParameters(parameters.D),
+            ExtendedSecurityAlgorithms.Curves.Ed448 => new Ed448PrivateKeyParameters(parameters.D),
             _ => throw new NotSupportedException()
         };
     }
 
-    private AsymmetricKeyParameter CreatePublicKeyParameter()
+    private static AsymmetricKeyParameter CreatePublicKeyParameter(EdDsaParameters parameters)
     {
-        return Parameters.Curve switch
+        if (parameters.X == null) return null;
+        
+        return parameters.Curve switch
         {
-            ExtendedSecurityAlgorithms.Curves.Ed25519 => new Ed25519PublicKeyParameters(Parameters.X, 0),
-            ExtendedSecurityAlgorithms.Curves.Ed448 => new Ed448PublicKeyParameters(Parameters.X, 0),
+            ExtendedSecurityAlgorithms.Curves.Ed25519 => new Ed25519PublicKeyParameters(parameters.X),
+            ExtendedSecurityAlgorithms.Curves.Ed448 => new Ed448PublicKeyParameters(parameters.X),
             _ => throw new NotSupportedException()
         };
     }
@@ -124,4 +152,8 @@ public class EdDsa: AsymmetricAlgorithm
             _ => throw new NotSupportedException()
         };
     }
+    
+    public override void ImportFromEncryptedPem(ReadOnlySpan<char> input, ReadOnlySpan<char> password) => throw new NotImplementedException();
+    public override void ImportFromEncryptedPem(ReadOnlySpan<char> input, ReadOnlySpan<byte> passwordBytes) => throw new NotImplementedException();
+    public override void ImportFromPem(ReadOnlySpan<char> input) => throw new NotImplementedException();
 }

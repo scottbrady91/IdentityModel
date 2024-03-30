@@ -13,12 +13,18 @@ public static class ExtendedSecurityAlgorithms
     // https://tools.ietf.org/html/rfc8037#section-5
     public const string EdDsa = "EdDSA";
 
-    public class Curves
+    public static class Curves
     {
         // https://tools.ietf.org/html/rfc8037#section-5
         public const string Ed25519 = "Ed25519";
         public const string Ed448 = "Ed448";
         public const string X25519 = "X25519";
         public const string X448 = "X448";
+    }
+    
+    public static class KeyTypes
+    {
+        // https://datatracker.ietf.org/doc/html/draft-ietf-jose-cfrg-curves-06#section-2
+        public const string Ecdh = "OKP";
     }
 }

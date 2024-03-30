@@ -14,7 +14,7 @@ namespace ScottBrady.IdentityModel.Extensions
                 Crv = parameters.Curve,
                 X = parameters.X != null ? Base64UrlEncoder.Encode(parameters.X) : null,
                 D = parameters.D != null ? Base64UrlEncoder.Encode(parameters.D) : null,
-                Kty = ExtendedJsonWebAlgorithmsKeyTypes.ECDH,
+                Kty = ExtendedSecurityAlgorithms.KeyTypes.Ecdh,
                 Alg = ExtendedSecurityAlgorithms.EdDsa,
                 CryptoProviderFactory = securityKey.CryptoProviderFactory,
             };
