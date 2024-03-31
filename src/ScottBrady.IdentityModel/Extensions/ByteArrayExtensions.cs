@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ScottBrady.IdentityModel;
 
-public static class ByteArrayExtensions // TODO: unit test
+public static class ByteArrayExtensions
 {
     /// <summary>
     /// Combines multiple byte arrays.
