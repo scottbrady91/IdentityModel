@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <Authors>Scott Brady</Authors>
     <Description>Extensions for Microsoft.IdentityModel, including support for EdDSA signed JWTs.</Description>
     <PackageIcon>icon.png</PackageIcon>
@@ -18,8 +18,8 @@
 
   <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.3.0" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.*" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.*" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.5.0" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.0" />
     <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7" PrivateAssets="all" />
   </ItemGroup>
 

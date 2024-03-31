@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -32,7 +33,7 @@ public class JsonWebTokenHandlerTests
     };
         
     [Fact]
-    public void WhenEd25519TokenGenerated_ExpectEdDsaTokenVerifiable()
+    public async Task WhenEd25519TokenGenerated_ExpectEdDsaTokenVerifiable()
     {
             var key = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519);
 
@@ -42,14 +43,14 @@ public class JsonWebTokenHandlerTests
 
             var jwt = handler.CreateToken(securityTokenDescriptor);
 
-            var validationResult = handler.ValidateToken(jwt, tokenValidationParameters);
+            var validationResult = await handler.ValidateTokenAsync(jwt, tokenValidationParameters);
 
             validationResult.IsValid.Should().BeTrue();
             validationResult.ClaimsIdentity.Claims.Should().Contain(x => x.Type == "sub" && x.Value == Subject);
         }
         
     [Fact]
-    public void WhenEd448TokenGenerated_ExpectEdDsaTokenVerifiable()
+    public async Task WhenEd448TokenGenerated_ExpectEdDsaTokenVerifiable()
     {
             var key = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed448);
 
@@ -59,14 +60,14 @@ public class JsonWebTokenHandlerTests
 
             var jwt = handler.CreateToken(securityTokenDescriptor);
 
-            var validationResult = handler.ValidateToken(jwt, tokenValidationParameters);
+            var validationResult = await handler.ValidateTokenAsync(jwt, tokenValidationParameters);
 
             validationResult.IsValid.Should().BeTrue();
             validationResult.ClaimsIdentity.Claims.Should().Contain(x => x.Type == "sub" && x.Value == Subject);
         }
 
     [Fact]
-    public void WhenEd25519SignatureValidatedUsingEs448_ExpectInvalidToken()
+    public async Task WhenEd25519SignatureValidatedUsingEs448_ExpectInvalidToken()
     {
             var signingKey = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519);
             var validationKey = EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed448);
@@ -77,7 +78,7 @@ public class JsonWebTokenHandlerTests
             
             var jwt = handler.CreateToken(securityTokenDescriptor);
 
-            var validationResult = handler.ValidateToken(jwt, tokenValidationParameters);
+            var validationResult = await handler.ValidateTokenAsync(jwt, tokenValidationParameters);
 
             validationResult.IsValid.Should().BeFalse();
         }

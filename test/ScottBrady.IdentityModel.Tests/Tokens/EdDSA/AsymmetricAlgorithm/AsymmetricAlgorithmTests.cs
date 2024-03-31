@@ -113,7 +113,6 @@ public class AsymmetricAlgorithmTests : EdDsaTestBase
     public void ImportFromPem_WithPasswordBytes_ExpectNotImplementedException(EdDsa key, int _)
         => Assert.Throws<NotImplementedException>(() => key.ImportFromPem(Array.Empty<char>()));
     
-#if NET8
     [Theory, MemberData(nameof(Keys))]
     public void ExportPkcs8PrivateKeyPem_ExpectNotImplementedException(EdDsa key, int _)
         => Assert.Throws<NotImplementedException>(() => key.ExportPkcs8PrivateKeyPem());
@@ -128,7 +127,7 @@ public class AsymmetricAlgorithmTests : EdDsaTestBase
 
     [Theory, MemberData(nameof(Keys))]
     public void ExportSubjectPublicKeyInfoPem_ExpectNotImplementedException(EdDsa key, int _)
-        => Assert.Throws<NotImplementedException>(() => key.ExportSubjectPublicKeyInfoPem();
+        => Assert.Throws<NotImplementedException>(key.ExportSubjectPublicKeyInfoPem);
 
     [Theory, MemberData(nameof(Keys))]
     public void TryExportSubjectPublicKeyInfoPem_ExpectNotImplementedException(EdDsa key, int _)
@@ -140,12 +139,11 @@ public class AsymmetricAlgorithmTests : EdDsaTestBase
 
     [Theory, MemberData(nameof(Keys))]
     public void TryExportEncryptedPkcs8PrivateKeyPem_WithPasswordString_ExpectNotImplementedException(EdDsa key, int _)
-        => Assert.Throws<NotImplementedException>(() => key.TryExportEncryptedPkcs8PrivateKeyPem(Array.Empty<char>(), _fixture.Create<PbeParameters>()), Array.Empty<char>(), out var _));
+        => Assert.Throws<NotImplementedException>(() => key.TryExportEncryptedPkcs8PrivateKeyPem(Array.Empty<char>(), _fixture.Create<PbeParameters>(), Array.Empty<char>(), out var _));
 
     [Theory, MemberData(nameof(Keys))]
     public void TryExportEncryptedPkcs8PrivateKeyPem_WithPasswordBytes_ExpectNotImplementedException(EdDsa key, int _)
-        => Assert.Throws<NotImplementedException>(() => key.TryExportEncryptedPkcs8PrivateKeyPem(Array.Empty<byte>(), _fixture.Create<PbeParameters>()), Array.Empty<char>(), out var _));
-#endif
+        => Assert.Throws<NotImplementedException>(() => key.TryExportEncryptedPkcs8PrivateKeyPem(Array.Empty<byte>(), _fixture.Create<PbeParameters>(), Array.Empty<char>(), out var _));
     
     [Theory, MemberData(nameof(Keys))]
     public void Clear_WhenDisposed_ExpectNoException(EdDsa key, int _)
