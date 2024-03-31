@@ -35,8 +35,8 @@ public class EdDsaParameters
         }
     }
     
-    public byte[] D { get; set; }
-    public byte[] X { get; set; }
+    public byte[] D { get; init; }
+    public byte[] X { get; init; }
     public string Curve { get; }
 
     public void Validate()
@@ -45,8 +45,8 @@ public class EdDsaParameters
         
         if (D != null)
         {
-            if (Curve == ExtendedSecurityAlgorithms.Curves.Ed25519 && (D.Length != 32 && D.Length != 32*2)) throw new CryptographicException("Invalid key length. Must be 32 bytes.");
-            if (Curve == ExtendedSecurityAlgorithms.Curves.Ed448 && (D.Length != 57 && D.Length != 57*2)) throw new CryptographicException("Invalid key length. Must be 57 bytes.");
+            if (Curve == ExtendedSecurityAlgorithms.Curves.Ed25519 && D.Length != 32 && D.Length != 32*2) throw new CryptographicException("Invalid key length. Must be 32 bytes.");
+            if (Curve == ExtendedSecurityAlgorithms.Curves.Ed448 && D.Length != 57 && D.Length != 57*2) throw new CryptographicException("Invalid key length. Must be 57 bytes.");
         }
 
         if (X != null)

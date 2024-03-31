@@ -73,8 +73,8 @@ public class EdDsa : AsymmetricAlgorithm
 
     public override KeySizes[] LegalKeySizes => Parameters.Curve switch
     {
-        ExtendedSecurityAlgorithms.Curves.Ed25519 => new[] { new KeySizes(32, 32, 0) },
-        ExtendedSecurityAlgorithms.Curves.Ed448 => new[] { new KeySizes(57, 57, 0) },
+        ExtendedSecurityAlgorithms.Curves.Ed25519 => [new KeySizes(32, 32, 0)],
+        ExtendedSecurityAlgorithms.Curves.Ed448 => [new KeySizes(57, 57, 0)],
         _ => throw new NotSupportedException()
     };
 

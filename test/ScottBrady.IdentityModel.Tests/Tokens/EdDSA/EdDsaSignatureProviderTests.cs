@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using FluentAssertions;
 using Microsoft.IdentityModel.Tokens;
@@ -9,83 +10,100 @@ namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA;
 
 public class EdDsaSignatureProviderTests
 {
-    // privateKey = "FU1F1QTjYwfB-xkO6aknnBifE_Ywa94U04xpd-XJfBs"
-        
+    private readonly byte[] privateKey = Base64UrlEncoder.DecodeBytes("FU1F1QTjYwfB-xkO6aknnBifE_Ywa94U04xpd-XJfBs");
+    private readonly byte[] publicKey = Base64UrlEncoder.DecodeBytes("60mR98SQlHUSeLeIu7TeJBTLRG10qlcDLU4AJjQdqMQ");
+    private readonly byte[] plaintext = Encoding.UTF8.GetBytes("eyJraWQiOiIxMjMiLCJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJhdWQiOiJ5b3UiLCJzdWIiOiJib2IiLCJpc3MiOiJtZSIsImV4cCI6MTU5MDg0MTg4N30");
+    private readonly byte[] validSignature = Base64UrlEncoder.DecodeBytes("OyBxBr344Ny-0vRCeEMLSnuEO1IecybvJBivrjum4d-dgN5WLnEAGAO43MlZeRGn1F3fRXO_xlYot68PtDuiAA");
+ 
     [Fact]
-    public void ctor_ExpectPropertiesSet()
+    public void ctor_WithPrivateKey_ExpectPropertiesSet()
     {
-            var expectedSecurityKey = new EdDsaSecurityKey(EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519));
-            var expectedAlgorithm = ExtendedSecurityAlgorithms.EdDsa;
+        var securityKey = new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) { D = privateKey }));
+        var algorithm = ExtendedSecurityAlgorithms.EdDsa;
 
-            var provider = new EdDsaSignatureProvider(expectedSecurityKey, expectedAlgorithm);
+        var provider = new EdDsaSignatureProvider(securityKey, algorithm);
 
-            provider.Key.Should().Be(expectedSecurityKey);
-            provider.Algorithm.Should().Be(expectedAlgorithm);
-        }
+        provider.Key.Should().Be(securityKey);
+        provider.Algorithm.Should().Be(algorithm);
+        provider.WillCreateSignatures.Should().BeTrue();
+    }
+    [Fact]
+    public void ctor_WithPublicKey_ExpectPropertiesSet()
+    {
+        var securityKey = new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) { X = publicKey }));
+        var algorithm = ExtendedSecurityAlgorithms.EdDsa;
+
+        var provider = new EdDsaSignatureProvider(securityKey, algorithm);
+
+        provider.Key.Should().Be(securityKey);
+        provider.Algorithm.Should().Be(algorithm);
+        provider.WillCreateSignatures.Should().BeFalse();
+    }
+    
+    [Fact]
+    public void Dispose_ExpectNoException()
+    {
+        new EdDsaSignatureProvider(new EdDsaSecurityKey(EdDsa.Create(ExtendedSecurityAlgorithms.Curves.Ed25519)), ExtendedSecurityAlgorithms.EdDsa).Dispose();
+    }
 
     [Fact]
     public void Sign_WhenSigningWithEd25519Curve_ExpectCorrectSignature()
     {
-            const string plaintext =
-                "eyJraWQiOiIxMjMiLCJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJhdWQiOiJ5b3UiLCJzdWIiOiJib2IiLCJpc3MiOiJtZSIsImV4cCI6MTU5MDg0MTg4N30";
-            const string expectedSignature =
-                "OyBxBr344Ny-0vRCeEMLSnuEO1IecybvJBivrjum4d-dgN5WLnEAGAO43MlZeRGn1F3fRXO_xlYot68PtDuiAA";
-            
-            const string privateKey = "FU1F1QTjYwfB-xkO6aknnBifE_Ywa94U04xpd-XJfBs";
-            var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(
-                new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {D = Base64UrlEncoder.DecodeBytes(privateKey)}));
-            
-            var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
+        var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) { D = privateKey }));
+        var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
 
-            var signature = signatureProvider.Sign(Encoding.UTF8.GetBytes(plaintext));
+        var signature = signatureProvider.Sign(plaintext);
 
-            signature.Should().BeEquivalentTo(Base64UrlEncoder.DecodeBytes(expectedSignature));
-        }
+        signature.Should().BeEquivalentTo(validSignature);
+    }
 
     [Fact]
     public void Verify_WhenJwtSignedWithEd25519Curve_ExpectTrue()
     {
-            const string plaintext =
-                "eyJraWQiOiIxMjMiLCJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJhdWQiOiJ5b3UiLCJzdWIiOiJib2IiLCJpc3MiOiJtZSIsImV4cCI6MTU5MDg0MTg4N30";
-            const string signature =
-                "OyBxBr344Ny-0vRCeEMLSnuEO1IecybvJBivrjum4d-dgN5WLnEAGAO43MlZeRGn1F3fRXO_xlYot68PtDuiAA";
-            
-            const string publicKey = "60mR98SQlHUSeLeIu7TeJBTLRG10qlcDLU4AJjQdqMQ";
-            var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(
-                new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = Base64UrlEncoder.DecodeBytes(publicKey)}));
-
-            var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
-
-            var isValidSignature = signatureProvider.Verify(
-                Encoding.UTF8.GetBytes(plaintext),
-                Base64UrlEncoder.DecodeBytes(signature));
-
-            isValidSignature.Should().BeTrue();
-        }
+        var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) { X = publicKey }));
+        var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
         
+        var isValidSignature = signatureProvider.Verify(plaintext, validSignature);
+
+        isValidSignature.Should().BeTrue();
+    }
+
     [Fact]
-    public void VerifyWithOffsets_WhenJwtSignedWithEd25519Curve_ExpectTrue()
+    public void Verify_WithOffsets_WhenJwtSignedWithEd25519Curve_ExpectTrue()
     {
-            const string plaintext =
-                "eyJraWQiOiIxMjMiLCJ0eXAiOiJKV1QiLCJhbGciOiJFZERTQSJ9.eyJhdWQiOiJ5b3UiLCJzdWIiOiJib2IiLCJpc3MiOiJtZSIsImV4cCI6MTU5MDg0MTg4N30";
-            const string signature =
-                "OyBxBr344Ny-0vRCeEMLSnuEO1IecybvJBivrjum4d-dgN5WLnEAGAO43MlZeRGn1F3fRXO_xlYot68PtDuiAA";
-            
-            const string publicKey = "60mR98SQlHUSeLeIu7TeJBTLRG10qlcDLU4AJjQdqMQ";
-            var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(
-                new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = Base64UrlEncoder.DecodeBytes(publicKey)}));
+        var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) { X = publicKey }));
+        var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
 
-            var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
+        var isValidSignature = signatureProvider.Verify(plaintext, 0, plaintext.Length, validSignature, 0, validSignature.Length);
 
-            var inputBytes = Encoding.UTF8.GetBytes(plaintext);
-            var signatureBytes = Base64UrlEncoder.DecodeBytes(signature);
-            
-            var isValidSignature = signatureProvider.Verify(
-                inputBytes,
-                0, inputBytes.Length,
-                signatureBytes, 0,signatureBytes.Length);
-    
-            isValidSignature.Should().BeTrue();
-        }
+        isValidSignature.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Sign_WithSpan_WhenSigningWithEd25519Curve_ExpectCorrectSignature()
+    {
+        var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) { D = privateKey }));
+        var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
+
+        Span<byte> signature = stackalloc byte[64];
+        var isSuccess = signatureProvider.Sign(plaintext.AsSpan(), signature, out var bytesWritten);
+
+        isSuccess.Should().BeTrue();
+        signature.ToArray().Should().BeEquivalentTo(validSignature);
+        bytesWritten.Should().Be(64);
+    }
+
+    [Fact]
+    public void Sign_WithOffset_WhenSigningWithEd25519Curve_ExpectCorrectSignature()
+    {
+        var edDsaSecurityKey = new EdDsaSecurityKey(EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) { D = privateKey }));
+        var signatureProvider = new EdDsaSignatureProvider(edDsaSecurityKey, ExtendedSecurityAlgorithms.EdDsa);
+
+        var input = new byte[plaintext.Length + 1];
+        Buffer.BlockCopy(plaintext, 0, input, 1, plaintext.Length);
         
+        var signature = signatureProvider.Sign(input, 1, plaintext.Length);
+
+        signature.Should().BeEquivalentTo(validSignature);
+    }
 }

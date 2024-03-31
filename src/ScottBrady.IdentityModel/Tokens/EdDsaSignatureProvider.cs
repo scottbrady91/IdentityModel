@@ -11,11 +11,14 @@ internal class EdDsaSignatureProvider : SignatureProvider
         : base(key, algorithm)
     {
         edDsaKey = key;
+        WillCreateSignatures = key.PrivateKeyStatus == PrivateKeyStatus.Exists;
     }
 
     protected override void Dispose(bool disposing) { }
     public override byte[] Sign(byte[] input) => edDsaKey.EdDsa.Sign(input);
-
+    public override bool Verify(byte[] input, byte[] signature) => edDsaKey.EdDsa.Verify(input, signature);
+    public override bool Verify(byte[] input, int inputOffset, int inputLength, byte[] signature, int signatureOffset, int signatureLength) => edDsaKey.EdDsa.Verify(input, inputOffset, inputLength, signature, signatureOffset, signatureLength);
+    
     public override bool Sign(ReadOnlySpan<byte> data, Span<byte> destination, out int bytesWritten)
     {
         var signature = edDsaKey.EdDsa.Sign(data.ToArray());
@@ -30,8 +33,4 @@ internal class EdDsaSignatureProvider : SignatureProvider
         Buffer.BlockCopy(input, offset, data, 0, count);
         return edDsaKey.EdDsa.Sign(data);
     }
-
-    public override bool Verify(byte[] input, byte[] signature) => edDsaKey.EdDsa.Verify(input, signature);
-    public override bool Verify(byte[] input, int inputOffset, int inputLength, byte[] signature, int signatureOffset, int signatureLength) 
-        => edDsaKey.EdDsa.Verify(input, inputOffset, inputLength, signature, signatureOffset, signatureLength);
 }
