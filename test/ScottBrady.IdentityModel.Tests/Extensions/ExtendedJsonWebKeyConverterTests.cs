@@ -5,7 +5,7 @@ using ScottBrady.IdentityModel.Crypto;
 using ScottBrady.IdentityModel.Tokens;
 using Xunit;
 
-namespace ScottBrady.IdentityModel.Tests.Tokens;
+namespace ScottBrady.IdentityModel.Tests.Extensions;
 
 public class ExtendedJsonWebKeyConverterTests
 {
@@ -157,13 +157,26 @@ public class ExtendedJsonWebKeyConverterTests
     [Fact]
     public void ConvertFromEdDsaSecurityKey_TryConvertToEdDsaSecurityKey_ExpectConvertableKey()
     {
-        const string jwk = "{\n  \"kty\": \"OKP\",\n  \"alg\": \"EdDSA\",\n  \"crv\": \"Ed25519\",\n  \"x\": \"60mR98SQlHUSeLeIu7TeJBTLRG10qlcDLU4AJjQdqMQ\"\n}";
+        const string jwk = "{\"kty\":\"OKP\",\"crv\": \"Ed25519\",\"alg\":\"EdDSA\",\"x\":\"60mR98SQlHUSeLeIu7TeJBTLRG10qlcDLU4AJjQdqMQ\"}";
         var jsonWebKey = new JsonWebKey(jwk);
 
         ExtendedJsonWebKeyConverter.TryConvertToEdDsaSecurityKey(jsonWebKey, out var edDsaKey).Should().BeTrue();
         var convertedJsonWebKey = ExtendedJsonWebKeyConverter.ConvertFromEdDsaSecurityKey(edDsaKey);
 
         jsonWebKey.Should().BeEquivalentTo(convertedJsonWebKey);
+    }
+
+    [Fact]
+    public void ConvertFromEdDsaSecurityKey_WithRfc8037Jwk_ExpectConvertableKey()
+    {
+        const string jwk = "{\"kty\":\"OKP\",\"crv\":\"Ed25519\",\"d\":\"nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A\",\"x\":\"11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo\"}";
+        var jsonWebKey = new JsonWebKey(jwk);
+
+        ExtendedJsonWebKeyConverter.TryConvertToEdDsaSecurityKey(jsonWebKey, out var edDsaKey).Should().BeTrue();
+        var convertedJsonWebKey = ExtendedJsonWebKeyConverter.ConvertFromEdDsaSecurityKey(edDsaKey);
+
+        // RFC8037 test vectors do not include the alg parameter
+        jsonWebKey.Should().BeEquivalentTo(convertedJsonWebKey, options => options.Excluding(x => x.Alg));
     }
 
     private static void TestAndAssertFailure(JsonWebKey jwk)

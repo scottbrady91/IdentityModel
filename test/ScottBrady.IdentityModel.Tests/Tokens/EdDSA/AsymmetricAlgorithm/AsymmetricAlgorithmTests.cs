@@ -8,7 +8,7 @@ using Xunit;
 
 namespace ScottBrady.IdentityModel.Tests.Tokens.EdDSA.AsymmetricAlgorithm;
 
-public class EdDsaBaseClassTests : EdDsaTestBase
+public class AsymmetricAlgorithmTests : EdDsaTestBase
 {
     public static TheoryData<EdDsa, int> Keys
         => new TheoryData<EdDsa, int> { { _ed25519Key, 32 }, { _ed448Key, 57 } };
@@ -154,6 +154,4 @@ public class EdDsaBaseClassTests : EdDsaTestBase
     [Theory, MemberData(nameof(Keys))]
     public void Dispose_WhenDisposed_ExpectNoException(EdDsa key, int _)
         => key.Dispose();
-
-
 }

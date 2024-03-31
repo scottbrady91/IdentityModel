@@ -27,9 +27,7 @@ public static class ExtendedJsonWebKeyConverter
     {
         key = null;
         
-        if (webKey != null
-            && webKey.Kty == ExtendedSecurityAlgorithms.KeyTypes.Ecdh
-            && webKey.Alg == ExtendedSecurityAlgorithms.EdDsa) 
+        if (webKey != null && webKey.Kty == ExtendedSecurityAlgorithms.KeyTypes.Ecdh)
         {
             if (webKey.Crv == ExtendedSecurityAlgorithms.Curves.Ed25519
                 || webKey.Crv == ExtendedSecurityAlgorithms.Curves.Ed448)
