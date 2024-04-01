@@ -40,31 +40,44 @@ public class EdDsa : AsymmetricAlgorithm
     public new static EdDsa Create(string curve)
     {
         if (string.IsNullOrWhiteSpace(curve)) throw new ArgumentNullException(nameof(curve));
-
-        IAsymmetricCipherKeyPairGenerator generator;
+        
         if (curve == ExtendedSecurityAlgorithms.Curves.Ed25519)
         {
-            generator = new Ed25519KeyPairGenerator();
+            var generator = new Ed25519KeyPairGenerator();
             generator.Init(new Ed25519KeyGenerationParameters(new SecureRandom()));
+            var keyPair = generator.GenerateKeyPair();
             
-        }
-        else if (curve == ExtendedSecurityAlgorithms.Curves.Ed448)
-        {
-            generator = new Ed448KeyPairGenerator();
-            generator.Init(new Ed448KeyGenerationParameters(new SecureRandom()));
-        }
-        else
-        {
-            throw new NotSupportedException("Unsupported EdDSA curve");  
+            return new EdDsa
+            {
+                Parameters = new EdDsaParameters(curve)
+                {
+                    D = ((Ed25519PrivateKeyParameters) keyPair.Private).GetEncoded(),
+                    X = ((Ed25519PublicKeyParameters) keyPair.Public).GetEncoded()
+                },
+                PrivateKeyParameter = keyPair.Private,
+                PublicKeyParameter = keyPair.Public
+            };
         }
         
-        var keyPair = generator.GenerateKeyPair();
-        return new EdDsa
+        if (curve == ExtendedSecurityAlgorithms.Curves.Ed448)
         {
-            Parameters = new EdDsaParameters(keyPair, curve),
-            PrivateKeyParameter = keyPair.Private,
-            PublicKeyParameter = keyPair.Public
-        };
+            var generator = new Ed448KeyPairGenerator();
+            generator.Init(new Ed448KeyGenerationParameters(new SecureRandom()));
+            var keyPair = generator.GenerateKeyPair();
+            
+            return new EdDsa
+            {
+                Parameters = new EdDsaParameters(curve)
+                {
+                    D = ((Ed448PrivateKeyParameters) keyPair.Private).GetEncoded(),
+                    X = ((Ed448PublicKeyParameters) keyPair.Public).GetEncoded()
+                },
+                PrivateKeyParameter = keyPair.Private,
+                PublicKeyParameter = keyPair.Public
+            };
+        }
+
+        throw new NotSupportedException("Unsupported EdDSA curve");
     }
 
     public override string KeyExchangeAlgorithm => null;
@@ -91,7 +104,6 @@ public class EdDsa : AsymmetricAlgorithm
 
     public bool Verify(byte[] input, int inputOffset, int inputLength, byte[] signature, int signatureOffset, int signatureLength)
     {
-        
         if (input == null) throw new ArgumentNullException(nameof(input));
         if (signature == null) throw new ArgumentNullException(nameof(signature));
         if (inputLength <= 0) throw new ArgumentException($"{nameof(inputLength)} must be greater than 0");

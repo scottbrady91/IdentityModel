@@ -1,6 +1,5 @@
 using System;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Crypto.Parameters;
 using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens;
@@ -11,29 +10,11 @@ namespace ScottBrady.IdentityModel.Tokens;
 public class EdDsaSecurityKey : AsymmetricSecurityKey
 {
     public EdDsa EdDsa { get; }
-        
-    private EdDsaSecurityKey()
+
+    public EdDsaSecurityKey(EdDsa edDsa)
     {
         CryptoProviderFactory.CustomCryptoProvider = new ExtendedCryptoProvider();
-    }
-
-    public EdDsaSecurityKey(EdDsa edDsa) : this()
-    {
         EdDsa = edDsa ?? throw new ArgumentNullException(nameof(edDsa));
-    }
-        
-    [Obsolete("Deprecated in favor of EdDsa constructor")]
-    public EdDsaSecurityKey(Ed25519PrivateKeyParameters keyParameters) : this()
-    {
-        if (keyParameters == null) throw new ArgumentNullException(nameof(keyParameters));
-        EdDsa = EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {D = keyParameters.GetEncoded()});
-    }
-
-    [Obsolete("Deprecated in favor of EdDsa constructor")]
-    public EdDsaSecurityKey(Ed25519PublicKeyParameters keyParameters) : this()
-    {
-        if (keyParameters == null) throw new ArgumentNullException(nameof(keyParameters));
-        EdDsa = EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) {X = keyParameters.GetEncoded()});
     }
     
     public override int KeySize => EdDsa.KeySize;

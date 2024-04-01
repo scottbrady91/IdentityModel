@@ -1,7 +1,5 @@
 using System;
 using System.Security.Cryptography;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Parameters;
 using ScottBrady.IdentityModel.Crypto;
 
 namespace ScottBrady.IdentityModel.Tokens;
@@ -15,25 +13,7 @@ public class EdDsaParameters
         Curve = curve;
     }
     
-    internal EdDsaParameters(AsymmetricCipherKeyPair keyPair, string curve) : this(curve)
-    {
-        if (keyPair == null) throw new ArgumentNullException(nameof(keyPair));
-        
-        if (curve == ExtendedSecurityAlgorithms.Curves.Ed25519)
-        {
-            D = ((Ed25519PrivateKeyParameters) keyPair.Private).GetEncoded();
-            X = ((Ed25519PublicKeyParameters) keyPair.Public).GetEncoded();
-        }
-        else if (curve == ExtendedSecurityAlgorithms.Curves.Ed448)
-        {
-            D = ((Ed448PrivateKeyParameters) keyPair.Private).GetEncoded();
-            X = ((Ed448PublicKeyParameters) keyPair.Public).GetEncoded();
-        }
-        else
-        {
-            throw new NotSupportedException("Unsupported EdDSA curve");
-        }
-    }
+    // TODO: ctor for signing key? 64 bytes, concatenation of private and public key? https://github.com/openssl/openssl/issues/6357
     
     public byte[] D { get; init; }
     public byte[] X { get; init; }

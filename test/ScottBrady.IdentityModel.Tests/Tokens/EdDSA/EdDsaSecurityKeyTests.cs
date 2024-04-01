@@ -16,24 +16,22 @@ public class EdDsaSecurityKeyTests
     [Fact]
     public void ctor_WhenKeyParametersAreNull_ExpectArgumentNullException()
     {
-#pragma warning disable CS0618
-        Assert.Throws<ArgumentNullException>(() => new EdDsaSecurityKey((Ed25519PublicKeyParameters) null));
-#pragma warning restore CS0618   
+        Assert.Throws<ArgumentNullException>(() => new EdDsaSecurityKey(null));
     }
         
     [Fact]
     public void ctor_WhenEd25519PrivateKey_ExpectKeySetAndCorrectCurve()
     {
         var keyPair = GenerateEd25519KeyPair();
+        var privateKeyParameters = (Ed25519PrivateKeyParameters)keyPair.Private;
+        var edDsa = EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) { D = privateKeyParameters.GetEncoded() });
 
-#pragma warning disable CS0618
-        var securityKey = new EdDsaSecurityKey((Ed25519PrivateKeyParameters) keyPair.Private);
-#pragma warning restore CS0618
+        var securityKey = new EdDsaSecurityKey(edDsa);
 
         securityKey.CryptoProviderFactory.CustomCryptoProvider.Should().BeOfType<ExtendedCryptoProvider>();
-        securityKey.EdDsa.Parameters.D.Should().BeEquivalentTo(((Ed25519PrivateKeyParameters) keyPair.Private).GetEncoded());
-        securityKey.EdDsa.Parameters.Curve.Should().Be(ExtendedSecurityAlgorithms.Curves.Ed25519);
+        securityKey.EdDsa.Should().Be(edDsa);
         securityKey.PrivateKeyStatus.Should().Be(PrivateKeyStatus.Exists);
+        securityKey.KeySize.Should().Be(32);
 
 #pragma warning disable 618
         securityKey.HasPrivateKey.Should().BeTrue();
@@ -44,15 +42,15 @@ public class EdDsaSecurityKeyTests
     public void ctor_WhenEd25519PublicKey_ExpectKeySetAndCorrectCurve()
     {
         var keyPair = GenerateEd25519KeyPair();
-
-#pragma warning disable CS0618
-        var securityKey = new EdDsaSecurityKey((Ed25519PublicKeyParameters) keyPair.Public);
-#pragma warning restore CS0618
-
+        var publicKeyParameters = (Ed25519PublicKeyParameters)keyPair.Public;
+        var edDsa = EdDsa.Create(new EdDsaParameters(ExtendedSecurityAlgorithms.Curves.Ed25519) { X = publicKeyParameters.GetEncoded() });
+        
+        var securityKey = new EdDsaSecurityKey(edDsa);
+        
         securityKey.CryptoProviderFactory.CustomCryptoProvider.Should().BeOfType<ExtendedCryptoProvider>();
-        securityKey.EdDsa.Parameters.X.Should().BeEquivalentTo(((Ed25519PublicKeyParameters) keyPair.Public).GetEncoded());
-        securityKey.EdDsa.Parameters.Curve.Should().Be(ExtendedSecurityAlgorithms.Curves.Ed25519);
+        securityKey.EdDsa.Should().Be(edDsa);
         securityKey.PrivateKeyStatus.Should().Be(PrivateKeyStatus.DoesNotExist);
+        securityKey.KeySize.Should().Be(32);
 
 #pragma warning disable 618
         securityKey.HasPrivateKey.Should().BeFalse();
