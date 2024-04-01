@@ -2,7 +2,7 @@ name: .NET Core
 
 on:
   push:
-    branches: [ master, v2, v3 ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -16,24 +16,25 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Setup .NET 8.0
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
-    - name: Fix Windows VM bug
-      shell: bash
-      if: matrix.os == 'windows-latest'
-      run: |
-        dotnet nuget locals all --clear
+
     - name: Restore
       run: dotnet restore
+
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build --no-restore -c Release
+
     - name: Test
-      run: dotnet test --no-restore --verbosity minimal
+      run: dotnet test --no-build --verbosity minimal
+
     - name: Pack
       if: matrix.os == 'ubuntu-latest'
-      run: dotnet pack -c Release
+      run: dotnet pack --no-build -c Release
+
     - name: Publish artifact
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
