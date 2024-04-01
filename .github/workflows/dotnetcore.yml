@@ -29,7 +29,7 @@ jobs:
       run: dotnet build --no-restore -c Release
 
     - name: Test
-      run: dotnet test --no-build --verbosity minimal
+      run: dotnet test --no-build -c Release --verbosity minimal
 
     - name: Pack
       if: matrix.os == 'ubuntu-latest'
