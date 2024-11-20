@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <Authors>Scott Brady</Authors>
         <Description>ASP.NET Core Tag helpers for password rules and validation.</Description>
         <PackageIcon>icon.png</PackageIcon>
