@@ -11,7 +11,7 @@
         <PackageTags>passwordrules aspnetcore identity</PackageTags>
         <IncludeSymbols>true</IncludeSymbols>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>2.1.0</Version>
+        <Version>2.2.0</Version>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     </PropertyGroup>
     
